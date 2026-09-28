@@ -26,14 +26,11 @@ The following environment versions were used:
 
 **Node.js version**
 ```text
-
 v24.21.0
-
 ```
 
 **.NET version**
 ```text
-
 .NET SDK:
  Version:           10.0.401
  Commit:            e34a38d2ae
@@ -80,7 +77,6 @@ Learn more:
 
 Download .NET:
   https://aka.ms/dotnet/download
-
 ```
 
 ## Installation
@@ -101,5 +97,5 @@ How to run the project:
 
 ## Contact Me
 
-My mail - [https://gmail.com](ilyabegichev@gmail.com)
-Project Link: [https://github.com](https://github.com/ilyabeg/TACMESH.git)
+My mail - [ilyabegichev@gmail.com](https://gmail.com)
+Project Link: [https://github.com/ilyabeg/TACMESH.git](https://github.com)
