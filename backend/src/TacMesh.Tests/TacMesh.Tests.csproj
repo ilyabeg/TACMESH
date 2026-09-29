@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TacMesh.Agent\TacMesh.Agent.csproj" />
     <ProjectReference Include="..\TacMesh.Core\TacMesh.Core.csproj" />
   </ItemGroup>
 

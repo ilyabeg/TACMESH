@@ -5,7 +5,7 @@ using TacMesh.Core;
 
 namespace TacMesh.Agent
 {
-    internal class Node
+    public class Node
     {
         // magic numbers
         private readonly IPAddress _localhoast = IPAddress.Loopback; // localhost ip address (127.0.0.1)
@@ -22,7 +22,7 @@ namespace TacMesh.Agent
         private MulticastOption _mcastOption;
         private IPEndPoint _mcastEndPoint;
 
-        // end user socket
+        // end user socket and discovery socket
         public Socket UserSocket { get; private set; }
         private Socket _discoverySocket;
 
@@ -79,7 +79,7 @@ namespace TacMesh.Agent
             _discoverySocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, _mcastOption);
         }
 
-        public void Test1()
+        public void Test()
         {
             Console.WriteLine($"Sending message from instance with port {_assignedPort}");
             Messenger.SendTo(_discoverySocket, _mcastEndPoint, _message);
