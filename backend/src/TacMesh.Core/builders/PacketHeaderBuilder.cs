@@ -47,6 +47,9 @@ namespace TacMesh.Core.builders
         }       
         public IPacketHeaderBuilder SetHopCount(int hopCount = 0) // if hop count was not provided, the default is 0
         {
+            if (hopCount < 0 || hopCount > 255)
+                throw new Exception("Error initiating Hop Count. Hop Count must be between 0-255.");
+
             // save as primitive and as bytes
             _header.HopCount = hopCount;
             _header.B_HopCount = (byte)hopCount;
@@ -86,6 +89,9 @@ namespace TacMesh.Core.builders
         }
         public IPacketHeaderBuilder SetMessageType(PacketType type)
         {
+            if (type < PacketType.Heartbeat || type > PacketType.UserMessage)
+                throw new Exception("Error initiating Packet Type: Type not recognised.");
+
             // save as primitive and as bytes
             _header.MsgType = type;
             _header.B_MsgType = (byte)type;
