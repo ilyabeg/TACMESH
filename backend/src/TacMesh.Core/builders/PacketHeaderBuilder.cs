@@ -8,10 +8,11 @@ namespace TacMesh.Core.builders
     {
         // temporarily put the fixed magic numbers here 
         public double LatestVersion { get; private set; } = 1.0;
-        private long _maxTTL = 10000000; // in seconds
+        private readonly long _maxTTL = 10000000; // in seconds
+        private readonly int _16bytes = 16; // 16 bytes fixed size
 
         // private working header
-        private PacketHeader _header;
+        private readonly PacketHeader _header;
 
         // constructor
         public PacketHeaderBuilder(PacketHeader header) => _header = header;        
@@ -20,7 +21,7 @@ namespace TacMesh.Core.builders
         public IPacketHeaderBuilder SetProtocolVersion(double p_version)
         {
             if (p_version != LatestVersion)
-                throw new Exception($"Error initiating Protocol Version. Protocol Version must be up to date (v{LatestVersion:F1}).");
+                throw new ArgumentException($"Error initiating Protocol Version. Protocol Version must be up to date (v{LatestVersion:F1}).");
 
             // save as primitive and as bytes
             _header.ProtocolVersion = p_version;
@@ -30,8 +31,11 @@ namespace TacMesh.Core.builders
         }
         public IPacketHeaderBuilder SetSourceID(string srcID)
         {
+            if (srcID.IsWhiteSpace() || srcID.Length > _16bytes)
+                throw new ArgumentException("Error initiating Source ID. The ID must be under 16 characters and contain text.");
+
             // save as primitive and as bytes
-            _header.SrcID = srcID; // FIX THIS LATER (temp not checking if ok)
+            _header.SrcID = srcID;
 
             // string values don't need Big Endian order because each letter is a single byte
             byte[] arr = Encoding.UTF8.GetBytes(srcID);
@@ -48,7 +52,7 @@ namespace TacMesh.Core.builders
         public IPacketHeaderBuilder SetHopCount(int hopCount = 0) // if hop count was not provided, the default is 0
         {
             if (hopCount < 0 || hopCount > 255)
-                throw new Exception("Error initiating Hop Count. Hop Count must be between 0-255.");
+                throw new ArgumentException("Error initiating Hop Count. Hop Count must be between 0-255.");
 
             // save as primitive and as bytes
             _header.HopCount = hopCount;
@@ -72,8 +76,8 @@ namespace TacMesh.Core.builders
         }
         public IPacketHeaderBuilder SetTimeToLive(long ttl)
         {
-            if (ttl < 1 || ttl > _maxTTL)
-                throw new Exception("Error initiating TTL.");
+            if (ttl < 1 || ttl > _maxTTL) // <----------------------- FIX TEMP TLL IN FUTURE
+                throw new ArgumentException("Error initiating TTL.");
 
             // save as primitive and as bytes
             _header.TTL = ttl;
@@ -90,7 +94,7 @@ namespace TacMesh.Core.builders
         public IPacketHeaderBuilder SetMessageType(PacketType type)
         {
             if (type < PacketType.Heartbeat || type > PacketType.UserMessage)
-                throw new Exception("Error initiating Packet Type: Type not recognised.");
+                throw new ArgumentException("Error initiating Packet Type: Type not recognised.");
 
             // save as primitive and as bytes
             _header.MsgType = type;
@@ -100,6 +104,9 @@ namespace TacMesh.Core.builders
         }
         public IPacketHeaderBuilder SetMessageID(string msgID)
         {
+            if (msgID.IsWhiteSpace() || msgID.Length > _16bytes)
+                throw new ArgumentException("Error initiating Message ID. The ID must be unique, under 16 characters and contain text.");
+
             // save as primitive and as bytes
             _header.MsgID = msgID;
 
@@ -117,6 +124,9 @@ namespace TacMesh.Core.builders
         }
         public IPacketHeaderBuilder SetDestinationID(string dstID)
         {
+            if (dstID.IsWhiteSpace() || dstID.Length > _16bytes)
+                throw new ArgumentException("Error initiating Destination ID. The ID must be under 16 characters and contain text.");
+
             // save as primitive and as bytes
             _header.DstID = dstID;
 
@@ -135,7 +145,7 @@ namespace TacMesh.Core.builders
         public IPacketHeaderBuilder SetPriority(int priority)
         {
             if (priority < 1 || priority > 10)
-                throw new Exception("Error initializing message priority. The priority must be between 1-10.");
+                throw new ArgumentException("Error initializing message priority. The priority must be between 1-10.");
 
             // save as primitive and as bytes
             _header.Priority = priority;
@@ -145,6 +155,9 @@ namespace TacMesh.Core.builders
         }
         public IPacketHeaderBuilder SetLogicalClock(long logicalClock)
         {
+            if (logicalClock < 0 || logicalClock >= long.MaxValue)
+                throw new ArgumentException($"Error initializing Logical Clock. The Logical Clock must be between 0- {long.MaxValue:e3}.");
+
             // save as primitive and as bytes
             _header.LogicalClock = logicalClock;
 

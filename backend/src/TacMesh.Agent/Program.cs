@@ -18,15 +18,15 @@ namespace TacMesh.Agent
                 Console.WriteLine("Packet Header 1\n");
 
                 builder.SetProtocolVersion(1.0)
-                .SetSourceID("ilya")
-                .SetHopCount()
-                .SetSenderCounter(66)
-                .SetTimeToLive(1257)
+                .SetSourceID("ILYA")
+                .SetHopCount(255)
+                .SetSenderCounter(255L)
+                .SetTimeToLive(100L)
                 .SetMessageType(PacketType.Heartbeat)
-                .SetMessageID("MESSAGE1")
-                .SetDestinationID("Computer01")
+                .SetMessageID("MSG-2")
+                .SetDestinationID("BEG")
                 .SetPriority(1)
-                .SetLogicalClock(256);
+                .SetLogicalClock(256L);
 
                 PacketHeader header = builder.BuildPacketHeader();
                 Console.WriteLine(header + "\n\n");
