@@ -1,4 +1,6 @@
 ﻿using System.Buffers.Binary;
+using System.Globalization;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using TacMesh.Core.builders;
 
@@ -96,63 +98,63 @@ namespace TacMesh.Core
         /// </summary>
         /// <param name="header_byte_stream"></param>
         /// <returns></returns>
-        public static PacketHeader Deserialize(List<byte[]> arrayList)
+        public static PacketHeader? Deserialize(List<byte[]> arrayList)
         {
-            // single bits
+            // --- single bits ---
 
-            // bit number 0 of the first byte (which is also at index 0) is the protocol version
-            int array_indx = 0, bit_indx = 0;
-            double p_version = arrayList[array_indx][bit_indx];
+            // byte number 0 of the first byte (which is also at index 0) is the protocol version
+            double p_version = GetSpecificByte(arrayList, 0, 0);
+            // byte number 0 of the byte at index 2 of the list (byte 17) is the hop count
+            int hopCount = GetSpecificByte(arrayList, 2, 0);
+            // byte number 0 of the byte at index 5 of the list (byte 34) is the packet type
+            PacketType msgType = (PacketType)GetSpecificByte(arrayList, 5, 0);
+            // byte number 0 of the byte at index 8 of the list (byte 67) is the priority
+            int priority = GetSpecificByte(arrayList, 8, 0);
 
-            // bit number 0 of the byte at index 2 of the list (byte 17) is the hop count
-            array_indx = 2;
-            int hopCount = arrayList[array_indx][bit_indx];
-
-            // bit number 0 of the byte at index 5 of the list (byte 34) is the packet type
-            array_indx = 5;
-            PacketType msgType = (PacketType)arrayList[array_indx][bit_indx];
-
-            // bit number 0 of the byte at index 8 of the list (byte 67) is the priority
-            array_indx = 8;
-            int priority = arrayList[array_indx][bit_indx];
-
-            // 64 bit (8 byte) numbers
+            // --- 64 bit (8 byte) numbers ---
 
             // the byte array from index 3 in the list is the sender counter
-            array_indx = 3;
-            byte[] b_senderCounter = arrayList[array_indx];
-            long sender_counter = BinaryPrimitives.ReadInt64BigEndian(b_senderCounter);
-
+            long sender_counter = GetSpecificLong(arrayList, 3);
             // the byte array from index 4 in the list is the TTL
-            array_indx = 4;
-            byte[] b_ttl = arrayList[array_indx];
-            long ttl = BinaryPrimitives.ReadInt64BigEndian(b_ttl);
-
+            long ttl = GetSpecificLong(arrayList, 4);
             // the byte array from index 9 in the list is the Loogical clock
-            array_indx = 9;
-            byte[] b_logicalClock = arrayList[array_indx];
-            long logicalClock = BinaryPrimitives.ReadInt64BigEndian(b_logicalClock);
+            long logicalClock = GetSpecificLong(arrayList, 9);
 
-            // string values
+            // --- string values ---
 
-            // the byte array from index 1 in the list is the source ID
-            array_indx = 1;
-            byte[] b_srcID = arrayList[array_indx];
-            string srcID = Encoding.UTF8.GetString(b_srcID).TrimEnd('\0');
-
+            // the byte array from index 1 in the list is the source ID            
+            string srcID = GetSpecificString(arrayList, 1);
             // the byte array from index 6 in the list is the msg ID
-            array_indx = 6;
-            byte[] b_msgID = arrayList[array_indx];
-            string msgID = Encoding.UTF8.GetString(b_msgID).TrimEnd('\0');
+            string msgID = GetSpecificString(arrayList, 6);
+            // the byte array from index 7 in the list is the destination ID           
+            string dstID = GetSpecificString(arrayList, 7);
 
-            // the byte array from index 7 in the list is the destination ID
-            array_indx = 7;
-            byte[] b_dstID = arrayList[array_indx];
-            string dstID = Encoding.UTF8.GetString(b_dstID).TrimEnd('\0');
+            return BuildPacketHeader(p_version, srcID, hopCount, sender_counter, ttl, msgType,
+                msgID, dstID, priority, logicalClock);
+        }
 
-            // building the actual header
+        // private deserialization helpers
+        private static byte GetSpecificByte(List<byte[]> list, int array_indx, int byte_indx) => list[array_indx][byte_indx];
+        private static long GetSpecificLong(List<byte[]> list, int array_indx)
+        {
+            byte[] bytes_array = list[array_indx];
+            return BinaryPrimitives.ReadInt64BigEndian(bytes_array);
+        }
+        private static string GetSpecificString(List<byte[]> list, int array_indx)
+        {
+            byte[] bytes_array = list[array_indx];
+            return Encoding.UTF8.GetString(bytes_array).TrimEnd('\0');
+        }
+
+        // dump all at once. get a full header
+        public static PacketHeader? BuildPacketHeader(
+            double p_version, string srcID, 
+            int hopCount, long sender_counter, 
+            long ttl, PacketType msgType, 
+            string msgID, string dstID,
+            int priority, long logicalClock)
+        {
             PacketHeaderBuilder builder = new PacketHeaderBuilder(new PacketHeader());
-
             try
             {
                 builder.SetProtocolVersion(p_version)
@@ -165,13 +167,14 @@ namespace TacMesh.Core
                 .SetDestinationID(dstID)
                 .SetPriority(priority)
                 .SetLogicalClock(logicalClock);
+
+                return builder.BuildPacketHeader();
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Exception while building deserialized header: '{e.Message}'");
+                Console.WriteLine(e.Message);
+                return null;
             }
-
-            return builder.BuildPacketHeader();
         }
 
         /// <summary>
