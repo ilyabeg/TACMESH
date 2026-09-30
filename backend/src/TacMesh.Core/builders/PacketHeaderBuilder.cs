@@ -1,6 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
 using TacMesh.Core.interfaces;
+using TacMesh.Core.packet_related;
 
 namespace TacMesh.Core.builders
 {
@@ -181,26 +182,27 @@ namespace TacMesh.Core.builders
         }
 
         // build
-        public PacketHeader BuildPacketHeader()
+        public PacketHeader BuildHeader()
         {
-            _header.ArrayList.Clear();
+            _header.ByteArraysList.Clear();
 
             if (AreHeaderFieldsEmpty())
                 throw new ArgumentNullException("Error building the Packet Header. One or more fields are empty.");
 
             // add all field in the correct order to the array list            
-            _header.ArrayList.Add(new byte[] { _header.B_ProtocolVersion });
-            _header.ArrayList.Add(_header.B_SrcID);
-            _header.ArrayList.Add(new byte[] { _header.B_HopCount });
-            _header.ArrayList.Add(_header.B_SenderCounter);
-            _header.ArrayList.Add(_header.B_TTL);
-            _header.ArrayList.Add(new byte[] { _header.B_MsgType });
-            _header.ArrayList.Add(_header.B_MsgID);
-            _header.ArrayList.Add(_header.B_DstID);
-            _header.ArrayList.Add(new byte[] { _header.B_Priority });
-            _header.ArrayList.Add(_header.B_LogicalClock);
+            _header.ByteArraysList.Add(new byte[] { _header.B_ProtocolVersion });
+            _header.ByteArraysList.Add(_header.B_SrcID);
+            _header.ByteArraysList.Add(new byte[] { _header.B_HopCount });
+            _header.ByteArraysList.Add(_header.B_SenderCounter);
+            _header.ByteArraysList.Add(_header.B_TTL);
+            _header.ByteArraysList.Add(new byte[] { _header.B_MsgType });
+            _header.ByteArraysList.Add(_header.B_MsgID);
+            _header.ByteArraysList.Add(_header.B_DstID);
+            _header.ByteArraysList.Add(new byte[] { _header.B_Priority });
+            _header.ByteArraysList.Add(_header.B_LogicalClock);
+            _header.ByteStream = Serializer.SerializeHeader(_header);
 
-            if (!_header.SerializeFields())
+            if (_header.ByteStream == null)
                 throw new Exception("Error. Couldn't serialize Packet Header.");
 
             return _header;

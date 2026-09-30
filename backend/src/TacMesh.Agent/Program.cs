@@ -9,7 +9,7 @@ namespace TacMesh.Agent
         {
             if (args.Length != 2)
             {
-                Console.WriteLine("ERROR: Agent Process arguments did not match");
+                Console.WriteLine("ERROR: Agent Process arguments did not match. Terminating process...");
                 return;
             }
 

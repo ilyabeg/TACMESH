@@ -1,7 +1,4 @@
-﻿using System.Buffers.Binary;
-using System.Globalization;
-using System.Runtime.InteropServices.JavaScript;
-using System.Text;
+﻿using System.Text;
 using TacMesh.Core.builders;
 
 namespace TacMesh.Core
@@ -55,103 +52,16 @@ namespace TacMesh.Core
 
         // working byte stream of all the fields (76 bytes in total)
         private readonly int _headerSize = 76;
-        public byte[] ByteStream { get; private set; }
+        public byte[]? ByteStream { get; set; }
 
         // private List holding all of the byte arrays
-        public List<byte[]> ArrayList { get; private set; }
+        public List<byte[]> ByteArraysList { get; private set; }
 
         // Constructor
         public PacketHeader()
         {
-            ArrayList = new List<byte[]>();
-            ByteStream = new byte[_headerSize];
-        }
-
-        /// <summary>
-        /// Method that serializes all of the header fields into a byte stream
-        /// </summary>
-        /// <returns>True if Serialization process was successful. Flase if Serialization process was un-successful</returns>
-        public bool SerializeFields()
-        {
-            try
-            {
-                int offset = 0;
-                foreach (byte[] array in ArrayList)
-                {
-                    array.CopyTo(ByteStream, offset); // copy each array to the stream from the starting position at offset
-                    offset += array.Length;
-
-                    // stop early if fields are larger than 76 bytes
-                    if (offset > _headerSize) throw new Exception("Header size Overflow");
-                }
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Couldn't Serialize Header due to: '{e.Message}'.");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// static method to deserialize any Packet Header byte stream
-        /// </summary>
-        /// <param name="header_byte_stream"></param>
-        /// <returns></returns>
-        public static PacketHeader? Deserialize(List<byte[]> arrayList)
-        {
-            try
-            {
-                // --- single bits ---
-
-                // byte number 0 of the first byte (which is also at index 0) is the protocol version
-                double p_version = GetSpecificByte(arrayList, 0, 0);
-                // byte number 0 of the byte at index 2 of the list (byte 17) is the hop count
-                int hopCount = GetSpecificByte(arrayList, 2, 0);
-                // byte number 0 of the byte at index 5 of the list (byte 34) is the packet type
-                PacketType msgType = (PacketType)GetSpecificByte(arrayList, 5, 0);
-                // byte number 0 of the byte at index 8 of the list (byte 67) is the priority
-                int priority = GetSpecificByte(arrayList, 8, 0);
-
-                // --- 64 bit (8 byte) numbers ---
-
-                // the byte array from index 3 in the list is the sender counter
-                long sender_counter = GetSpecificLong(arrayList, 3);
-                // the byte array from index 4 in the list is the TTL
-                long ttl = GetSpecificLong(arrayList, 4);
-                // the byte array from index 9 in the list is the Loogical clock
-                long logicalClock = GetSpecificLong(arrayList, 9);
-
-                // --- string values ---
-
-                // the byte array from index 1 in the list is the source ID            
-                string srcID = GetSpecificString(arrayList, 1);
-                // the byte array from index 6 in the list is the msg ID
-                string msgID = GetSpecificString(arrayList, 6);
-                // the byte array from index 7 in the list is the destination ID           
-                string dstID = GetSpecificString(arrayList, 7);
-
-                return BuildPacketHeader(p_version, srcID, hopCount, sender_counter, ttl, msgType,
-                    msgID, dstID, priority, logicalClock);
-            } catch (Exception e)
-            {
-                Console.WriteLine($"Couldn't Deserialize Packet Header due to: '{e.Message}'.");
-                return null;
-            }            
-        }
-
-        // private deserialization helpers
-        private static byte GetSpecificByte(List<byte[]> list, int array_indx, int byte_indx) => list[array_indx][byte_indx];
-        private static long GetSpecificLong(List<byte[]> list, int array_indx)
-        {
-            byte[] bytes_array = list[array_indx];
-            return BinaryPrimitives.ReadInt64BigEndian(bytes_array);
-        }
-        private static string GetSpecificString(List<byte[]> list, int array_indx)
-        {
-            byte[] bytes_array = list[array_indx];
-            return Encoding.UTF8.GetString(bytes_array).TrimEnd('\0');
-        }
+            ByteArraysList = new List<byte[]>();
+        }        
 
         // dump all at once. get a full header
         public static PacketHeader? BuildPacketHeader(
@@ -175,7 +85,7 @@ namespace TacMesh.Core
                 .SetPriority(priority)
                 .SetLogicalClock(logicalClock);
 
-                return builder.BuildPacketHeader();
+                return builder.BuildHeader();
             }
             catch (Exception e)
             {
@@ -207,7 +117,7 @@ namespace TacMesh.Core
             str.AppendLine($"Logical Clock:    {LogicalClock} ({B_LogicalClock.Length} bytes)");
 
             // visually see all bytes
-            foreach (byte[] array in ArrayList)
+            foreach (byte[] array in ByteArraysList)
             {
                 Console.WriteLine("BYTES " + array.Length + ":");
                 foreach (byte b in array)
