@@ -25,8 +25,13 @@ namespace TacMesh.Core
         // THESS WILL BE DEFAULT CONFIGURATIONS STRICTLY FOR TESTING.
         private readonly byte _currentProtocolVersion = 1;
         private readonly long _maxTTL = 10000000; // in seconds
+        private readonly long _minTTL = 1;
         private readonly byte _minPriority = 1; 
         private readonly byte _maxPriority = 10;
+        private readonly byte _minHopCount = 0;
+        private readonly byte _maxHopCount = 255;
+        private readonly long _minLogicalClock = 0;
+        private readonly long _maxLogicalClock = long.MaxValue;
         #endregion
 
         // current legal string length 16 bytes
@@ -71,8 +76,8 @@ namespace TacMesh.Core
             get;
             set
             {
-                if (value < 0 || value > 255)
-                    throw new ArgumentException("Error initiating Hop Count. Hop Count must be between 0-255");
+                if (value < _minHopCount || value > _maxHopCount)
+                    throw new ArgumentException($"Error initiating Hop Count. Hop Count must be between {_minHopCount}-{_maxHopCount}");
                 field = value;
             }
         }
@@ -100,7 +105,7 @@ namespace TacMesh.Core
             {
                 // AGAIN, MAX TTL IS YET TO BE DESIDED AND THIS MAGIC NUMBER IS STRICTLY TEMPORARY.
 
-                if (value < 1 || value > _maxTTL)
+                if (value < _minTTL || value > _maxTTL)
                     throw new ArgumentException("Error initiating TTL");
                 field = value;
             }
@@ -176,8 +181,8 @@ namespace TacMesh.Core
             get;
             set
             {
-                if (value < 0 || value > long.MaxValue)
-                    throw new ArgumentException($"Error initializing Logical Clock. The Logical Clock must be between 0- {long.MaxValue:e3}");
+                if (value < _minLogicalClock || value > _maxLogicalClock)
+                    throw new ArgumentException($"Error initializing Logical Clock. The Logical Clock must be between {_minLogicalClock}-{_maxLogicalClock:e3}");
                 field = value;
             }
         }
@@ -185,24 +190,23 @@ namespace TacMesh.Core
 
         // dump all at once. get a full header
         public static PacketHeader BuildPacketHeader(
-            byte p_version, string srcID,
-            byte hopCount, long sender_counter, 
-            long ttl, PacketType msgType, 
-            string msgID, string dstID,
-            byte priority, long logicalClock)
+            byte p_version, PacketType msgType,
+            string msgID, string srcID, string dstID,
+            byte hopCount, long logicalClock,
+            long ttl, byte priority, long sender_counter)
         {
             PacketHeaderBuilder builder = new PacketHeaderBuilder(new PacketHeader());
 
             builder.SetProtocolVersion(p_version)
-            .SetSourceID(srcID)
-            .SetHopCount(hopCount)
-            .SetSenderCounter(sender_counter)
-            .SetTimeToLive(ttl)
             .SetMessageType(msgType)
             .SetMessageID(msgID)
+            .SetSourceID(srcID)
             .SetDestinationID(dstID)
+            .SetHopCount(hopCount)
+            .SetLogicalClock(logicalClock)
+            .SetTimeToLive(ttl)
             .SetPriority(priority)
-            .SetLogicalClock(logicalClock);
+            .SetSenderCounter(sender_counter);
 
             return builder.BuildHeader();
         }
@@ -219,15 +223,15 @@ namespace TacMesh.Core
             str.AppendLine("         HEADER FIELDS:");
             str.AppendLine("---------------------------------\n");
             str.AppendLine($"Protocol Version: {ProtocolVersion}");
-            str.AppendLine($"SrcID:            {SrcID}");
-            str.AppendLine($"Hop Count:        {HopCount}");
-            str.AppendLine($"Sender Count:     {SenderCounter}");
-            str.AppendLine($"TTL:              {TTL}");
             str.AppendLine($"Message Type:     {MsgType}");
             str.AppendLine($"MsgID:            {MsgID}");
+            str.AppendLine($"SrcID:            {SrcID}");
             str.AppendLine($"DstID:            {DstID}");
-            str.AppendLine($"Priority:         {Priority}");
+            str.AppendLine($"Hop Count:        {HopCount}");
             str.AppendLine($"Logical Clock:    {LogicalClock}");
+            str.AppendLine($"TTL:              {TTL}");
+            str.AppendLine($"Priority:         {Priority}");
+            str.AppendLine($"Sender Count:     {SenderCounter}");
 
             // TO DO: visually see all bytes
 

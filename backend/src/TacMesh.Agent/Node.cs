@@ -163,9 +163,9 @@ namespace TacMesh.Agent
             {
                 Console.WriteLine($"{AssignedPort} Received message from PORT: {remoteEP.Port}");
 
+                // TEMPORARY TEST! I KNOW MAGIC NUMBERS ARE INVOLVED AND I KNOW IT IS WRONG. THIS IS SIMPLY A TEST
                 // transmit a header to remote user
-                PacketHeader header_test = PacketHeader.BuildPacketHeader(1, NodeID, 0, 0, 0, PacketType.Heartbeat, $"1234567890123456", "TMP-DST", 1, 0);
-
+                PacketHeader header_test = PacketHeader.BuildPacketHeader(1, PacketType.Heartbeat, $"1234567890123456", NodeID, "TMP-DST", 0, 0, 0, 1, 0);
                 byte[] header_bytes = _header_serializer.Serialize(header_test);
 
                 Messenger.SendTo(UserSocket, remoteEP, header_bytes);

@@ -23,15 +23,15 @@ namespace TacMesh.Core.serializing_related
             ByteWriter byteWriter = new ByteWriter(byteStream);
 
             byteWriter.WriteBytes(header.ProtocolVersion);
-            byteWriter.WriteBytes(header.SrcID, PacketHeader.LegalStringLength);
-            byteWriter.WriteBytes(header.HopCount);
-            byteWriter.WriteBytes(header.SenderCounter);
-            byteWriter.WriteBytes(header.TTL);
             byteWriter.WriteBytes((byte)header.MsgType);
             byteWriter.WriteBytes(header.MsgID, PacketHeader.LegalStringLength);
+            byteWriter.WriteBytes(header.SrcID, PacketHeader.LegalStringLength);
             byteWriter.WriteBytes(header.DstID, PacketHeader.LegalStringLength);
-            byteWriter.WriteBytes(header.Priority);
+            byteWriter.WriteBytes(header.HopCount);
             byteWriter.WriteBytes(header.LogicalClock);
+            byteWriter.WriteBytes(header.TTL);
+            byteWriter.WriteBytes(header.Priority);
+            byteWriter.WriteBytes(header.SenderCounter);
 
             return byteStream;
         }
@@ -43,21 +43,25 @@ namespace TacMesh.Core.serializing_related
         /// <returns></returns>
         public PacketHeader Deserialize(byte[] byteStream)
         {
+            // reject byte streams shorter than the header size
+            if (byteStream.Length < PacketHeader.HeaderSize)
+                throw new ArgumentOutOfRangeException($"Unable to Deserialize due to: Provided byte stream was shorter than {PacketHeader.HeaderSize} bytes");
+
             PacketHeaderBuilder builder = new PacketHeaderBuilder(new PacketHeader());
             ByteReader reader = new ByteReader(byteStream);
 
             int len = PacketHeader.LegalStringLength;
 
             builder.SetProtocolVersion(reader.ReadByte())
-                .SetSourceID(reader.ReadString(len))
-                .SetHopCount(reader.ReadByte())
-                .SetSenderCounter(reader.ReadLong())
-                .SetTimeToLive(reader.ReadLong())
                 .SetMessageType((PacketType)reader.ReadByte())
                 .SetMessageID(reader.ReadString(len))
+                .SetSourceID(reader.ReadString(len))
                 .SetDestinationID(reader.ReadString(len))
+                .SetHopCount(reader.ReadByte())
+                .SetLogicalClock(reader.ReadLong())
+                .SetTimeToLive(reader.ReadLong())
                 .SetPriority(reader.ReadByte())
-                .SetLogicalClock(reader.ReadLong());
+                .SetSenderCounter(reader.ReadLong());
 
             return builder.BuildHeader();
         }
