@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using TacMesh.Core;
 using TacMesh.Core.packet_related;
+using TacMesh.Core.serializing_related;
 
 namespace TacMesh.Agent
 {
@@ -38,6 +39,9 @@ namespace TacMesh.Agent
         // temporary message 
         private readonly byte[] _discover_message;
 
+        // Serializers
+        private readonly PacketHeaderSerializer _header_serializer;
+
 
         // Constructors
         public Node(string nodeID)
@@ -46,6 +50,7 @@ namespace TacMesh.Agent
             {
                 NodeID = nodeID;
                 _mcastEndPoint = new IPEndPoint(_mcastAddress, _discoveryPort);
+                _header_serializer = new PacketHeaderSerializer();
                 CreateSockets();
                 BindSockets();
                 AddToMCastGroup();
@@ -148,7 +153,7 @@ namespace TacMesh.Agent
             // TEMP TEST: try header transmition
             if (message.Length >= PacketHeader.HeaderSize)
             {
-                PacketHeader? received_header = Deserializer.DeserializeHeader(message);
+                PacketHeader? received_header = _header_serializer.Deserialize(message);
                 if (received_header == null) return;
 
                 Console.WriteLine($"{AssignedPort} Received Packet Header from PORT: {remoteEP.Port}");
@@ -159,12 +164,11 @@ namespace TacMesh.Agent
                 Console.WriteLine($"{AssignedPort} Received message from PORT: {remoteEP.Port}");
 
                 // transmit a header to remote user
-                //PacketHeader header_test = PacketHeader.BuildPacketHeader(
-                //    1.0, NodeID, 0, 0, 0, PacketType.Heartbeat, $"TEST-MSG-{NodeID}", "TMP-DST", 1, 0)!;
+                PacketHeader header_test = PacketHeader.BuildPacketHeader(1, NodeID, 0, 0, 0, PacketType.Heartbeat, $"1234567890123456", "TMP-DST", 1, 0);
 
-                //byte[] header_bytes = header_test.ByteStream!;
+                byte[] header_bytes = _header_serializer.Serialize(header_test);
 
-                //Messenger.SendTo(UserSocket, remoteEP, header_bytes);
+                Messenger.SendTo(UserSocket, remoteEP, header_bytes);
             }
         }
     }

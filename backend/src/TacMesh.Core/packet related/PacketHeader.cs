@@ -17,7 +17,7 @@ namespace TacMesh.Core
     public class PacketHeader
     {
         // fixed global header size
-        public static readonly int HeaderSize = 76; // bytes
+        public const int HeaderSize = 76; // bytes
 
         #region TEMPORARY MAGIC NUMBERS
         // THESE ARE TEMPORARY MAGIC NUMBERS AND I KNOW IT IS WRONG.
@@ -29,10 +29,13 @@ namespace TacMesh.Core
         private readonly byte _maxPriority = 10;
         #endregion
 
-        // 16 bytes fixed size
-        private readonly int _16bytes = 16;
+        // current legal string length 16 bytes
+        // CAN BE CHANGED AT ANY TIME OR BE PROVIDED FROM AN OTHER SOURCE,
+        // SUCH AS THE CONFIG FILE OR MISSION PACKAGE.
+        public const int LegalStringLength = 16;
 
-        // Header fields in order of transmision (as byte and primitive representations)
+
+        // Header fields in order of transmision
         #region Header Fields
         public byte ProtocolVersion // 1 byte
         { 
@@ -50,8 +53,15 @@ namespace TacMesh.Core
             get;
             set
             {
-                if (string.IsNullOrWhiteSpace(value) || value.Length > _16bytes)
-                    throw new ArgumentException("Error initiating Source ID. The ID must be under 16 characters and contain text");
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException("Error initiating Source ID. The ID must contain text");
+                
+                // check if actual byte length and not the amount of characters
+                int byteCount = Encoding.UTF8.GetByteCount(value);
+
+                if (byteCount > LegalStringLength)
+                    throw new ArgumentException($"Error initiating Source ID. The ID must be {LegalStringLength} bytes or less");
+                
                 field = value;
             }
         }
@@ -117,8 +127,15 @@ namespace TacMesh.Core
                 // LENGTH, AND THIS IS STRICTLY TEMPORARY FOR TESTING REASONS ONLY. I KNOW THIS IS 
                 // WRONG AND I DO NOT INTEND OF LEAVING IT THIS WAY IN THE FINISHED PRODUCT.
 
-                if (string.IsNullOrWhiteSpace(value) || value.Length > _16bytes)
-                    throw new ArgumentException("Error initiating Message ID. The ID must be unique, under 16 characters and contain text");
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException("Error initiating Message ID. The ID must contain text");
+
+                // check the actual byte length and not the amount of characters
+                int byteCount = Encoding.UTF8.GetByteCount(value);
+
+                if (byteCount != LegalStringLength)
+                    throw new ArgumentException($"Error initiating Message ID. The ID must be exactly {LegalStringLength} bytes");
+
                 field = value;
             }
         }
@@ -128,8 +145,15 @@ namespace TacMesh.Core
             get;
             set
             {
-                if (string.IsNullOrWhiteSpace(value) || value.Length > _16bytes)
-                    throw new ArgumentException("Error initiating Destination ID. The ID must be under 16 characters and contain text");
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException("Error initiating Destination ID. The ID must contain text");
+
+                // check if actual byte length and not the amount of characters
+                int byteCount = Encoding.UTF8.GetByteCount(value);
+
+                if (byteCount > LegalStringLength)
+                    throw new ArgumentException($"Error initiating Destination ID. The ID must be {LegalStringLength} bytes or less");
+
                 field = value;
             }
         }
@@ -160,7 +184,7 @@ namespace TacMesh.Core
         #endregion
 
         // dump all at once. get a full header
-        public static PacketHeader? BuildPacketHeader(
+        public static PacketHeader BuildPacketHeader(
             byte p_version, string srcID,
             byte hopCount, long sender_counter, 
             long ttl, PacketType msgType, 
@@ -168,26 +192,19 @@ namespace TacMesh.Core
             byte priority, long logicalClock)
         {
             PacketHeaderBuilder builder = new PacketHeaderBuilder(new PacketHeader());
-            try
-            {
-                builder.SetProtocolVersion(p_version)
-                .SetSourceID(srcID)
-                .SetHopCount(hopCount)
-                .SetSenderCounter(sender_counter)
-                .SetTimeToLive(ttl)
-                .SetMessageType(msgType)
-                .SetMessageID(msgID)
-                .SetDestinationID(dstID)
-                .SetPriority(priority)
-                .SetLogicalClock(logicalClock);
 
-                return builder.BuildHeader();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return null;
-            }
+            builder.SetProtocolVersion(p_version)
+            .SetSourceID(srcID)
+            .SetHopCount(hopCount)
+            .SetSenderCounter(sender_counter)
+            .SetTimeToLive(ttl)
+            .SetMessageType(msgType)
+            .SetMessageID(msgID)
+            .SetDestinationID(dstID)
+            .SetPriority(priority)
+            .SetLogicalClock(logicalClock);
+
+            return builder.BuildHeader();
         }
 
         /// <summary>
@@ -201,7 +218,7 @@ namespace TacMesh.Core
             str.AppendLine("---------------------------------");
             str.AppendLine("         HEADER FIELDS:");
             str.AppendLine("---------------------------------\n");
-            str.AppendLine($"Protocol Version: {ProtocolVersion:F1}");
+            str.AppendLine($"Protocol Version: {ProtocolVersion}");
             str.AppendLine($"SrcID:            {SrcID}");
             str.AppendLine($"Hop Count:        {HopCount}");
             str.AppendLine($"Sender Count:     {SenderCounter}");

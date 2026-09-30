@@ -1,23 +1,28 @@
 ﻿using TacMesh.Core;
+using TacMesh.Core.serializing_related;
 namespace TacMesh.Tests;
 
 public class UnitTest1
 {
     [Theory]
 
-    // roundtrip tests for each of the three packet types returns identical objects
-    [InlineData(1.0, "abcdefg", 0, 100L, 255L, 0, "MSG-01", "hijklmnop", 1, 1234L)]
-    [InlineData(1.0, "ilya", 3, 10L, 256L, 1, "MSG-02", "beg", 10, 4321L)]
-    [InlineData(1.0, "pc1", 100, 160L, 15L, 2, "MSG-03", "pc2", 5, 1551L)]
+    [InlineData(1, "abcdefg", 0, 100L, 255L, PacketType.Heartbeat, "1234567890123456", "hijklmnop", 1, 1234L)]
+    [InlineData(1, "abcdefg", 0, 100L, 255L, PacketType.Heartbeat, "1234567890123456", "hijklmnop", 1, 1234L)]
 
-    public void Test1(  
-        double version, string src, int hop, long sender, long ttl,
-        int msgType, string msgId, string dst, int priority, long clock)
+    public void TestPacketHeaderSerialization(
+        byte version, string src, byte hop, long sender, long ttl,
+        PacketType msgType, string msgId, string dst, byte priority, long clock)
     {
-        PacketHeader header1 = PacketHeader.BuildPacketHeader(
-            version, src, hop, sender, ttl, (PacketType)msgType, msgId, dst, priority, clock);
+        PacketHeaderSerializer serializer = new PacketHeaderSerializer();
 
-        PacketHeader header2 = PacketHeader.Deserialize(header1.ArrayList);
+        // original packet header
+        PacketHeader header1 = PacketHeader.BuildPacketHeader(version, src, hop, sender, ttl, msgType, msgId, dst, priority, clock);
+
+        // serialized byte stream
+        byte[] serialized_header_bytes = serializer.Serialize(header1);
+
+        // new header from the deserialization
+        PacketHeader header2 = serializer.Deserialize(serialized_header_bytes);
 
         Assert.NotNull(header2);
         Assert.Equal(version, header2.ProtocolVersion);
@@ -25,7 +30,7 @@ public class UnitTest1
         Assert.Equal(hop, header2.HopCount);
         Assert.Equal(sender, header2.SenderCounter);
         Assert.Equal(ttl, header2.TTL);
-        Assert.Equal((PacketType)msgType, header2.MsgType);
+        Assert.Equal(msgType, header2.MsgType);
         Assert.Equal(msgId, header2.MsgID);
         Assert.Equal(dst, header2.DstID);
         Assert.Equal(priority, header2.Priority);
