@@ -16,52 +16,22 @@ namespace TacMesh.Core
     /// </summary>
     public class PacketHeader
     {
-        // global header size
-        public int HeaderSize { get; set; } = 76;
+        // fixed global header size
+        public static readonly int HeaderSize = 76; // bytes
 
         // Header fields in order of transmision (as byte and primitive representations)
-        public byte B_ProtocolVersion { get; set; } // 1 byte
-        public double ProtocolVersion { get; set; } 
-
-        public byte[] B_SrcID { get; set; } // 16 byte
-        public string SrcID { get; set; } 
-
-        public byte B_HopCount { get; set; } // 1 byte        
-        public int HopCount { get; set; }       
-
-        public byte[] B_SenderCounter { get; set; } // 8 byte
-        public long SenderCounter { get; set; }
-
-        public byte[] B_TTL { get; set; } // 8 byte
-        public long TTL { get; set; }
-
-        public byte B_MsgType { get; set; } // 1 byte
-        public PacketType MsgType { get; set; }
-
-        public byte[] B_MsgID { get; set; } // 16 byte
-        public string MsgID { get; set; }
-
-        public byte[] B_DstID { get; set; } // 16 byte
-        public string DstID { get; set; }
-
-        public byte B_Priority { get; set; } // 1 byte
-        public int Priority { get; set; }
-
-        public byte[] B_LogicalClock { get; set; } // 8 byte
-        public long LogicalClock { get; set; }
-
-        // working byte stream of all the fields (76 bytes in total)
-        private readonly int _headerSize = 76;
-        public byte[]? ByteStream { get; set; }
-
-        // private List holding all of the byte arrays
-        public List<byte[]> ByteArraysList { get; private set; }
-
-        // Constructor
-        public PacketHeader()
-        {
-            ByteArraysList = new List<byte[]>();
-        }        
+        #region Header Fields
+        public byte ProtocolVersion { get; private set; } // 1 byte
+        public string SrcID { get; private set; }  // 16 byte
+        public int HopCount { get; private set; } // 1 byte
+        public long SenderCounter { get; private set; } // 8 byte
+        public long TTL { get; private set; } // 8 byte
+        public PacketType MsgType { get; private set; } // 1 byte
+        public string MsgID { get; private set; } // 16 byte
+        public string DstID { get; private set; } // 16 byte
+        public int Priority { get; private set; }  // 1 byte
+        public long LogicalClock { get; private set; }  // 8 byte
+        #endregion
 
         // dump all at once. get a full header
         public static PacketHeader? BuildPacketHeader(
@@ -105,16 +75,16 @@ namespace TacMesh.Core
             str.AppendLine("---------------------------------");
             str.AppendLine("         HEADER FIELDS:");
             str.AppendLine("---------------------------------\n");
-            str.AppendLine($"Protocol Version: {ProtocolVersion:F1} (1 bytes)");
-            str.AppendLine($"SrcID:            {SrcID} ({B_SrcID.Length} bytes)");
-            str.AppendLine($"Hop Count:        {HopCount} (1 bytes)");
-            str.AppendLine($"Sender Count:     {SenderCounter} ({B_SenderCounter.Length} bytes)");
-            str.AppendLine($"TTL:              {TTL} ({B_TTL.Length} bytes)");
-            str.AppendLine($"Message Type:     {MsgType} (1 bytes)");
-            str.AppendLine($"MsgID:            {MsgID} ({B_MsgID.Length} bytes)");
-            str.AppendLine($"DstID:            {DstID} ({B_DstID.Length} bytes)");
-            str.AppendLine($"Priority:         {Priority} (1 bytes)");
-            str.AppendLine($"Logical Clock:    {LogicalClock} ({B_LogicalClock.Length} bytes)");
+            str.AppendLine($"Protocol Version: {ProtocolVersion:F1}");
+            str.AppendLine($"SrcID:            {SrcID}");
+            str.AppendLine($"Hop Count:        {HopCount}");
+            str.AppendLine($"Sender Count:     {SenderCounter}");
+            str.AppendLine($"TTL:              {TTL}");
+            str.AppendLine($"Message Type:     {MsgType}");
+            str.AppendLine($"MsgID:            {MsgID}");
+            str.AppendLine($"DstID:            {DstID}");
+            str.AppendLine($"Priority:         {Priority}");
+            str.AppendLine($"Logical Clock:    {LogicalClock}");
 
             // visually see all bytes
             foreach (byte[] array in ByteArraysList)

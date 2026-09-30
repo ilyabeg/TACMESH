@@ -18,14 +18,12 @@ namespace TacMesh.Agent
         private IPEndPoint _discoveryEndPoint;
         #endregion
 
-
         #region multicast group values
         private readonly IPAddress _mcastAddress = IPAddress.Parse("239.0.0.1");
         // MulticastOption is a class that provides the IPAddress values used to join or drop an IPv4 multicast group
         private MulticastOption _mcastOption;
         private IPEndPoint _mcastEndPoint;
         #endregion
-
 
         #region end user socket and discovery socket
         public Socket UserSocket { get; private set; }
@@ -148,7 +146,7 @@ namespace TacMesh.Agent
             if (remoteEP.Port == AssignedPort) return;
 
             // TEMP TEST: try header transmition
-            if (message.Length >= 76)
+            if (message.Length >= PacketHeader.HeaderSize)
             {
                 PacketHeader? received_header = Deserializer.DeserializeHeader(message);
                 if (received_header == null) return;

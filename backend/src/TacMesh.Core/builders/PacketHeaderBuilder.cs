@@ -35,8 +35,6 @@ namespace TacMesh.Core.builders
 
             // save as primitive and as bytes
             _header.ProtocolVersion = p_version;
-            _header.B_ProtocolVersion = (byte)p_version;
-
             return this;
         }
         public IPacketHeaderBuilder SetSourceID(string srcID)
@@ -165,7 +163,7 @@ namespace TacMesh.Core.builders
         }
         public IPacketHeaderBuilder SetLogicalClock(long logicalClock)
         {
-            if (logicalClock < 0 || logicalClock >= long.MaxValue)
+            if (logicalClock < 0 || logicalClock > long.MaxValue)
                 throw new ArgumentException($"Error initializing Logical Clock. The Logical Clock must be between 0- {long.MaxValue:e3}");
 
             // save as primitive and as bytes

@@ -2,8 +2,6 @@
 {
     public class Serializer
     {
-        private static readonly int _headerSize = 76; // bytes
-
         /// <summary>
         /// Method that serializes all of the header fields into a byte stream
         /// </summary>
@@ -12,7 +10,8 @@
         {
             try
             {
-                byte[] byteStream = new byte[_headerSize];
+                // byte stream exactly 76 bytes
+                byte[] byteStream = new byte[PacketHeader.HeaderSize];
 
                 int offset = 0;
                 foreach (byte[] array in header.ByteArraysList)
@@ -21,7 +20,7 @@
                     offset += array.Length;
 
                     // stop early if fields are larger than 76 bytes
-                    if (offset > _headerSize) throw new Exception("Header size Overflow");
+                    if (offset > PacketHeader.HeaderSize) throw new Exception("Header size Overflow");
                 }
                 return byteStream;
             }

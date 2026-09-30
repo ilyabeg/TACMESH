@@ -5,10 +5,8 @@ namespace TacMesh.Core.packet_related
 {
     public class Deserializer
     {
-        private static readonly int _headerSize = 76; // bytes
-
         /// <summary>
-        /// static method to deserialize any Packet Header byte stream
+        /// static method to deserialize any Packet Header byte stream into a PacketHeader object
         /// </summary>
         /// <param name="header_byte_stream"></param>
         /// <returns></returns>
@@ -65,7 +63,7 @@ namespace TacMesh.Core.packet_related
         private static List<byte[]>? CreateByteArraysList(byte[] byteStream)
         {
             // reject byte stream shorter than 76 bytes
-            if (byteStream.Length < _headerSize) return null;
+            if (byteStream.Length < PacketHeader.HeaderSize) return null;
 
             // the starting index at which copying the array starts
             int start_index = 0, end_index = 0;

@@ -43,30 +43,35 @@ In TACMESH the dependencied are:
 
 - **TacMesh.Core** - Indepenent. Why? Because the Core contains all of the backend logic without executing it, it is simply a class library.
 
-- **TacMesh.Launcher, TacMesh.Tests**: Both depend on TacMesh.Core. Launcher: Because it is responsible for launching the logic behind the Core. Tests: Because it is responsible for unitesting logic from the Core.
+- **TacMesh.Agent** - Depends on the Core. Why? Core: Because it executes logic written inside of the Core project.
 
-- **TacMesh.Agent** - Depends on the Core and the Launcher. Why? Core: Because it executes Core logic. Launcher: Because the Launcher is responsible to execute instances of the Agent and terminating them at will.
+- **TacMesh.Launcher** - : Depends on TacMesh.Core and TacMesh.Agent. Why? Core: Because it is responsible for launching the logic behind the Core. Agent: Because it is responsible for launching instances of the Agent project.
+
+- **TacMesh.Tests** - Depends on TacMesh.Core and TacMesh.Agent as well. Why? Because it is for unit testing code sample, it get either be Core logic or trying out Agent samples.
 
 ```mermaid
 graph TD
-    %% Core Project (Independent)
-    Core[TacMesh.Core]
+   %% Core Project (Independent)
+   Core[TacMesh.Core]
 
-    %% Dependent Projects
-    Launcher[TacMesh.Launcher] --> Core
-    Tests[TacMesh.Tests] --> Core
+   %% Agent Dependencies
+   Agent[TacMesh.Agent] --> Core
+   
+   %% Launcher Dependencies
+   Launcher[TacMesh.Launcher] --> Core
+   Launcher[TacMesh.Launcher] --> Agent
 
-    %% Agent Dependencies
-    Agent[TacMesh.Agent] --> Core
-    Agent[TacMesh.Agent] --> Launcher
+   %% Tests Dependencies
+   Tests[TacMesh.Tests] --> Core
+   Tests[TacMesh.Tests] --> Agent
 ```
 
 ## Proposal Chapters Implementation Places
 
-**TacMesh.Core - responsible for the whole logic behind the backend. These Proposal Chapters will be written here:**
+In this next section i'll be explaining the brief resposibility for each project, which chapters from the proposal each project is responsible for handling, and in which class the logic is written in.
 
-```text
-* The mission package Builder
+**TacMesh.Core** - responsible for the whole logic behind the backend, meaning the whole logic will be written here. Chapters of the  
+
 * Virtual Radio Model
 * Seed Generator and Mission-Replay
 * Node Processes
@@ -77,13 +82,12 @@ graph TD
 * Storage and Expiration Policy
 * End-to-end encryption
 * Key derivation and rolling process
-```
 
-**TacMesh.Agent - responsible for executing Routing messages, Encrypting & Dectypting messages, Calculating Graph State, Storing and Carrying messages, and Forwarding messages**:
+**TacMesh.Agent** - responsible for executing Routing messages, Encrypting & Dectypting messages, Calculating Graph State, Storing and Carrying messages, and Forwarding messages:
 
 **TacMesh.Launcher - responsible for launching Agent instances, and killing them to simulate Graph Expansion and Shrinking**:
 
-**TacMesh.Tests - responsible for Uni-testing Core logic.**:
+**TacMesh.Tests** - responsible for Uni-testing Core logic. No
 
 ## Functional Requirements Implementation Place
 
@@ -112,13 +116,13 @@ Requirement is written (Where Requirement is implemented != where Requirement lo
    | will not be able to read |                          |
    | the content              |                          |
 ---+--------------------------+--------------------------+--------------------------
- 4 | The system will identify | Agent (Identifies break  | NetWorker (class from
+ 4 | The system will identify | Agent (Identifies break  | NetAnalyser (class from
    | breaking nodes and bridges points after each        | Core)
    | in the network graph in  | 'connectivity' broadcast | 
    | real time and alert the  | messages and network     |
    | commander                | changes)                 |
 ---+--------------------------+--------------------------+--------------------------
- 5 | Upon receiving a report of  Core (Executes routing  | NetWorker (class from
+ 5 | Upon receiving a report of  Agent (Executes routing | Router (class from
    | a casualty, the system   | algorithms upon receving | Core)
    | will calculate three     | the report from the UI)  |
    | evacuation routes        |                          |
@@ -130,22 +134,22 @@ Requirement is written (Where Requirement is implemented != where Requirement lo
    | run in two modes without |                          |
    | code changes             |                          |
 ---+--------------------------+--------------------------+--------------------------
- 8 | A scenario created by the| Core (Creates executable | MissionPlayer (class in
-   | user is saved to a file, | files at every simulation) Core)
-   | Restoring this file      |                          |
+ 8 | A scenario created by the| Launcher (Creates data   | MissionPlayer (class in
+   | user is saved to a file, | files after every        | Core)
+   | Restoring this file      | simulation)              |
    | reproduces the same      |                          |
    | scenario                 |                          |
 ---+--------------------------+--------------------------+--------------------------
- 9 | Each node constructs a   | Agent (Builds Graph)     | NetWorker (class from 
+ 9 | Each node constructs a   | Agent (Builds Graph)     | GraphCalculator (class from 
    | local estimate of the    |                          | Core)
    | entire network graph based                          |
    | on connectivity records  |                          |
    | distributed across the   |                          |
    | network                  |                          |
 ---+--------------------------+--------------------------+--------------------------
- 10| The Mission Package      | Launcher (Mission Package| MissionPackage (class
-   | builder will define users, will be defined in the   | from Core)
-   | roles, and permissions,  | Launcher project)        |
+ 10| The Mission Package      | Offline tool.            | (To be Desided.)
+   | builder will define users,                          | 
+   | roles, and permissions,  |                          |
    | issue the keys, and sign |                          |
    | the package with the     |                          |
    | mission key              |                          |
