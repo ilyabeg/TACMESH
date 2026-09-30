@@ -17,16 +17,16 @@ namespace TacMesh.Core.packet_related
                 List<byte[]>? arrayList = CreateByteArraysList(byteStream);
                 if (arrayList == null) return null;
 
-                // --- single bits ---
+                // --- single bytes ---
 
                 // byte number 0 of the first byte (which is also at index 0) is the protocol version
-                double p_version = GetSpecificByte(arrayList, 0, 0);
+                byte p_version = GetSpecificByte(arrayList, 0, 0);
                 // byte number 0 of the byte at index 2 of the list (byte 17) is the hop count
-                int hopCount = GetSpecificByte(arrayList, 2, 0);
+                byte hopCount = GetSpecificByte(arrayList, 2, 0);
                 // byte number 0 of the byte at index 5 of the list (byte 34) is the packet type
                 PacketType msgType = (PacketType)GetSpecificByte(arrayList, 5, 0);
                 // byte number 0 of the byte at index 8 of the list (byte 67) is the priority
-                int priority = GetSpecificByte(arrayList, 8, 0);
+                byte priority = GetSpecificByte(arrayList, 8, 0);
 
                 // --- 64 bit (8 byte) numbers ---
 

@@ -159,12 +159,12 @@ namespace TacMesh.Agent
                 Console.WriteLine($"{AssignedPort} Received message from PORT: {remoteEP.Port}");
 
                 // transmit a header to remote user
-                PacketHeader header_test = PacketHeader.BuildPacketHeader(
-                    1.0, NodeID, 0, 0, 0, PacketType.Heartbeat, $"TEST-MSG-{NodeID}", "TMP-DST", 1, 0)!;
+                //PacketHeader header_test = PacketHeader.BuildPacketHeader(
+                //    1.0, NodeID, 0, 0, 0, PacketType.Heartbeat, $"TEST-MSG-{NodeID}", "TMP-DST", 1, 0)!;
 
-                byte[] header_bytes = header_test.ByteStream!;
+                //byte[] header_bytes = header_test.ByteStream!;
 
-                Messenger.SendTo(UserSocket, remoteEP, header_bytes);
+                //Messenger.SendTo(UserSocket, remoteEP, header_bytes);
             }
         }
     }

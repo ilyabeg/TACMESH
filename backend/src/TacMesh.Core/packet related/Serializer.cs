@@ -14,14 +14,14 @@
                 byte[] byteStream = new byte[PacketHeader.HeaderSize];
 
                 int offset = 0;
-                foreach (byte[] array in header.ByteArraysList)
-                {
-                    array.CopyTo(byteStream, offset); // copy each array to the stream from the starting position at offset
-                    offset += array.Length;
+                //foreach (byte[] array in header.ByteArraysList)
+                //{
+                //    array.CopyTo(byteStream, offset); // copy each array to the stream from the starting position at offset
+                //    offset += array.Length;
 
-                    // stop early if fields are larger than 76 bytes
-                    if (offset > PacketHeader.HeaderSize) throw new Exception("Header size Overflow");
-                }
+                //    // stop early if fields are larger than 76 bytes
+                //    if (offset > PacketHeader.HeaderSize) throw new Exception("Header size Overflow");
+                //}
                 return byteStream;
             }
             catch (Exception e)

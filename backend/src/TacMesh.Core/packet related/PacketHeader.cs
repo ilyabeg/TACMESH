@@ -4,7 +4,7 @@ using TacMesh.Core.builders;
 namespace TacMesh.Core
 {
     // type of the packet
-    public enum PacketType
+    public enum PacketType : byte
     {
         Heartbeat,
         LinkState,
@@ -19,27 +19,153 @@ namespace TacMesh.Core
         // fixed global header size
         public static readonly int HeaderSize = 76; // bytes
 
+        #region TEMPORARY MAGIC NUMBERS
+        // THESE ARE TEMPORARY MAGIC NUMBERS AND I KNOW IT IS WRONG.
+        // UNTILL I ADD THE MISSION PACKAGE OR GET IT FROM CONFIG FILE LATER,
+        // THESS WILL BE DEFAULT CONFIGURATIONS STRICTLY FOR TESTING.
+        private readonly byte _currentProtocolVersion = 1;
+        private readonly long _maxTTL = 10000000; // in seconds
+        private readonly byte _minPriority = 1; 
+        private readonly byte _maxPriority = 10;
+        #endregion
+
+        // 16 bytes fixed size
+        private readonly int _16bytes = 16;
+
         // Header fields in order of transmision (as byte and primitive representations)
         #region Header Fields
-        public byte ProtocolVersion { get; private set; } // 1 byte
-        public string SrcID { get; private set; }  // 16 byte
-        public int HopCount { get; private set; } // 1 byte
-        public long SenderCounter { get; private set; } // 8 byte
-        public long TTL { get; private set; } // 8 byte
-        public PacketType MsgType { get; private set; } // 1 byte
-        public string MsgID { get; private set; } // 16 byte
-        public string DstID { get; private set; } // 16 byte
-        public int Priority { get; private set; }  // 1 byte
-        public long LogicalClock { get; private set; }  // 8 byte
+        public byte ProtocolVersion // 1 byte
+        { 
+            get; 
+            set
+            {
+                if (value != _currentProtocolVersion)
+                    throw new ArgumentException("Unknown protocol version");
+                field = value;
+            }
+        }
+
+        public string SrcID // 16 byte
+        { 
+            get;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value) || value.Length > _16bytes)
+                    throw new ArgumentException("Error initiating Source ID. The ID must be under 16 characters and contain text");
+                field = value;
+            }
+        }
+
+        public byte HopCount // 1 byte
+        {
+            get;
+            set
+            {
+                if (value < 0 || value > 255)
+                    throw new ArgumentException("Error initiating Hop Count. Hop Count must be between 0-255");
+                field = value;
+            }
+        }
+
+        public long SenderCounter // 8 byte
+        {
+            get;
+            set
+            {
+                // THERE IS NO CHECK FOR THIS FIELDS, AND I KNOW THIS IS WRONG.
+                // I JUST DIDN'T GET TO LEARN YET WHAT THIS FIELD DOES EXACTLY, THUS I
+                // DON'T HAVE A CHECK YET. THIS IS STRICTLY TEMPORARY AND WILL BE FIXED
+                // IN THE FUTURE.
+
+                //if (value ...)
+                //    throw new ArgumentException("Error initiating Sender Counter.");
+                field = value;
+            }
+        }
+
+        public long TTL // 8 byte
+        {
+            get;
+            set
+            {
+                // AGAIN, MAX TTL IS YET TO BE DESIDED AND THIS MAGIC NUMBER IS STRICTLY TEMPORARY.
+
+                if (value < 1 || value > _maxTTL)
+                    throw new ArgumentException("Error initiating TTL");
+                field = value;
+            }
+        }
+
+        public PacketType MsgType // 1 byte
+        {
+            get;
+            set
+            {
+                if (value < PacketType.Heartbeat || value > PacketType.UserMessage)
+                    throw new ArgumentException("Error initiating Packet Type: Unkown Packet Type");
+                field = value;
+            }
+        }
+
+        public string MsgID // 16 byte
+        {
+            get;
+            set
+            {
+                // VERY IMPORTANT NOTE: THERES IS NO CHECK FOR A UNIQUE ID BECAUSE I HAVEN'T DECIDED 
+                // YET ON HOW I AM GOING TO MAKE A UNIQUE ID FOR EVERY MESSAGE. FOR NOW I ONLY CHECK THE 
+                // LENGTH, AND THIS IS STRICTLY TEMPORARY FOR TESTING REASONS ONLY. I KNOW THIS IS 
+                // WRONG AND I DO NOT INTEND OF LEAVING IT THIS WAY IN THE FINISHED PRODUCT.
+
+                if (string.IsNullOrWhiteSpace(value) || value.Length > _16bytes)
+                    throw new ArgumentException("Error initiating Message ID. The ID must be unique, under 16 characters and contain text");
+                field = value;
+            }
+        }
+
+        public string DstID // 16 byte
+        {
+            get;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value) || value.Length > _16bytes)
+                    throw new ArgumentException("Error initiating Destination ID. The ID must be under 16 characters and contain text");
+                field = value;
+            }
+        }
+
+        public byte Priority // 1 byte
+        {
+            get;
+            set
+            {
+                // AGAIN, THESE ARE STRICTLY ONLY TEMPORARY VALUES AND WILL BE CHANGED.
+
+                if (value < _minPriority || value > _maxPriority)
+                    throw new ArgumentException($"Error initializing message priority. The priority must be between {_minPriority}-{_maxPriority}");
+                field = value;
+            }
+        }
+
+        public long LogicalClock // 8 byte
+        {
+            get;
+            set
+            {
+                if (value < 0 || value > long.MaxValue)
+                    throw new ArgumentException($"Error initializing Logical Clock. The Logical Clock must be between 0- {long.MaxValue:e3}");
+                field = value;
+            }
+        }
         #endregion
 
         // dump all at once. get a full header
         public static PacketHeader? BuildPacketHeader(
-            double p_version, string srcID, 
-            int hopCount, long sender_counter, 
+            byte p_version, string srcID,
+            byte hopCount, long sender_counter, 
             long ttl, PacketType msgType, 
             string msgID, string dstID,
-            int priority, long logicalClock)
+            byte priority, long logicalClock)
         {
             PacketHeaderBuilder builder = new PacketHeaderBuilder(new PacketHeader());
             try
@@ -86,16 +212,7 @@ namespace TacMesh.Core
             str.AppendLine($"Priority:         {Priority}");
             str.AppendLine($"Logical Clock:    {LogicalClock}");
 
-            // visually see all bytes
-            foreach (byte[] array in ByteArraysList)
-            {
-                Console.WriteLine("BYTES " + array.Length + ":");
-                foreach (byte b in array)
-                {
-                    Console.Write(b + " ");
-                }
-                Console.WriteLine("\n");
-            }
+            // TO DO: visually see all bytes
 
             return str.ToString();
         }
