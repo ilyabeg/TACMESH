@@ -4,6 +4,15 @@ using TacMesh.Core.interfaces;
 
 namespace TacMesh.Core.builders
 {
+    /// <summary>
+    /// The PacketHeaderBuilder class implements the 'Builder' Design Pattern for a couple of good reasons:
+    /// 1) Supplying easy, flexible and readable building of a PacketHeader while containing the exact header format perfectly.
+    /// 2) Handles data integrity and error checking to make sure the input data is correctly formated. If not: throws an
+    ///    Exception with a fitting message describing the problem.
+    ///    
+    /// NOTES: 1. Fix _maxTTL in future: currently a mgic number, needs to be global from a different source, such as the Core.
+    ///        2. Same goes for the LatestVersion
+    /// </summary>
     public class PacketHeaderBuilder : IPacketHeaderBuilder
     {
         // temporarily put the fixed magic numbers here 

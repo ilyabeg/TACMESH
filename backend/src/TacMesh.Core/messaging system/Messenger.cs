@@ -14,22 +14,28 @@ namespace TacMesh.Core;
 public class Messenger
 {
     // magic numbers
-    private static readonly int _bufferSize = 1500;
+    private static readonly int _bufferSize = 1500; // mtu
     private static readonly IPAddress _anyIP = IPAddress.Any;
     private static readonly int _anyPort = 0;
 
-    public static void ListenForBroadcast(Socket socket, Action<byte[], IPEndPoint> pushNotification)
+    /// <summary>
+    /// Infinite loop that listenes for 'Broadcasts' that were sent to the multicast group on the discovery port.
+    /// </summary>
+    /// <param name="socket">The Discovry Socket which receives the information from mcast group broadcasts</param>
+    /// <param name="assignedPort">The actual User Socket port number</param>
+    /// <param name="pushNotification">Callback to push the received information to the Agent out of the loop</param>
+    /// <param name="shutdown">Callback used to shutdown the whole Node Process if the listening loop crashed</param>
+    public static void ListenForBroadcast(Socket socket, int assignedPort, Action<byte[], IPEndPoint> pushNotification, Action shutdown)
     {
         try
         {
             while (true)
             {
-                byte[] buffer = new byte[_bufferSize];
-                EndPoint remoteEP = new IPEndPoint(_anyIP, _anyPort);
+                byte[] buffer = new byte[_bufferSize]; // buffer to hold the remote messages
+                EndPoint remoteEP = new IPEndPoint(_anyIP, _anyPort); // remote endpoint holder
 
-                int count = socket.ReceiveFrom(buffer, ref remoteEP);
-
-                if (count > 0)
+                // ReceiveFrom return the number of bytes received
+                if (socket.ReceiveFrom(buffer, ref remoteEP) > 0)
                 {
                     IPEndPoint remoteIPEP = (IPEndPoint)remoteEP;
 
@@ -40,14 +46,57 @@ public class Messenger
                     int parsedPort = int.Parse(message.Split('#')[1]);
                     IPEndPoint parsedEP = new IPEndPoint(IPAddress.Loopback, parsedPort);
 
-                    // push the message to the Agent and stop
+                    // ignore self messages
+                    if (parsedEP.Port == assignedPort) continue;
+
+                    // push the message to the Agent
                     pushNotification.Invoke(buffer, parsedEP);                    
+                }                
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error caught while listening for broadcasts: '{e.Message}'");
+            shutdown.Invoke(); // shutdown node and all background threads gracefully
+        }
+    }
+
+    /// <summary>
+    /// Infinite loop that listenes for unicats that were sent to the User port.
+    /// </summary>
+    /// <param name="socket">The User Socket which receives the information from unicast messages</param>
+    /// <param name="pushNotification">Callback to push the received information to the Agent out of the loop</param>
+    /// <param name="shutdown">Callback used to shutdown the whole Node Process if the listening loop crashed</param>
+    public static void ListenForUnicast(Socket socket, Action<byte[], IPEndPoint> pushNotification, Action shutdown)
+    {
+        try
+        {
+            while (true)
+            {
+                byte[] buffer = new byte[_bufferSize]; // buffer to hold the remote messages
+                EndPoint remoteEP = new IPEndPoint(_anyIP, _anyPort); // remote endpoint holder
+
+                // ReceiveFrom return the number of bytes received
+                if (socket.ReceiveFrom(buffer, ref remoteEP) > 0)
+                {
+                    IPEndPoint remoteIPEP = (IPEndPoint)remoteEP;
+
+                    string message = Encoding.UTF8.GetString(buffer);
+                    Console.WriteLine($"Received message: {message} (UNICAST from {remoteIPEP.Address}:{remoteIPEP.Port})");
+
+                    // TEMPORARY 'dumb' parsing to get port number of remote end
+                    int parsedPort = int.Parse(message.Split('#')[1]);
+                    IPEndPoint parsedEP = new IPEndPoint(IPAddress.Loopback, parsedPort);
+
+                    // push the message to the Agent and stop
+                    pushNotification.Invoke(buffer, parsedEP);
                 }
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Error caught while listening for broadcasts: {e.Message}");
+            Console.WriteLine($"Error caught while listening for unicasts: '{e.Message}'");
+            shutdown.Invoke(); // shutdown node and all background threads gracefully
         }
     }
 
@@ -60,33 +109,7 @@ public class Messenger
         } 
         catch (Exception e)
         {
-            Console.WriteLine($"Error caught while sending: {e.Message}");
-        }
-    }
-
-    public static void ListenForUnicast(Socket socket)
-    {
-        try
-        {
-            while (true)
-            {
-                byte[] buffer = new byte[_bufferSize];
-                EndPoint remoteEP = new IPEndPoint(_anyIP, _anyPort);
-
-                int count = socket.ReceiveFrom(buffer, ref remoteEP);
-
-                if (count > 0)
-                {
-                    IPEndPoint remoteIPEP = (IPEndPoint)remoteEP;
-
-                    string message = Encoding.UTF8.GetString(buffer);
-                    Console.WriteLine($"Received message: {message} (UNICAST from {remoteIPEP.Address}:{remoteIPEP.Port})");
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"Error caught while listening for unicasts: {e.Message}");
+            Console.WriteLine($"Error caught while sending message: '{e.Message}'");
         }
     }
 }

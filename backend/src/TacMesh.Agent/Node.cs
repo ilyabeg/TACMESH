@@ -11,7 +11,6 @@ namespace TacMesh.Agent
         private readonly IPAddress _localhoast = IPAddress.Loopback; // localhost ip address (127.0.0.1)
         private readonly int _randomPort = 0; // let the OS decide the port
         private IPEndPoint _userEndPoint;
-        private int _assignedPort; // the port which will be assigned eventually
 
         private readonly IPAddress _discoveryIP = IPAddress.Any;
         private readonly int _discoveryPort = 55555; // fixed discovery port number
@@ -19,12 +18,14 @@ namespace TacMesh.Agent
 
         // multicast group values
         private readonly IPAddress _mcastAddress = IPAddress.Parse("239.0.0.1");
+        // MulticastOption is a class that provides the IPAddress values used to join or drop an IPv4 multicast group
         private MulticastOption _mcastOption;
         private IPEndPoint _mcastEndPoint;
 
         // end user socket and discovery socket
         public Socket UserSocket { get; private set; }
         private Socket _discoverySocket;
+        public int AssignedPort { get; private set; } // the port which will be assigned eventually
 
         // temporary message 
         private readonly byte[] _message;
@@ -39,15 +40,43 @@ namespace TacMesh.Agent
                 CreateSockets();
                 BindSockets();
                 AddToMCastGroup();
-                Task.Run(() => Messenger.ListenForBroadcast(_discoverySocket!, SaveReceivedMessage));
-                Task.Run(() => Messenger.ListenForUnicast(UserSocket!));
+                RunListeners();
+                // attach Ctrl+C event handler
+                Console.CancelKeyPress += (sender, e) => ShutdownNode();
 
-                _assignedPort = ((IPEndPoint)UserSocket.LocalEndPoint).Port;
-                _message = Encoding.UTF8.GetBytes($"DISCOVER#{_assignedPort}");
+                AssignedPort = ((IPEndPoint)UserSocket.LocalEndPoint).Port;
+                Console.WriteLine($"PORT={AssignedPort}");
+
+                _message = Encoding.UTF8.GetBytes($"DISCOVER#{AssignedPort}");
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error: {e.Message}");
+                Console.WriteLine($"Error Constructing Node: '{e.Message}'");
+                ShutdownNode();
+            }
+        }
+
+        // flag to determine if the Node is already shutting down
+        private bool _shutdown_flag = false;
+        private readonly object _shutdown_lock = new object();
+        /// <summary>
+        /// Shuts down the User and Discovery Sockets gracefully. Executing Socket.Close() internally executes
+        /// Socket.Dispose() (check Socket.Close() definition), so handling disposing of the Socket is unnecessary.
+        /// 
+        /// NOTE: By using the null-conditional operator (?) I ensure no exception is thrown if a null Socket exists.
+        /// </summary>
+        private void ShutdownNode()
+        {
+            lock (_shutdown_lock)
+            {
+                if (_shutdown_flag) return; // another thread already shutting down the Node
+                _shutdown_flag = true; // claim shutdown
+
+                // drop mcast group and close the sockets
+                Console.WriteLine($"Shutting down Node on PORT={AssignedPort}.");
+                _discoverySocket?.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.DropMembership, _mcastOption);
+                _discoverySocket?.Close();
+                UserSocket?.Close();
             }
         }
 
@@ -72,6 +101,9 @@ namespace TacMesh.Agent
             UserSocket.Bind(_userEndPoint);
         }
 
+        /// <summary>
+        /// Adds the Discovery Socket to the multicast group that sits on the IPV4 Address: 239.0.0.1.
+        /// </summary>
         private void AddToMCastGroup()
         {
             // add discovery socket to multicast group on ip 239.0.0.1
@@ -79,16 +111,30 @@ namespace TacMesh.Agent
             _discoverySocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, _mcastOption);
         }
 
+        /// <summary>
+        /// Runs the listening loops in background threads using Tasks.
+        /// </summary>
+        private void RunListeners()
+        {
+            Task.Run(() => Messenger.ListenForBroadcast(_discoverySocket, AssignedPort, SaveReceivedMessage, ShutdownNode));
+            Task.Run(() => Messenger.ListenForUnicast(UserSocket, SaveReceivedMessage, ShutdownNode));
+        }
+
         public void Test()
         {
-            Console.WriteLine($"Sending message from instance with port {_assignedPort}");
+            Console.WriteLine($"Sending message from instance with port {AssignedPort}");
             Messenger.SendTo(_discoverySocket, _mcastEndPoint, _message);
         }
         
+        /// <summary>
+        /// Callback function used for pushing received messages from the background threads to the Agent.
+        /// </summary>
+        /// <param name="message">The bytes that were received.</param>
+        /// <param name="remoteEP">The remote EndPoint from which the message was received.</param>
         private void SaveReceivedMessage(byte[] message, IPEndPoint remoteEP)
         {
             // ignore self messages
-            if (remoteEP.Port == _assignedPort) return;
+            if (remoteEP.Port == AssignedPort) return;
             Messenger.SendTo(UserSocket, remoteEP, message);
         }
     }

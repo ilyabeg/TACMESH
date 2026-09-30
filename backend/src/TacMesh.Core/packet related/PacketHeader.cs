@@ -136,6 +136,7 @@ namespace TacMesh.Core
             } catch (Exception e)
             {
                 Console.WriteLine($"Couldn't Deserialize Packet Header due to: '{e.Message}'.");
+                return null;
             }            
         }
 
