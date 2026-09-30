@@ -2,40 +2,51 @@
 using System.Net.Sockets;
 using System.Text;
 using TacMesh.Core;
+using TacMesh.Core.packet_related;
 
 namespace TacMesh.Agent
 {
     public class Node
     {
-        // magic numbers
+        #region magic numbers
         private readonly IPAddress _localhoast = IPAddress.Loopback; // localhost ip address (127.0.0.1)
         private readonly int _randomPort = 0; // let the OS decide the port
-        private IPEndPoint _userEndPoint;
+        private IPEndPoint _userEndPoint;        
 
         private readonly IPAddress _discoveryIP = IPAddress.Any;
         private readonly int _discoveryPort = 55555; // fixed discovery port number
         private IPEndPoint _discoveryEndPoint;
+        #endregion
 
-        // multicast group values
+
+        #region multicast group values
         private readonly IPAddress _mcastAddress = IPAddress.Parse("239.0.0.1");
         // MulticastOption is a class that provides the IPAddress values used to join or drop an IPv4 multicast group
         private MulticastOption _mcastOption;
         private IPEndPoint _mcastEndPoint;
+        #endregion
 
-        // end user socket and discovery socket
+
+        #region end user socket and discovery socket
         public Socket UserSocket { get; private set; }
         private Socket _discoverySocket;
         public int AssignedPort { get; private set; } // the port which will be assigned eventually
+        #endregion
+
+        #region Node Fields
+        public string NodeID { get; private set; }
+        #endregion
 
         // temporary message 
-        private readonly byte[] _message;
+        private readonly byte[] _discover_message;
 
 
         // Constructors
-        public Node()
+        public Node(string nodeID)
         {
             try
             {
+                NodeID = nodeID;
                 _mcastEndPoint = new IPEndPoint(_mcastAddress, _discoveryPort);
                 CreateSockets();
                 BindSockets();
@@ -47,7 +58,7 @@ namespace TacMesh.Agent
                 AssignedPort = ((IPEndPoint)UserSocket.LocalEndPoint).Port;
                 Console.WriteLine($"PORT={AssignedPort}");
 
-                _message = Encoding.UTF8.GetBytes($"DISCOVER#{AssignedPort}");
+                _discover_message = Encoding.UTF8.GetBytes($"DISCOVER#{AssignedPort}");
             }
             catch (Exception e)
             {
@@ -123,7 +134,7 @@ namespace TacMesh.Agent
         public void Test()
         {
             Console.WriteLine($"Sending message from instance with port {AssignedPort}");
-            Messenger.SendTo(_discoverySocket, _mcastEndPoint, _message);
+            Messenger.SendTo(_discoverySocket, _mcastEndPoint, _discover_message);
         }
         
         /// <summary>
@@ -135,7 +146,28 @@ namespace TacMesh.Agent
         {
             // ignore self messages
             if (remoteEP.Port == AssignedPort) return;
-            Messenger.SendTo(UserSocket, remoteEP, message);
+
+            // TEMP TEST: try header transmition
+            if (message.Length >= 76)
+            {
+                PacketHeader? received_header = Deserializer.DeserializeHeader(message);
+                if (received_header == null) return;
+
+                Console.WriteLine($"{AssignedPort} Received Packet Header from PORT: {remoteEP.Port}");
+                Console.WriteLine(received_header);
+            }
+            else
+            {
+                Console.WriteLine($"{AssignedPort} Received message from PORT: {remoteEP.Port}");
+
+                // transmit a header to remote user
+                PacketHeader header_test = PacketHeader.BuildPacketHeader(
+                    1.0, NodeID, 0, 0, 0, PacketType.Heartbeat, $"TEST-MSG-{NodeID}", "TMP-DST", 1, 0)!;
+
+                byte[] header_bytes = header_test.ByteStream!;
+
+                Messenger.SendTo(UserSocket, remoteEP, header_bytes);
+            }
         }
     }
 }

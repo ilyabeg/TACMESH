@@ -5,15 +5,20 @@ namespace TacMesh.Core.packet_related
 {
     public class Deserializer
     {
+        private static readonly int _headerSize = 76; // bytes
+
         /// <summary>
         /// static method to deserialize any Packet Header byte stream
         /// </summary>
         /// <param name="header_byte_stream"></param>
         /// <returns></returns>
-        public static PacketHeader? DeserializeHeader(List<byte[]> arrayList)
+        public static PacketHeader? DeserializeHeader(byte[] byteStream)
         {
             try
             {
+                List<byte[]>? arrayList = CreateByteArraysList(byteStream);
+                if (arrayList == null) return null;
+
                 // --- single bits ---
 
                 // byte number 0 of the first byte (which is also at index 0) is the protocol version
@@ -53,7 +58,38 @@ namespace TacMesh.Core.packet_related
             }
         }
 
-        // private deserialization helpers
+        // --- private deserialization helpers ---
+
+        // each header field corresponds to it's size in bytes
+        private static readonly int[] _array_size = { 1, 16, 1, 8, 8, 1, 16, 16, 1, 8 };
+        private static List<byte[]>? CreateByteArraysList(byte[] byteStream)
+        {
+            // reject byte stream shorter than 76 bytes
+            if (byteStream.Length < _headerSize) return null;
+
+            // the starting index at which copying the array starts
+            int start_index = 0, end_index = 0;
+
+            List<byte[]> list = new List<byte[]>();
+
+            for (int i = 0; i < _array_size.Length; i++)
+            {
+                // ending index of the copy array
+                end_index += _array_size[i];
+
+                // Range Operator (..): returns a new copy of the sub-array from index: start - (end-1),
+                // without changing the original array
+                byte[] field_bytes = byteStream[start_index..end_index];
+
+                // next starting index starts at index + size of the last array
+                start_index += _array_size[i];
+
+                // add the corrisponding byte array of the field to the list
+                list.Add(field_bytes);                
+            }
+            return list;
+        }
+
         private static byte GetSpecificByte(List<byte[]> list, int array_indx, int byte_indx) => list[array_indx][byte_indx];
         private static long GetSpecificLong(List<byte[]> list, int array_indx)
         {

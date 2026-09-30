@@ -13,7 +13,7 @@ namespace TacMesh.Agent
                 return;
             }
 
-            Node node = new Node();
+            Node node = new Node(args[0]); // init with node id (args[0])
             node.Test();
             Console.ReadKey();
 

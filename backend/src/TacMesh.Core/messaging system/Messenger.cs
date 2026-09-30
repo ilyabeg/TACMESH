@@ -40,7 +40,7 @@ public class Messenger
                     IPEndPoint remoteIPEP = (IPEndPoint)remoteEP;
 
                     string message = Encoding.UTF8.GetString(buffer);
-                    Console.WriteLine($"Received message: {message} (BROADCAST)");
+                    Console.WriteLine($"[BROADCAST]: {message} (from PORT {assignedPort})");
 
                     // TEMPORARY 'dumb' parsing to get port number of remote end
                     int parsedPort = int.Parse(message.Split('#')[1]);
@@ -82,7 +82,7 @@ public class Messenger
                     IPEndPoint remoteIPEP = (IPEndPoint)remoteEP;
 
                     string message = Encoding.UTF8.GetString(buffer);
-                    Console.WriteLine($"Received message: {message} (UNICAST from {remoteIPEP.Address}:{remoteIPEP.Port})");
+                    Console.WriteLine($"[UNICAST]: {message} (from PORT {remoteIPEP.Port})");
 
                     // TEMPORARY 'dumb' parsing to get port number of remote end
                     int parsedPort = int.Parse(message.Split('#')[1]);
