@@ -17,6 +17,9 @@ namespace TacMesh.Core.serializers
         private Memory<byte> _byteMemory;
 
         // fixed index 0
+        // IMPORTANT NOTE: I AM AWARE THIS VALUE APPEARS TWICE, ONCE HERE AND IN THE BYTEWRITER CLASS,
+        // BUT I AM LEAVING IT HERE FOR NOW, UNTILL I FIND A BETTER PLACE FOR IT, BECAUSE THE
+        // CONSTANT INDEX IS STRICTLY RELATED TO THE BYTE READER AND BYTE WRITER CLASSES, AND NOT TO ANY OTHER CLASS.
         private const int _index0 = 0;
 
         // Inject the byte buffer in construction

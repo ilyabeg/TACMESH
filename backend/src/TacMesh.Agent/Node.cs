@@ -3,7 +3,6 @@ using System.Net.Sockets;
 using System.Text;
 using TacMesh.Core;
 using TacMesh.Core.serializers;
-using TacMesh.Core.serializing_related;
 
 namespace TacMesh.Agent
 {
