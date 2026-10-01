@@ -1,6 +1,6 @@
 ﻿using System.Net;
-using System.Text;
-using TacMesh.Core.events;
+using TacMesh.Core.communication;
+using TacMesh.Core.configurations;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.models;
 using TacMesh.Core.packet_related;
@@ -15,33 +15,57 @@ namespace TacMesh.Agent
         public int AssignedPort { get; private set; }
 
         private ITransport _transporter;
+        private HeartBeater _heartbeater;
         private VirtualRadioModel _radioModel;
         private List<IPEndPoint> _neighbourNodes;
         private PacketBuffer _packetBuffer;
-
-        // Serializers
-        private readonly PacketHeaderSerializer _header_serializer;
 
 
         // Constructors
         public Node(ITransport transporter, string nodeID)
         {
+            // start receiving background thread
             _transporter = transporter;
             _transporter.StartReceiving();
-            AssignedPort = _transporter.GetAssignedPort(); 
-
+            AssignedPort = _transporter.GetAssignedPort();
             NodeID = nodeID;
-            // TEMPORARY TEST. THIS WILL NOT STAY HERE FOREVER.
-            Console.WriteLine($"PORT={AssignedPort} on {NodeID}");
-            Console.ReadKey();
 
-            _header_serializer = new PacketHeaderSerializer();
-            _radioModel = new VirtualRadioModel();
-            _neighbourNodes = new List<IPEndPoint>();
+
+            // TEMPORARILY START HEARTBEATS HERE, WILL CHANGE THE PLACEMENT IN THE FUTURE
+            // start transmitting heartbeats
+            StartHeartbeat();
+
+
+            // attach packet reading event
+            _transporter.MessageReceivedEventHandler += (s,e) => PacketReader.ReadPacket(e);
+
+            // TEMPORARY TEST. THIS WILL NOT STAY HERE FOREVER.
+            Console.WriteLine($"~~~ PORT OPENED ON = {AssignedPort} for {NodeID} ~~~\n");            
 
             // attach Ctrl+C event handler
-            Console.CancelKeyPress += (sender, e) => ShutdownNode();            
+            Console.CancelKeyPress += (s,e) => ShutdownNode();
+            //Console.ReadKey();
         }
+
+        // ----------------------------------------------------
+
+        // TEMPORARILY TEST HEARTBEATS HERE, WILL ALSO MAYBE THIS CHANGE PLACEMENT IN THE FUTURE
+        private void StartHeartbeat()
+        {
+            // remove own node from known nodes dict before handing to the hearbeater
+            SystemConfigurations.StaticNodes.Remove(NodeID);
+
+            // start heartbeating process
+            _heartbeater = new HeartBeater(
+                NodeID,
+                SystemConfigurations.StaticNodes,
+                new PacketHeaderSerializer(),
+                _transporter
+            );
+            _heartbeater.TransmitHeartbeat();
+        }
+
+        // ----------------------------------------------------
 
         // flag to determine if the Node is already shutting down
         private bool _shutdown_flag = false;
@@ -59,13 +83,6 @@ namespace TacMesh.Agent
                 Console.WriteLine($"Shutting down Node on PORT={AssignedPort}.");
                 _transporter.ShutDown();
             }
-        }
-
-        // TMPORARY PRINTING METHOD, I AM AWARE THAT THIS IS LOGIC THAT GOES INTO THE CORE
-        private void Print(MessageReceivedEventArgs e)
-        {
-            string received = Encoding.UTF8.GetString(e.MessageBytes);
-            Console.WriteLine($"\nRecieved: '{received}' from PORT={e.RemoteEndPoint.Port}\n");
         }
     }
 }

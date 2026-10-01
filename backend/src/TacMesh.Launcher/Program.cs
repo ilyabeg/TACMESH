@@ -31,7 +31,9 @@ namespace TacMesh.Launcher
         static List<Process> CreateAgents(int num_of_agents)
         {
             string agaent_exe = @"..\..\..\..\TacMesh.Agent\bin\Debug\net10.0\TacMesh.Agent.exe";
-            string config_file = @"..\..\..\config.json";
+            string config_file = @"..\..\..\..\TacMesh.Agent\config.json";
+
+            string configPath = Path.GetFullPath(config_file);
             List<Process> agents = new();
 
             for (int i = 0; i < num_of_agents; i++)
@@ -39,7 +41,7 @@ namespace TacMesh.Launcher
                 string nodeID = $"Node-0{i + 1}";
 
                 // init start info
-                ProcessStartInfo start_info = InitStartInfo(agaent_exe, nodeID, config_file);
+                ProcessStartInfo start_info = InitStartInfo(agaent_exe, nodeID, configPath);
 
                 // init agent process with the start info
                 Process agent = InitAgent(start_info);
@@ -78,7 +80,7 @@ namespace TacMesh.Launcher
         {
             if (string.IsNullOrEmpty(e.Data)) return;
 
-            Console.WriteLine($"[LAUNCHER] Received: '{e.Data}'");
+            Console.WriteLine(e.Data);
         }
 
         static void Shutdown(List<Process> agents)
