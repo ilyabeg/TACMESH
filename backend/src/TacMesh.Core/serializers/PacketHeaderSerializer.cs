@@ -1,14 +1,13 @@
 ﻿using TacMesh.Core.builders;
 using TacMesh.Core.interfaces;
-using TacMesh.Core.packet_related;
 
-namespace TacMesh.Core.serializing_related
+namespace TacMesh.Core.serializers
 {
     /// <summary>
     /// PacketHeader Serializer class. Serializes a PacketHeader into a byte stream,
     /// and Deserializers a byte stream back into a PacketHeader.
     /// </summary>
-    public class PacketHeaderSerializer : ISerializer<byte[], PacketHeader>
+    public class PacketHeaderSerializer : IByteSerializer<PacketHeader>
     {
         /// <summary>
         /// Method that serializes all of the header fields into a byte stream
@@ -24,7 +23,7 @@ namespace TacMesh.Core.serializing_related
 
             byteWriter.WriteBytes(header.ProtocolVersion);
             byteWriter.WriteBytes((byte)header.MsgType);
-            byteWriter.WriteBytes(header.MsgID, PacketHeader.LegalStringLength);
+            byteWriter.WriteBytes(header.MsgID);
             byteWriter.WriteBytes(header.SrcID, PacketHeader.LegalStringLength);
             byteWriter.WriteBytes(header.DstID, PacketHeader.LegalStringLength);
             byteWriter.WriteBytes(header.HopCount);
@@ -47,14 +46,14 @@ namespace TacMesh.Core.serializing_related
             if (byteStream.Length < PacketHeader.HeaderSize)
                 throw new ArgumentOutOfRangeException($"Unable to Deserialize due to: Provided byte stream was shorter than {PacketHeader.HeaderSize} bytes");
 
-            PacketHeaderBuilder builder = new PacketHeaderBuilder(new PacketHeader());
+            PacketHeaderBuilder builder = new PacketHeaderBuilder();
             ByteReader reader = new ByteReader(byteStream);
 
             int len = PacketHeader.LegalStringLength;
 
             builder.SetProtocolVersion(reader.ReadByte())
                 .SetMessageType((PacketType)reader.ReadByte())
-                .SetMessageID(reader.ReadString(len))
+                .SetMessageID(reader.ReadGuid())
                 .SetSourceID(reader.ReadString(len))
                 .SetDestinationID(reader.ReadString(len))
                 .SetHopCount(reader.ReadByte())

@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 using TacMesh.Core;
-using TacMesh.Core.packet_related;
+using TacMesh.Core.serializers;
 using TacMesh.Core.serializing_related;
 
 namespace TacMesh.Agent
@@ -165,8 +165,11 @@ namespace TacMesh.Agent
 
                 // TEMPORARY TEST! I KNOW MAGIC NUMBERS ARE INVOLVED AND I KNOW IT IS WRONG. THIS IS SIMPLY A TEST
                 // transmit a header to remote user
-                PacketHeader header_test = PacketHeader.BuildPacketHeader(1, PacketType.Heartbeat, $"1234567890123456", NodeID, "TMP-DST", 0, 0, 0, 1, 0);
+                PacketHeader header_test = new PacketHeader(1, PacketType.Heartbeat, Guid.NewGuid(), NodeID, "TMP-DST", 0, 0, 0, 1, 0);
                 byte[] header_bytes = _header_serializer.Serialize(header_test);
+
+                Console.WriteLine($"{AssignedPort} Sending test header:");
+                Console.WriteLine(header_test);
 
                 Messenger.SendTo(UserSocket, remoteEP, header_bytes);
             }

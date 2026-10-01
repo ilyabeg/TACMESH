@@ -8,7 +8,7 @@
         public IPacketHeaderBuilder SetSenderCounter(long senderCounter);
         public IPacketHeaderBuilder SetTimeToLive(long ttl);
         public IPacketHeaderBuilder SetMessageType(PacketType type);
-        public IPacketHeaderBuilder SetMessageID(string msgID);
+        public IPacketHeaderBuilder SetMessageID(Guid msgID);
         public IPacketHeaderBuilder SetDestinationID(string dstID);
         public IPacketHeaderBuilder SetPriority(byte priority);
         public IPacketHeaderBuilder SetLogicalClock(long logicalClock);

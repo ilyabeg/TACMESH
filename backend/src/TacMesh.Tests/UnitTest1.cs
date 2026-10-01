@@ -8,27 +8,28 @@ public class UnitTest1
     [Theory]
 
     // hop count 255 test
-    [InlineData((byte)1, PacketType.Heartbeat, "1234567890123456", "node-a", "node-b", (byte)255, 1234L, 255L, 100L, (byte)1)]
+    [InlineData((byte)1, PacketType.Heartbeat, "11111111-1111-1111-1111-111111111111", "node-a", "node-b", (byte)255, 1234L, 255L, 100L, (byte)1)]
     // unknown message type
-    [InlineData((byte)1, (PacketType)3, "1234567890123456", "node-a", "node-b", (byte)255, 1234L, 255L, 100L, (byte)1)]
+    [InlineData((byte)1, (PacketType)3, "22222222-2222-2222-2222-222222222222", "node-a", "node-b", (byte)255, 1234L, 255L, 100L, (byte)1)]
     // unkown protocol version
-    [InlineData((byte)2, PacketType.Heartbeat, "1234567890123456", "node-a", "node-b", (byte)255, 1234L, 255L, 100L, (byte)1)]
+    [InlineData((byte)2, PacketType.Heartbeat, "33333333-3333-3333-3333-333333333333", "node-a", "node-b", (byte)255, 1234L, 255L, 100L, (byte)1)]
 
     // Round trip: serialize then deserialize returns an identical object, for each of the three packet types.
-    [InlineData((byte)1, PacketType.Heartbeat, "1234567890123456", "node-a", "node-b", (byte)1, 1234L, 255L, 100L, (byte)1)]
-    [InlineData((byte)1, PacketType.LinkState, "1234567890123456", "node-a", "node-b", (byte)1, 1234L, 255L, 100L, (byte)1)]
-    [InlineData((byte)1, PacketType.UserMessage, "1234567890123456", "node-a", "node-b", (byte)1, 1234L, 255L, 100L, (byte)1)]
+    [InlineData((byte)1, PacketType.Heartbeat, "44444444-4444-4444-4444-444444444444", "node-a", "node-b", (byte)1, 1234L, 255L, 100L, (byte)1)]
+    [InlineData((byte)1, PacketType.LinkState, "55555555-5555-5555-5555-555555555555", "node-a", "node-b", (byte)1, 1234L, 255L, 100L, (byte)1)]
+    [InlineData((byte)1, PacketType.UserMessage, "66666666-6666-6666-6666-666666666666", "node-a", "node-b", (byte)1, 1234L, 255L, 100L, (byte)1)]
 
     public void TestPacketHeaderSerialization(
             byte version, PacketType msgType,
-            string msgId, string src, string dst,
+            string str, string src, string dst,
             byte hop, long clock,
             long ttl, long sender, byte priority)
     {
         PacketHeaderSerializer serializer = new PacketHeaderSerializer();
+        Guid msgId = Guid.Parse(str);
 
         // original packet header
-        PacketHeader header1 = PacketHeader.BuildPacketHeader(version, msgType, msgId, src, dst, hop, clock, ttl, priority, sender);
+        PacketHeader header1 = new PacketHeader(version, msgType, msgId, src, dst, hop, clock, ttl, priority, sender);
 
         // serialized byte stream
         byte[] serialized_header_bytes = serializer.Serialize(header1);

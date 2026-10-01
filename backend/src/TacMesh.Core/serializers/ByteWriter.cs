@@ -1,11 +1,14 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
+using TacMesh.Core.interfaces;
 
-namespace TacMesh.Core.packet_related
+namespace TacMesh.Core.serializers
 {
     /// <summary>
     /// The Byte writer class is a helper class used to serialize any type of data into it's
-    /// byte representation. By following the SOLID Principle O/C, I leave this class OPEN for 
+    /// byte representation and write it into a contiguous region in memory. The writing must be IN ORDER
+    /// that you want to write into the region in memory.
+    /// By following the SOLID Principle O/C, I leave this class OPEN for 
     /// extension, and CLOSED for modification.
     /// </summary>
     public class ByteWriter
@@ -13,12 +16,8 @@ namespace TacMesh.Core.packet_related
         // Memory of type byte to keep a "clone" of the actual byte stream that needs to built.        
         private Memory<byte> _byteMemory;
 
-        // byte sizes
-        private readonly int _1byte = 1;
-        private readonly int _8byte = 8;
-
         // fixed index 0
-        private readonly int _index0 = 0;
+        private const int _index0 = 0;
 
         // Inject the empty buffer in construction
         public ByteWriter(byte[] buffer)
@@ -35,7 +34,7 @@ namespace TacMesh.Core.packet_related
             _byteMemory.Span[_index0] = data;
 
             // slice the written data: shrinks the Memory object by 1 byte
-            _byteMemory = _byteMemory.Slice(_1byte);
+            _byteMemory = _byteMemory.Slice(IByteSerializer._1byte);
         }
 
         public void WriteBytes(long data)
@@ -44,7 +43,7 @@ namespace TacMesh.Core.packet_related
             BinaryPrimitives.WriteInt64BigEndian(_byteMemory.Span, data);
 
             // slice the written data: shrinks the Memory object by 8 bytes
-            _byteMemory = _byteMemory.Slice(_8byte);
+            _byteMemory = _byteMemory.Slice(IByteSerializer._8bytes);
         }
 
         public void WriteBytes(string data, int length)
@@ -57,6 +56,16 @@ namespace TacMesh.Core.packet_related
 
             // slice the written data: shrinks the Memory object by 'length' bytes
             _byteMemory = _byteMemory.Slice(length);
+        }
+
+        public void WriteBytes(Guid data)
+        {
+            // write the Guid into the Memory object in Big Endian order
+            bool write_as_big_endian = true;
+            data.TryWriteBytes(_byteMemory.Span, write_as_big_endian, out _);
+
+            // slice the written data: shrinks the Memory object by 16 bytes
+            _byteMemory = _byteMemory.Slice(IByteSerializer._16bytes);
         }
     }
 }

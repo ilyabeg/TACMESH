@@ -45,7 +45,7 @@ namespace TacMesh.Core
         public byte ProtocolVersion // 1 byte
         { 
             get; 
-            set
+            private set
             {
                 if (value != _currentProtocolVersion)
                     throw new ArgumentException("Unknown protocol version");
@@ -56,7 +56,7 @@ namespace TacMesh.Core
         public string SrcID // 16 byte
         { 
             get;
-            set
+            private set
             {
                 if (string.IsNullOrWhiteSpace(value))
                     throw new ArgumentException("Error initiating Source ID. The ID must contain text");
@@ -74,7 +74,7 @@ namespace TacMesh.Core
         public byte HopCount // 1 byte
         {
             get;
-            set
+            private set
             {
                 if (value < _minHopCount || value > _maxHopCount)
                     throw new ArgumentException($"Error initiating Hop Count. Hop Count must be between {_minHopCount}-{_maxHopCount}");
@@ -85,7 +85,7 @@ namespace TacMesh.Core
         public long SenderCounter // 8 byte
         {
             get;
-            set
+            private set
             {
                 // THERE IS NO CHECK FOR THIS FIELDS, AND I KNOW THIS IS WRONG.
                 // I JUST DIDN'T GET TO LEARN YET WHAT THIS FIELD DOES EXACTLY, THUS I
@@ -101,7 +101,7 @@ namespace TacMesh.Core
         public long TTL // 8 byte
         {
             get;
-            set
+            private set
             {
                 // AGAIN, MAX TTL IS YET TO BE DESIDED AND THIS MAGIC NUMBER IS STRICTLY TEMPORARY.
 
@@ -114,7 +114,7 @@ namespace TacMesh.Core
         public PacketType MsgType // 1 byte
         {
             get;
-            set
+            private set
             {
                 if (value < PacketType.Heartbeat || value > PacketType.UserMessage)
                     throw new ArgumentException("Error initiating Packet Type: Unkown Packet Type");
@@ -122,25 +122,13 @@ namespace TacMesh.Core
             }
         }
 
-        public string MsgID // 16 byte
+        public Guid MsgID // 16 byte
         {
             get;
-            set
+            private set
             {
-                // VERY IMPORTANT NOTE: THERES IS NO CHECK FOR A UNIQUE ID BECAUSE I HAVEN'T DECIDED 
-                // YET ON HOW I AM GOING TO MAKE A UNIQUE ID FOR EVERY MESSAGE. FOR NOW I ONLY CHECK THE 
-                // LENGTH, AND THIS IS STRICTLY TEMPORARY FOR TESTING REASONS ONLY. I KNOW THIS IS 
-                // WRONG AND I DO NOT INTEND OF LEAVING IT THIS WAY IN THE FINISHED PRODUCT.
-
-                if (string.IsNullOrWhiteSpace(value))
-                    throw new ArgumentException("Error initiating Message ID. The ID must contain text");
-
-                // check the actual byte length and not the amount of characters
-                int byteCount = Encoding.UTF8.GetByteCount(value);
-
-                if (byteCount != LegalStringLength)
-                    throw new ArgumentException($"Error initiating Message ID. The ID must be exactly {LegalStringLength} bytes");
-
+                if (value == Guid.Empty)
+                    throw new ArgumentException("Error initiating Message ID. The ID must be a valid GUID");
                 field = value;
             }
         }
@@ -148,7 +136,7 @@ namespace TacMesh.Core
         public string DstID // 16 byte
         {
             get;
-            set
+            private set
             {
                 if (string.IsNullOrWhiteSpace(value))
                     throw new ArgumentException("Error initiating Destination ID. The ID must contain text");
@@ -166,7 +154,7 @@ namespace TacMesh.Core
         public byte Priority // 1 byte
         {
             get;
-            set
+            private set
             {
                 // AGAIN, THESE ARE STRICTLY ONLY TEMPORARY VALUES AND WILL BE CHANGED.
 
@@ -179,7 +167,7 @@ namespace TacMesh.Core
         public long LogicalClock // 8 byte
         {
             get;
-            set
+            private set
             {
                 if (value < _minLogicalClock || value > _maxLogicalClock)
                     throw new ArgumentException($"Error initializing Logical Clock. The Logical Clock must be between {_minLogicalClock}-{_maxLogicalClock:e3}");
@@ -188,31 +176,44 @@ namespace TacMesh.Core
         }
         #endregion
 
-        // dump all at once. get a full header
-        public static PacketHeader BuildPacketHeader(
+        // Constructor NEEDS all fields at once, no way to make header with a missing field
+        public PacketHeader(
             byte p_version, PacketType msgType,
-            string msgID, string srcID, string dstID,
+            Guid msgID, string srcID, string dstID,
             byte hopCount, long logicalClock,
             long ttl, byte priority, long sender_counter)
         {
-            PacketHeaderBuilder builder = new PacketHeaderBuilder(new PacketHeader());
-
-            builder.SetProtocolVersion(p_version)
-            .SetMessageType(msgType)
-            .SetMessageID(msgID)
-            .SetSourceID(srcID)
-            .SetDestinationID(dstID)
-            .SetHopCount(hopCount)
-            .SetLogicalClock(logicalClock)
-            .SetTimeToLive(ttl)
-            .SetPriority(priority)
-            .SetSenderCounter(sender_counter);
-
-            return builder.BuildHeader();
+            ProtocolVersion = p_version;
+            MsgType = msgType;
+            MsgID = msgID;
+            SrcID = srcID;
+            DstID = dstID;
+            HopCount = hopCount;
+            LogicalClock = logicalClock;
+            TTL = ttl;
+            Priority = priority;
+            SenderCounter = sender_counter;
         }
 
         /// <summary>
-        /// Prints out Packet Header in an orginized block
+        /// Used to increment the hop count when forwarding messages.
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception>
+        public void IncrementHopCount()
+        {
+            if (HopCount == _maxHopCount)
+                throw new InvalidOperationException($"Cannot increment Hop Count. Hop Count is already at maximum value of {_maxHopCount}");
+            HopCount++;
+        }
+
+
+        // IMPORTANT NODE: UPDATERS FOR SENDER COUNTER, TTL, AND LOGICAL CLOCK HAVE NOT BEEN HANDLED YET
+        // AND I AM AWARE, AND WILL FIX. THIS IS BECAUSE I DIDN'T DECIDE YET HOW I AM GOING TO IMPLEMENT.
+        // THIS IS AN INITIAL IMPLEMENTATION AND I DON'T PLAN OF HAVING IT LIKE THIS IN THE FINAL VERSION.
+
+
+        /// <summary>
+        /// Returns a string representation of the Packet Header in an organized block
         /// </summary>
         /// <returns></returns>
         public override string ToString()

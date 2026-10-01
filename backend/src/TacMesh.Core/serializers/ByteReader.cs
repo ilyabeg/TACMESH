@@ -1,11 +1,14 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
+using TacMesh.Core.interfaces;
 
-namespace TacMesh.Core.serializing_related
+namespace TacMesh.Core.serializers
 {
     /// <summary>
-    /// The Byte Reader class is a helper class used to deserialize any type of data into from
-    /// byte representation. By following the SOLID Principle O/C, I leave this class OPEN for 
+    /// The Byte Reader class is a helper class used to deserialize any type of data from it's
+    /// byte representation from a contiguous region in memory. The reading must be IN ORDER 
+    /// of the original region in memory.
+    /// By following the SOLID Principle O/C, I leave this class OPEN for 
     /// extension, and CLOSED for modification.
     /// </summary>
     public class ByteReader
@@ -13,12 +16,8 @@ namespace TacMesh.Core.serializing_related
         // Memory of type byte to keep a "clone" of the actual byte stream that needs to be translated.        
         private Memory<byte> _byteMemory;
 
-        // byte sizes
-        private readonly int _1byte = 1;
-        private readonly int _8byte = 8;
-
         // fixed index 0
-        private readonly int _index0 = 0;
+        private const int _index0 = 0;
 
         // Inject the byte buffer in construction
         public ByteReader(byte[] buffer)
@@ -34,7 +33,7 @@ namespace TacMesh.Core.serializing_related
             byte field = _byteMemory.Span[_index0];
 
             // slice the written data: shrinks the Memory object by 1 byte
-            _byteMemory = _byteMemory.Slice(_1byte);
+            _byteMemory = _byteMemory.Slice(IByteSerializer._1byte);
 
             return field;
         }
@@ -45,7 +44,7 @@ namespace TacMesh.Core.serializing_related
             long field = BinaryPrimitives.ReadInt64BigEndian(_byteMemory.Span);
 
             // slice the written data: shrinks the Memory object by 8 bytes
-            _byteMemory = _byteMemory.Slice(_8byte);
+            _byteMemory = _byteMemory.Slice(IByteSerializer._8bytes);
 
             return field;
         }
@@ -71,6 +70,22 @@ namespace TacMesh.Core.serializing_related
 
             // slice the written data: shrinks the Memory object by 'length' bytes
             _byteMemory = _byteMemory.Slice(length);
+
+            return field;
+        }
+
+        public Guid ReadGuid()
+        {
+            // slice a chunk of 16 bytes out of the Memory object
+            Span<byte> _byteSpan = _byteMemory.Span.Slice(_index0, IByteSerializer._16bytes);
+
+            // read the Guid from the Memory object in Big Endian order
+            // throws ArgumentException if the length of the Span is not 16 bytes
+            bool read_as_big_endian = true;
+            Guid field = new Guid(_byteSpan, read_as_big_endian);
+
+            // slice the written data: shrinks the Memory object by 16 bytes
+            _byteMemory = _byteMemory.Slice(IByteSerializer._16bytes);
 
             return field;
         }

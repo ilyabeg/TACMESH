@@ -102,9 +102,9 @@ Requirement is written (Where Requirement is implemented != where Requirement lo
    | without a central node or| not intended for him)    |
    | external infrastructure  |                          |
 ---+--------------------------+--------------------------+--------------------------
- 2 | A message with no route  | Agent (Stores pending    | Node (main Agent class.
-   | will be stored in the    | messages in a buffer until Pending messages are
-   | node's memory until it   | a fitting connection is  | stored in the buffer)
+ 2 | A message with no route  | Agent (Stores pending    | 
+   | will be stored in the    | messages in a buffer until 
+   | node's memory until it   | a fitting connection is  | 
    | expires, and will be     | astablished or TTL ends) |
    | delivered as soon as a   |                          |
    | connection with a suitable                          |
