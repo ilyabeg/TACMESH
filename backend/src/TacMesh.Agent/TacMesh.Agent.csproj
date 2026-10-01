@@ -11,4 +11,10 @@
     <ProjectReference Include="..\TacMesh.Core\TacMesh.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

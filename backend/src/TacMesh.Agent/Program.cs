@@ -8,28 +8,24 @@ using TacMesh.Core.socket_related;
 namespace TacMesh.Agent
 {
     public class Program
-    { 
+    {
+        // arguments length should be exactly 2: NodeID, config file path
+        const int arguments_length = 2;
+
         static void Main(string[] args)
         {
-            //if (args.Length != 2)
-            //{
-            //    Console.WriteLine("ERROR: Agent Process arguments did not match. Terminating process...");
-            //    return;
-            //}
+            if (args.Length != arguments_length)
+            {
+                Console.WriteLine("ERROR: Agent Process arguments did not match. Terminating process...");
+                return;
+            }
 
-            int role = GetRole();
-            Node node = new Node(new SimTransport(GetSocket()), "TEST-NODE");
-            node.Test(role);
-        }
-
-        static int GetRole()
-        {
-            Console.WriteLine("Enter Role (0 - listener, 1 - sender): ");
-            return int.Parse(Console.ReadLine());
+            Node node = new Node(new SimTransport(GetSocket()), args[0]);
         }
 
         static Socket GetSocket()
         {
+            // create and bind socket to a random free port assigned by the OS and the localhoast ip
             Socket s = SocketGenerator.GenerateUdpSocket();
             SocketGenerator.BindSocket(s, IPAddress.Loopback);
             return s;

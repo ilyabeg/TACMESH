@@ -4,6 +4,8 @@ namespace TacMesh.Launcher
 {
     public class Program
     {
+        public static event ConsoleCancelEventHandler? CancelKeyPress;
+
         static void Main(string[] args)
         {
             Console.WriteLine("[LAUNCHER] Launching Agent Processes...");
@@ -11,24 +13,33 @@ namespace TacMesh.Launcher
             List<Process> agents = CreateAgents(2);
             StartAgents(agents);
 
+            // kill processes when Ctrl+C is pressed
+            Console.CancelKeyPress += (s, e) => myHandler(s, e, agents);
+
             Console.WriteLine("Press ENTER to end.");
             Console.ReadLine();
 
             Shutdown(agents);
         }
 
+        static void myHandler(object sender, ConsoleCancelEventArgs args, List<Process> agents)
+        {
+            args.Cancel = true;
+            Shutdown(agents);
+        }
+
         static List<Process> CreateAgents(int num_of_agents)
         {
             string agaent_exe = @"..\..\..\..\TacMesh.Agent\bin\Debug\net10.0\TacMesh.Agent.exe";
+            string config_file = @"..\..\..\config.json";
             List<Process> agents = new();
 
             for (int i = 0; i < num_of_agents; i++)
             {
                 string nodeID = $"Node-0{i + 1}";
-                string tmp_path = "tmp string";
 
                 // init start info
-                ProcessStartInfo start_info = InitStartInfo(agaent_exe, nodeID, tmp_path);
+                ProcessStartInfo start_info = InitStartInfo(agaent_exe, nodeID, config_file);
 
                 // init agent process with the start info
                 Process agent = InitAgent(start_info);
