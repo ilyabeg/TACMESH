@@ -1,5 +1,9 @@
-﻿using TacMesh.Core;
+﻿using System.Net;
+using System.Net.Sockets;
+using TacMesh.Core;
 using TacMesh.Core.builders;
+using TacMesh.Core.communication.simulation_communication;
+using TacMesh.Core.socket_related;
 
 namespace TacMesh.Agent
 {
@@ -13,9 +17,22 @@ namespace TacMesh.Agent
             //    return;
             //}
 
-            Node node = new Node("NodeA"); // init with node id (args[0])
-            node.Test();
-            Console.ReadKey();
+            int role = GetRole();
+            Node node = new Node(new SimTransport(GetSocket()), "TEST-NODE");
+            node.Test(role);
+        }
+
+        static int GetRole()
+        {
+            Console.WriteLine("Enter Role (0 - listener, 1 - sender): ");
+            return int.Parse(Console.ReadLine());
+        }
+
+        static Socket GetSocket()
+        {
+            Socket s = SocketGenerator.GenerateUdpSocket();
+            SocketGenerator.BindSocket(s, IPAddress.Loopback);
+            return s;
         }
     }
 }
