@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using TacMesh.Core.builders;
+using TacMesh.Core.configurations;
 using TacMesh.Core.database_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.serializers;
@@ -7,17 +8,22 @@ using TacMesh.Core.serializers;
 namespace TacMesh.Core.communication
 {
     public class HeartBeater
-    {
+    {        
+        private const int _initialization_delay = 100;//ms
+
         // heart beater dependencies
+        private HeartbeatLogger _logger;
         private Dictionary<string, IPEndPoint> _destinations;
-        PacketHeaderSerializer _serializer;
+        private PacketHeaderSerializer _serializer;
         private ITransport _transporter;
         private string _srcID;       
 
+
         // inject dependencies through constructor
-        public HeartBeater(string sourceID, Dictionary<string, IPEndPoint> destinations, PacketHeaderSerializer serializer, ITransport transporter)
+        public HeartBeater(string sourceID, HeartbeatLogger logger, Dictionary<string, IPEndPoint> destinations, PacketHeaderSerializer serializer, ITransport transporter)
         {
             _srcID = sourceID;
+            _logger = logger;
             _destinations = destinations;
             _serializer = serializer;
             _transporter = transporter;
@@ -29,20 +35,14 @@ namespace TacMesh.Core.communication
         /// </summary>
         public void TransmitHeartbeat()
         {
-            // TEMPORARY COUNTER TO BREAK OUT OF THE HEARTBEAT LOOP AFTER 5 HEARTBEATS
-            int TEMP_COUNTER = 0;
-
             Task.Run(async () =>
             {
-                // wait 100ms before sending to ensure other sockets are open and actively listening
-                await Task.Delay(100);
+                // wait a small delay before sending to ensure other sockets are open and actively listening
+                await Task.Delay(_initialization_delay);
 
                 // heartbeat loop
                 while (true)
                 {
-                    // TEMPORARY TEST ONLY, SEND 5 HEARTBEATS AND BREAK OUT OF THE LOOP
-                    if (TEMP_COUNTER == 5) break;
-
                     foreach (string destinationID in _destinations.Keys)
                     {
                         // NOTE: DATA PACKET NOT IMPLEMENTED YET SO I USE ONLY
@@ -54,15 +54,10 @@ namespace TacMesh.Core.communication
 
                         // treansmit header and log
                         _transporter.Transmit(headerBytes, _destinations[destinationID]);
-                        Logger.LogHeartbeat(LoggingMode.Sent, _srcID, destinationID, DateTime.Now);
+                        _logger.FormatAndLogHeartbeat(LoggingMode.Sent, _srcID, destinationID);
                     }
-                    await Task.Delay(5000);
-
-                    TEMP_COUNTER++;
+                    await Task.Delay(SystemConfigurations.HeartbeatDelayMs);
                 }
-
-                // TEMPORARILY CHECK THE LOGS HERE. WILL CHANGE IN FUTURE
-                Logger.PrintLogs();
             });
         }
 
@@ -86,6 +81,10 @@ namespace TacMesh.Core.communication
 
             return builder.BuildHeader();
         }
+
+        // IMPORTANT NOTE: I KNOW THIS UPDATE FUNCTION IS NOT GOOD, IT CAN CAUSE RACE CONDITIONS
+        // AND A 'COLLECTION MODIFIED' ERROR, IT IS SIMPLY A SORT OF BOILERPLATE SO I DON'T FORGET
+        // TO UPDATE AND ADD THIS KIND OF METHOD LATER. I DO NOT INTED ON LEAVING IT THIS WAY.
 
         /// <summary>
         /// Updates old destinations if new provided

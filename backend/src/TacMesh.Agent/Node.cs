@@ -1,10 +1,14 @@
 ﻿using System.Net;
+using TacMesh.Core;
 using TacMesh.Core.communication;
 using TacMesh.Core.configurations;
+using TacMesh.Core.database_related;
+using TacMesh.Core.events;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.models;
 using TacMesh.Core.packet_related;
 using TacMesh.Core.serializers;
+using TacMesh.Core.tables.node_related;
 
 namespace TacMesh.Agent
 {
@@ -17,18 +21,24 @@ namespace TacMesh.Agent
         private ITransport _transporter;
         private HeartBeater _heartbeater;
         private VirtualRadioModel _radioModel;
-        private List<IPEndPoint> _neighbourNodes;
+        private NeighbourTable _neighbourTable;
         private PacketBuffer _packetBuffer;
+        private HeartbeatLogger _heartbeatLogger;
 
 
         // Constructors
-        public Node(ITransport transporter, string nodeID)
+        public Node(string nodeID, ITransport transporter, NeighbourTable neighbourTable, HeartbeatLogger logger)
         {
             // start receiving background thread
+            NodeID = nodeID;
             _transporter = transporter;
             _transporter.StartReceiving();
             AssignedPort = _transporter.GetAssignedPort();
-            NodeID = nodeID;
+
+            // start checking expiration in the background
+            _neighbourTable = neighbourTable;
+            _neighbourTable.StartExpirationCheck();
+            _heartbeatLogger = logger;
 
 
             // TEMPORARILY START HEARTBEATS HERE, WILL CHANGE THE PLACEMENT IN THE FUTURE
@@ -37,7 +47,7 @@ namespace TacMesh.Agent
 
 
             // attach packet reading event
-            _transporter.MessageReceivedEventHandler += (s,e) => PacketReader.ReadPacket(e);
+            _transporter.MessageReceivedEventHandler += (s,e) => OnPacketReceived(s,e);
 
             // TEMPORARY TEST. THIS WILL NOT STAY HERE FOREVER.
             Console.WriteLine($"~~~ PORT OPENED ON = {AssignedPort} for {NodeID} ~~~\n");            
@@ -49,21 +59,36 @@ namespace TacMesh.Agent
 
         // ----------------------------------------------------
 
-        // TEMPORARILY TEST HEARTBEATS HERE, WILL ALSO MAYBE THIS CHANGE PLACEMENT IN THE FUTURE
+
+        // TEMPORARILY TESTS! NOT INTENTED TO STAY HERE, WILL MOVE LOGIC IN THE FUTURE
         private void StartHeartbeat()
         {
             // remove own node from known nodes dict before handing to the hearbeater
             SystemConfigurations.StaticNodes.Remove(NodeID);
 
             // start heartbeating process
-            _heartbeater = new HeartBeater(
+            _heartbeater = new HeartBeater(                
                 NodeID,
+                _heartbeatLogger,
                 SystemConfigurations.StaticNodes,
                 new PacketHeaderSerializer(),
                 _transporter
             );
             _heartbeater.TransmitHeartbeat();
         }
+        private void OnPacketReceived(object s, MessageReceivedEventArgs e)
+        {
+            PacketHeader header = PacketReader.ReadPacket(e);
+            if (header.MsgType == PacketType.Heartbeat)
+            {
+                // log heartbeat
+                _heartbeatLogger.FormatAndLogHeartbeat(LoggingMode.Received, header.SrcID, header.DstID);
+
+                // add/update record of peer in neighbour table
+                _neighbourTable.UpdateRecord(header.SrcID, e.RemoteEndPoint);
+            }
+        }
+
 
         // ----------------------------------------------------
 

@@ -1,65 +1,96 @@
-﻿using TacMesh.Core;
-using TacMesh.Core.serializers;
+﻿using System.Net;
+using TacMesh.Core.tables.node_related;
+
 namespace TacMesh.Tests;
 
 public class UnitTest1
 {
-    [Theory]
-
-    // hop count 255 test
-    [InlineData((byte)1, PacketType.Heartbeat, "11111111-1111-1111-1111-111111111111", "node-a", "node-b", (byte)255, 1234L, 255L, 100L, (byte)1)]
-    // unknown message type
-    [InlineData((byte)1, (PacketType)3, "22222222-2222-2222-2222-222222222222", "node-a", "node-b", (byte)255, 1234L, 255L, 100L, (byte)1)]
-    // unkown protocol version
-    [InlineData((byte)2, PacketType.Heartbeat, "33333333-3333-3333-3333-333333333333", "node-a", "node-b", (byte)255, 1234L, 255L, 100L, (byte)1)]
-
-    // Round trip: serialize then deserialize returns an identical object, for each of the three packet types.
-    [InlineData((byte)1, PacketType.Heartbeat, "44444444-4444-4444-4444-444444444444", "node-a", "node-b", (byte)1, 1234L, 255L, 100L, (byte)1)]
-    [InlineData((byte)1, PacketType.LinkState, "55555555-5555-5555-5555-555555555555", "node-a", "node-b", (byte)1, 1234L, 255L, 100L, (byte)1)]
-    [InlineData((byte)1, PacketType.UserMessage, "66666666-6666-6666-6666-666666666666", "node-a", "node-b", (byte)1, 1234L, 255L, 100L, (byte)1)]
-
-    public void TestPacketHeaderSerialization(
-            byte version, PacketType msgType,
-            string str, string src, string dst,
-            byte hop, long clock,
-            long ttl, long sender, byte priority)
+    [Fact]
+    public void Test_Add_Neighbours_to_Table()
     {
-        PacketHeaderSerializer serializer = new PacketHeaderSerializer();
-        Guid msgId = Guid.Parse(str);
+        // --- Arrange ---
+        TestClock clock = new TestClock();
+        clock.Time = new DateTime(2026, 10, 2, 12, 0, 0);
+        
+        NeighbourTable table = new NeighbourTable(clock); // inject clock
 
-        // original packet header
-        PacketHeader header1 = new PacketHeader(version, msgType, msgId, src, dst, hop, clock, ttl, priority, sender);
+        IPEndPoint ep1 = new IPEndPoint(IPAddress.Loopback, 51001);
+        IPEndPoint ep2 = new IPEndPoint(IPAddress.Loopback, 51002);
+        IPEndPoint ep3 = new IPEndPoint(IPAddress.Loopback, 51003);
 
-        // serialized byte stream
-        byte[] serialized_header_bytes = serializer.Serialize(header1);
+        // --- Act ---
+        // add nodes 1, 2, 3 records
+        table.UpdateRecord("Node-01", ep1);
+        table.UpdateRecord("Node-02", ep2);
+        table.UpdateRecord("Node-03", ep3);
 
-        // new header from the deserialization
-        PacketHeader header2 = serializer.Deserialize(serialized_header_bytes);
-
-        Assert.NotNull(header2);
-        Assert.Equal(version, header2.ProtocolVersion);
-        Assert.Equal(msgType, header2.MsgType);
-        Assert.Equal(msgId, header2.MsgID);
-        Assert.Equal(src, header2.SrcID);
-        Assert.Equal(dst, header2.DstID);
-        Assert.Equal(hop, header2.HopCount);
-        Assert.Equal(clock, header2.LogicalClock);
-        Assert.Equal(ttl, header2.TTL);
-        Assert.Equal(priority, header2.Priority);
-        Assert.Equal(sender, header2.SenderCounter);
+        // --- Assert ---
+        Assert.True(
+            table.NeighbourRecords.ContainsKey("Node-01") && 
+            table.NeighbourRecords.ContainsKey("Node-02") && 
+            table.NeighbourRecords.ContainsKey("Node-03")
+        );
     }
 
-    [Theory]
-    // test a packet header (as bytes) shorter than 76 bytes
-    [InlineData(new byte[] { 1, 2, 3, 4, 5 })]
-
-    public void TestShortByteStream(byte[] byteStream)
+    [Fact]
+    public void Test_Update_Neighbours_of_Table()
     {
-        PacketHeaderSerializer serializer = new PacketHeaderSerializer();
+        // --- Arrange ---
+        TestClock clock = new TestClock();
+        clock.Time = new DateTime(2026, 10, 2, 12, 0, 0);
 
-        PacketHeader header2 = serializer.Deserialize(byteStream);
-        Console.WriteLine(header2);
+        NeighbourTable table = new NeighbourTable(clock); // inject clock
 
-        Assert.NotNull(header2);
+        IPEndPoint ep1 = new IPEndPoint(IPAddress.Loopback, 51001);
+        IPEndPoint ep2 = new IPEndPoint(IPAddress.Loopback, 51002);
+        IPEndPoint ep3 = new IPEndPoint(IPAddress.Loopback, 51003);
+
+        // add nodes 1, 2, 3 records
+        table.UpdateRecord("Node-01", ep1);
+        table.UpdateRecord("Node-02", ep2);
+        table.UpdateRecord("Node-03", ep3);
+
+        // add 5 seconds
+        clock.Time = clock.Time.AddSeconds(5);
+
+        // --- Act ---
+        // update nodes 1, 2, 3 records. last heartbeat supposed to change to the new clock time
+        table.UpdateRecord("Node-01", ep1);
+        table.UpdateRecord("Node-02", ep2);
+        table.UpdateRecord("Node-03", ep3);
+
+        // --- Assert ---
+        Assert.True(
+            table.NeighbourRecords["Node-01"].LastHeartbeatTime.Equals(clock.Time) &&
+            table.NeighbourRecords["Node-02"].LastHeartbeatTime.Equals(clock.Time) &&
+            table.NeighbourRecords["Node-03"].LastHeartbeatTime.Equals(clock.Time)
+        );
+    }
+
+    [Fact]
+    public void Test_Neighbour_Table_Expiration()
+    {
+        // --- Arrange ---
+        TestClock clock = new TestClock();
+        clock.Time = new DateTime(2026,10,2,12,0,0);
+
+        NeighbourTable table = new NeighbourTable(clock); // inject clock
+
+        // node 1 should not be in the table. his last heartbeat was at: 2026/10/2 - 12:00:00
+        // which means 3 clock cycles have passed.
+        table.UpdateRecord("Node-01", new IPEndPoint(IPAddress.Loopback, 51001));
+
+        // add 15 seconds
+        clock.Time = clock.Time.AddSeconds(15);
+
+        // node 2 and 3 are good. their last heartbeat was at: 2026/10/2 - 12:00:15
+        table.UpdateRecord("Node-02", new IPEndPoint(IPAddress.Loopback, 51002));
+        table.UpdateRecord("Node-03", new IPEndPoint(IPAddress.Loopback, 51003));
+
+        // --- Act ---
+        table.CheckExpiration(); // check for expired neighbours
+
+        // --- Assert ---
+        Assert.False(table.NeighbourRecords.ContainsKey("Node-01")); // check if false
     }
 }

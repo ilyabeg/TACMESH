@@ -12,6 +12,11 @@ namespace TacMesh.Core.socket_related
         public const int RandomPort = 0; // let the OS decide the port
 
 
+        // WINDOWS CONSTANT NUMBER THAT DISABLES THE SOCKET'S RESET UPON RECEIVING
+        // AN ICMP PORT UNREACHABLE 
+        private const int SIO_UDP_CONNRESET = -1744830452;
+
+
         // --- Socket Generators ---
 
         /// <summary>
@@ -21,6 +26,10 @@ namespace TacMesh.Core.socket_related
         public static Socket GenerateUdpSocket()
         {
             Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+            // disable the automatic closing of the socket on ICMP Port Unreachable
+            socket.IOControl(SIO_UDP_CONNRESET, new byte[] { 0 }, null);
+
             return socket;
         }
 

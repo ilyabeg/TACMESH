@@ -10,6 +10,9 @@ namespace TacMesh.Core.configurations
         // NOT INTEND ON LEAVING IT LIKE THIS, IT IS ONLY FOR THIS SPESIFIC MISSION TEST.
         public static Dictionary<string, IPEndPoint> StaticNodes { get; private set; } = new Dictionary<string, IPEndPoint>();
 
+        // VERY IMPORTANT: TEMPORARILY MAGIC NUMBER!! WILL CHANGE IN THE FUTURE TO GRAB FROM CONFIGURATIONS FILE
+        public static int HeartbeatDelayMs = 5000;
+
         // loads provided configs to memory
         public static void LoadConfigurations(string configFilePath, string sourceNodeId)
         {
@@ -25,5 +28,13 @@ namespace TacMesh.Core.configurations
                 StaticNodes.TryAdd(nodeId, endpoint);
             }
         }
+
+        // global padding constants
+        #region padding constants
+        public const int _8_padRight = -8;
+        public const int _10_padRight = -10;
+        public const int _58_padRight = 58;
+        public const int _47_padRight = 47;
+        #endregion
     }
 }
