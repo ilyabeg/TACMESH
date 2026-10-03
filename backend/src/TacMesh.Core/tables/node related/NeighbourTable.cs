@@ -16,7 +16,7 @@ namespace TacMesh.Core.tables.node_related
         private readonly int _legal_timeDiff_seconds;
 
         // read-write lock for the table
-        // LOCK ORDER RULE: Always aquire access to the NeighbourTable lock before the Buffer lock to prevent Deadlocks
+        // LOCK ORDER RULE: Always acquire access to the NeighbourTable lock before the Buffer lock to prevent Deadlocks
         // Brief explanation documented in the README file.
         private readonly TacReadWriteLock _rwLock = new TacReadWriteLock();
 
@@ -53,7 +53,7 @@ namespace TacMesh.Core.tables.node_related
                     DateTime last_heartbeat = record.LastHeartbeatTime;
                     int time_diff = (int)(current_time - last_heartbeat).TotalSeconds;
 
-                    // if heartbest wasn't received from this neighbour for over N, heartbeat time cycles
+                    // if heartbeat wasn't received from this neighbour for over N, heartbeat time cycles
                     if (time_diff >= _legal_timeDiff_seconds)
                         expiredNeighbours.Add(record.NeighbourID);
                 }
@@ -67,7 +67,6 @@ namespace TacMesh.Core.tables.node_related
         // removes based on the neighbour id key
         private void RemoveRecord(string neighbourId)
         {
-            // NOTE: changed this method to private because no outer resources should be able to remove from the table
             if (!NeighbourRecords.Remove(neighbourId, out _))
                 throw new Exception($"Failed to remove neighbour {neighbourId} from table.");
         }
