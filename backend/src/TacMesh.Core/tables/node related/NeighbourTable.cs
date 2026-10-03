@@ -1,25 +1,24 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
+using TacMesh.Core.assets.read_write_lock;
 using TacMesh.Core.configurations;
 using TacMesh.Core.interfaces.clock_interfaces;
 
 namespace TacMesh.Core.tables.node_related
 {
-    // TEMPORARY TEST CLOCK, NOT INTENTED TO STAY LIKE THIS!
-    public class TestClock : IClock
-    {
-        public DateTime Time { get; set; }        
-        public DateTime GetTime() => Time;
-    }
-
     public class NeighbourTable
     {
-        // holds record for each neighbour by his ID, concurrent to keep thread safe
-        public ConcurrentDictionary<string, NeighbourRecord> NeighbourRecords { get; private set; }
+        // holds record for each neighbour by his ID
+        public Dictionary<string, NeighbourRecord> NeighbourRecords { get; private set; }
         public int N { get; private set; }
         private readonly IClock _tableClock;
         private readonly int _legal_timeDiff_seconds;
+
+        // read-write lock for the table
+        // LOCK ORDER RULE: Always aquire access to the NeighbourTable lock before the Buffer lock to prevent Deadlocks
+        // Brief explanation documented in the README file.
+        private readonly TacReadWriteLock _rwLock = new TacReadWriteLock();
 
 
         // inject any clock to the table
@@ -28,30 +27,49 @@ namespace TacMesh.Core.tables.node_related
             _tableClock = tableClock;
             N = cyclesNumber;
             _legal_timeDiff_seconds = (N * SystemConfigurations.HeartbeatDelayMs / 1000);
-            NeighbourRecords = new ConcurrentDictionary<string, NeighbourRecord>();
+            NeighbourRecords = new Dictionary<string, NeighbourRecord>();
         }
 
         // adds new record if doesn't exist OR overrides an existing one
         public void UpdateRecord(string neighbourId, IPEndPoint address)
         {
-            NeighbourRecords[neighbourId] = new NeighbourRecord(neighbourId, address, _tableClock.GetTime());            
+            using (_rwLock.Write())
+            {
+                NeighbourRecords[neighbourId] = new NeighbourRecord(neighbourId, address, _tableClock.GetTime());
+            }
         }
 
         // checks for expired nodes and removes
         public void CheckExpiration()
         {
-            DateTime current_time = _tableClock.GetTime();
-
-            // O(NeighbourRecords.Length) - iterates through all records
-            foreach (NeighbourRecord record in NeighbourRecords.Values)
+            using (_rwLock.Write())
             {
-                DateTime last_heartbeat = record.LastHeartbeatTime;
-                int time_diff = (int)(current_time - last_heartbeat).TotalSeconds;
+                DateTime current_time = _tableClock.GetTime();
+                List<string> expiredNeighbours = new List<string>();
 
-                // if heartbest wasn't received from this neighbour for over N, heartbeat time cycles
-                if (time_diff >= _legal_timeDiff_seconds)
-                    RemoveRecord(record.NeighbourID);
+                // O(NeighbourRecords.Length) - iterates through all records
+                foreach (NeighbourRecord record in NeighbourRecords.Values)
+                {
+                    DateTime last_heartbeat = record.LastHeartbeatTime;
+                    int time_diff = (int)(current_time - last_heartbeat).TotalSeconds;
+
+                    // if heartbest wasn't received from this neighbour for over N, heartbeat time cycles
+                    if (time_diff >= _legal_timeDiff_seconds)
+                        expiredNeighbours.Add(record.NeighbourID);
+                }
+
+                // remove all expired neighbours
+                foreach (string expired_neighbour in expiredNeighbours)
+                    RemoveRecord(expired_neighbour);
             }
+        }
+
+        // removes based on the neighbour id key
+        private void RemoveRecord(string neighbourId)
+        {
+            // NOTE: changed this method to private because no outer resources should be able to remove from the table
+            if (!NeighbourRecords.Remove(neighbourId, out _))
+                throw new Exception($"Failed to remove neighbour {neighbourId} from table.");
         }
 
         // background expiration checker
@@ -68,12 +86,6 @@ namespace TacMesh.Core.tables.node_related
             });
         }
 
-        // tries to remove based on the neighbour id key
-        public void RemoveRecord(string neighbourId)
-        {
-            if (!NeighbourRecords.TryRemove(neighbourId, out _))
-                throw new Exception($"Failed to remove neighbour {neighbourId} from table.");
-        }
 
         public void PrintTable()
         {
@@ -89,14 +101,17 @@ namespace TacMesh.Core.tables.node_related
             str.AppendLine("│ Neighbour  │ Address    │ Last Heartbeat      │");
             str.AppendLine("├────────────┼────────────┼─────────────────────┤");
 
-            foreach (string neighbourID in NeighbourRecords.Keys)
+            using (_rwLock.Read())
             {
-                string address = NeighbourRecords[neighbourID].Address.Port.ToString();
-                string heartbeat = NeighbourRecords[neighbourID].LastHeartbeatTime.ToString();
+                foreach (string neighbourID in NeighbourRecords.Keys)
+                {
+                    string address = NeighbourRecords[neighbourID].Address.Port.ToString();
+                    string heartbeat = NeighbourRecords[neighbourID].LastHeartbeatTime.ToString();
 
-                string padded_string = PadRecordString(neighbourID, address, heartbeat);
-                str.AppendLine(padded_string);
-            }
+                    string padded_string = PadRecordString(neighbourID, address, heartbeat);
+                    str.AppendLine(padded_string);
+                }
+            }            
             str.AppendLine("└────────────┴────────────┴─────────────────────┘");
 
             Console.WriteLine(str);
