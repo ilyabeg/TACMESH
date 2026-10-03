@@ -49,7 +49,7 @@ namespace TacMesh.Agent
             _transporter.MessageReceivedEventHandler += (s,e) => OnPacketReceived(s,e);
 
             // TEMPORARY TEST. THIS WILL NOT STAY HERE FOREVER.
-            Console.WriteLine($"~~~ PORT OPENED ON = {AssignedPort} for {NodeID} ~~~\n");            
+            Console.WriteLine($"PORT={AssignedPort}");          
 
             // attach Ctrl+C event handler
             Console.CancelKeyPress += (s,e) => ShutdownNode();

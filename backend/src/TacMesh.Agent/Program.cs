@@ -18,20 +18,20 @@ namespace TacMesh.Agent
         {
             try
             {
-                //if (args.Length != arguments_length)
-                //{
-                //    Console.WriteLine("ERROR: Agent Process arguments did not match. Terminating process...");
-                //    return;
-                //}
+                if (args.Length != arguments_length)
+                {
+                    Console.WriteLine("ERROR: Agent Process arguments did not match. Terminating process...");
+                    return;
+                }
 
 
                 // TEMPORARY TEST
-                Console.WriteLine("Enter node id:");            
+                //Console.WriteLine("Enter node id:");            
 
 
                 // the arguments
-                string nodeId = Console.ReadLine(); //args[0];
-                string configFile = @"..\..\..\config.json"; // args[1]; // @"..\..\..\config.json"
+                string nodeId = args[0];
+                string configFile = args[1]; // @"..\..\..\config.json"
 
                 // load configurations before starting node process
                 SystemConfigurations.LoadConfigurations(configFile, nodeId);
