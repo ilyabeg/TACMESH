@@ -16,7 +16,7 @@ namespace TacMesh.Core.packet_related
             PacketHeader header = serializer.Deserialize(e.MessageBytes);
 
             // print the header 
-            Console.WriteLine($"Received Packet from PORT {e.RemoteEndPoint.Port}");
+            //Console.WriteLine($"Received Packet from PORT {e.RemoteEndPoint.Port}");
 
             return header;
         }
