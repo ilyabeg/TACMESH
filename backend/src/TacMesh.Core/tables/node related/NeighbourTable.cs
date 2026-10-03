@@ -91,7 +91,7 @@ namespace TacMesh.Core.tables.node_related
             // ai design...
             StringBuilder str = new StringBuilder();
 
-            str.AppendLine("\n┌───────────────────────────────────────────────┐");
+            str.AppendLine("┌───────────────────────────────────────────────┐");
 
             string title = $" NEIGHBOUR TABLE";
             str.AppendLine($"│{title.PadRight(SystemConfigurations._47_padRight)}│");

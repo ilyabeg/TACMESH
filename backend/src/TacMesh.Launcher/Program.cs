@@ -1,5 +1,5 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using TacMesh.Launcher.commands;
 using TacMesh.Launcher.processes;
 using TacMesh.Launcher.startup;
 
@@ -20,27 +20,33 @@ namespace TacMesh.Launcher
                 throw new ArgumentException("[LAUNCHER] Error: Expected to get Number of Nodes as an Argument.");
             Console.WriteLine("[LAUNCHER] Launching Agent Processes...");
 
-            // arrange everything
+            // parse N from args
             int numOfAgents = int.Parse(args[0]);
 
+            // inject agents created
             Dictionary<string, Process> agents = ProcessCreator.CreateAgents(numOfAgents);
-            TerminalManager terminal = new TerminalManager(agents);
-            terminal.StartAgents();
+            AgentManager agentManager = new AgentManager(agents);
+            agentManager.StartAgents();
+
+            // inject agent manager
+            CommandParser commandParser = new CommandParser(agentManager);
 
             // kill processes when Ctrl+C is pressed
-            Console.CancelKeyPress += (s, e) => myHandler(s, e, terminal);
-            Console.WriteLine("[LAUNCHER] Press ENTER to end.\n");
-            Console.ReadLine();
+            Console.CancelKeyPress += (s, e) => myHandler(s,e);
+            Console.WriteLine("[LAUNCHER] Press Ctrl+C to end.\n");
+            commandParser.StartParsing();
 
-            // shutdown processes on exit
-            terminal.Shutdown();
+            // shutdown on Ctrl+C because it breaks the main thread out of the command parse loop
+            agentManager.Shutdown();
         }
 
-        // shutdown processess if Ctrl+C was pressed
-        static void myHandler(object sender, ConsoleCancelEventArgs args, TerminalManager terminal)
+        // don't kill main process if Ctrl+C was pressed just yet
+        static void myHandler(object sender, ConsoleCancelEventArgs args)
         {
+            // ConsoleCancelEventArgs.Cancel = true
+            // The value of the Cancel property indicates whether the current
+            // process should resume when the event handler concludes
             args.Cancel = true;
-            terminal.Shutdown();
         }      
     }
 }

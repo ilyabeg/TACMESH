@@ -15,5 +15,10 @@
             ProcessId = pId;
             Port = port;
         }
+
+        public override string ToString()
+        {            
+            return $"[Process Record] NodeID: <{NodeId}> | ProcessID: <{ProcessId}> | Port: <{Port}> |";
+        }
     }
 }

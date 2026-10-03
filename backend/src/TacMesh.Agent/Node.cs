@@ -104,7 +104,7 @@ namespace TacMesh.Agent
                 if (_shutdown_flag) return; // another thread already shutting down the Node
                 _shutdown_flag = true; // claim shutdown
 
-                Console.WriteLine($"Shutting down Node on PORT={AssignedPort}.");
+                Console.WriteLine($"Shutting down Node on PORT={AssignedPort}.\n");
                 _transporter.ShutDown();
             }
         }

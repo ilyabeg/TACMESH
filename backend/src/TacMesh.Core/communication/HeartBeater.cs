@@ -9,7 +9,7 @@ namespace TacMesh.Core.communication
 {
     public class HeartBeater
     {        
-        private const int _initialization_delay = 100;//ms
+        private const int _initialization_delay = 10;//ms
 
         // heart beater dependencies
         private HeartbeatLogger _logger;

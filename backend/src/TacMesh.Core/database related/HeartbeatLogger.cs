@@ -43,7 +43,7 @@ namespace TacMesh.Core.database_related
                 // ai design...
                 StringBuilder str = new StringBuilder();
 
-                str.AppendLine("\n┌──────────────────────────────────────────────────────────┐");
+                str.AppendLine("┌──────────────────────────────────────────────────────────┐");
 
                 string title = $" LOGS (Total: {Logs.Count})";
                 str.AppendLine($"│{title.PadRight(SystemConfigurations._58_padRight)}│");
