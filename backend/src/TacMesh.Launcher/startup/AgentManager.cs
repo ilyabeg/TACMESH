@@ -140,6 +140,12 @@ namespace TacMesh.Launcher.startup
         public void PrintAgents()
         {
             Console.WriteLine("[LAUNCHER] Agent Processes:\n");
+            if (_nodeRecords.IsEmpty)
+            {
+                Console.WriteLine("Empty.");
+                return;
+            }
+
             foreach (ProcessRecord record in _nodeRecords.Values)
                 Console.WriteLine(record);
             Console.WriteLine();

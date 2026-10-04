@@ -8,7 +8,7 @@ namespace TacMesh.Launcher.info
     public class Printer
     {
         // keep all output lines for each agent
-        private static readonly ConcurrentDictionary<string, List<string>> _output_lines = new();
+        private static readonly ConcurrentDictionary<string, Queue<string>> _output_lines = new();
 
         // lock to allow only one thread at a time to print out the lines
         private static readonly object _lock = new object();
@@ -17,9 +17,9 @@ namespace TacMesh.Launcher.info
         // appends the new line to the agent's output lines
         public static void AddNewLine(string agentId, string new_line)
         {
-            // gets or creates a new empty list of strings (if doesn't exist yet) and adds the new line to it
-            List<string> agent_lines = _output_lines.GetOrAdd(agentId, new List<string>());
-            agent_lines.Add(new_line);
+            // gets or creates a new empty queue of strings (if doesn't exist yet) and adds the new line to it
+            Queue<string> agent_lines = _output_lines.GetOrAdd(agentId, new Queue<string>());
+            agent_lines.Enqueue(new_line);
 
             // if empty line, print everything
             if (new_line.Trim().Equals(""))
