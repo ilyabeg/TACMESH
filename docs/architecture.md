@@ -68,90 +68,87 @@ graph TD
 
 ## Proposal Chapters Implementation Places
 
-In this next section i'll be explaining the brief resposibility for each project, which chapters from the proposal each project is responsible for handling, and in which class the logic is written in.
+*Proposal Chapters -> Project -> Class (Status)*:
 
-**TacMesh.Core** - responsible for the whole logic behind the backend, meaning the whole logic will be written here. Chapters of the  
+* Execution Architecture -> TacMesh.Core -> ITransport, IRadioModel - Interfaces for different types of executions (Clear)
+                         -> TacMesh.Launcher -> AgentManager - kills and starts Agent instances (Clear)
 
-* Virtual Radio Model
-* Seed Generator and Mission-Replay
-* Node Processes
-* Discovering Neighbours
-* Connectivity status and constructing the graph
-* Routing, Store-and-Carry
-* Logical Clock and Event Ordering
-* Storage and Expiration Policy
-* End-to-end encryption
-* Key derivation and rolling process
+* Node Processes -> TacMesh.Core -> ITransport, HeartBeater, TacReadWriteLock  (Clear)
 
-**TacMesh.Agent** - responsible for executing Routing messages, Encrypting & Dectypting messages, Calculating Graph State, Storing and Carrying messages, and Forwarding messages:
+* Discovering Neighbours -> TacMesh.Core -> NeighbourTable, HeartBeater (Clear)
 
-**TacMesh.Launcher - responsible for launching Agent instances, and killing them to simulate Graph Expansion and Shrinking**:
+* Connectivity status and constructing the graph -> TacMesh.Core -> GraphCalculator, ... (Clear + TBD - maybe more classes in the future)
 
-**TacMesh.Tests** - responsible for Uni-testing Core logic. No
+* Routing, Store-and-Carry -> TacMesh.Core -> Router, PacketBuffer, ... (Clear + TBD - maybe more classes in the future)
+
+* End-to-end encryption -> TacMesh.Core -> Crypto (Clear)
+
+* Communication Protocols -> TacMesh.Core -> DataPacket, PacketHeader, PacketHeaderSerializer, PacketBuffer, ITransport, ITransmitter, IReceiver ... (Clear + TBD - maybe more classes in the future)
+
+* Data Base -> TacMesh.Core -> ... (To be decided)
 
 ## Functional Requirements Implementation Place
 
-This chart shows where the implementation of the Functional Requirement is going to be implemented at. Not where the actual logic of the
-Requirement is written (Where Requirement is implemented != where Requirement logic is written).
+This chart shows where the Functional Requirement is executed and implemented, and a status if *Clear* from planning or going to be *Decided later*.
 
 ```text
-   |  Functional Requirement  | Poject (Where executed)  |  Class (Where written)
----+--------------------------+--------------------------+--------------------------
- 1 | transmit messages between| Agent (Each user sends   | Messenger (class ftom
-   | nodes via multiple hops, | messages and even messages Core)
-   | without a central node or| not intended for him)    |
-   | external infrastructure  |                          |
----+--------------------------+--------------------------+--------------------------
- 2 | A message with no route  | Agent (Stores pending    | 
-   | will be stored in the    | messages in a buffer until 
-   | node's memory until it   | a fitting connection is  | 
-   | expires, and will be     | astablished or TTL ends) |
-   | delivered as soon as a   |                          |
-   | connection with a suitable                          |
-   | node is established      |                          |
----+--------------------------+--------------------------+--------------------------
- 3 | Every message will be    | Agent (Encrypts messages | Crypto (class from Core)
-   | encrypted and digitally  | before ever sending)     |
-   | signed. An forwarding node                          |
-   | will not be able to read |                          |
-   | the content              |                          |
----+--------------------------+--------------------------+--------------------------
- 4 | The system will identify | Agent (Identifies break  | NetAnalyser (class from
-   | breaking nodes and bridges points after each        | Core)
-   | in the network graph in  | 'connectivity' broadcast | 
-   | real time and alert the  | messages and network     |
-   | commander                | changes)                 |
----+--------------------------+--------------------------+--------------------------
- 5 | Upon receiving a report of  Agent (Executes routing | Router (class from
-   | a casualty, the system   | algorithms upon receving | Core)
-   | will calculate three     | the report from the UI)  |
-   | evacuation routes        |                          |
----+--------------------------+--------------------------+--------------------------
- 6 | The system operates fully| All Projects.            | (No single definition)
-   | without any central server                          |
----+--------------------------+--------------------------+--------------------------
- 7 | The same executable will | All Projects.            | (No single definition)
-   | run in two modes without |                          |
-   | code changes             |                          |
----+--------------------------+--------------------------+--------------------------
- 8 | A scenario created by the| Launcher (Creates data   | MissionPlayer (class in
-   | user is saved to a file, | files after every        | Core)
-   | Restoring this file      | simulation)              |
-   | reproduces the same      |                          |
-   | scenario                 |                          |
----+--------------------------+--------------------------+--------------------------
- 9 | Each node constructs a   | Agent (Builds Graph)     | GraphCalculator (class from 
-   | local estimate of the    |                          | Core)
-   | entire network graph based                          |
-   | on connectivity records  |                          |
-   | distributed across the   |                          |
-   | network                  |                          |
----+--------------------------+--------------------------+--------------------------
- 10| The Mission Package      | Offline tool.            | (To be Desided.)
-   | builder will define users,                          | 
-   | roles, and permissions,  |                          |
-   | issue the keys, and sign |                          |
-   | the package with the     |                          |
-   | mission key              |                          |
-   |                          |                          |
+   |  Functional Requirement  | Where executed           |  Implementaion           | Status
+---+--------------------------+--------------------------+--------------------------+--------------
+ 1 | transmit messages between| Agent (Each user sends   |  --                      | To be decided
+   | nodes via multiple hops, | messages and even messages                          |
+   | without a central node or| not intended for him)    |                          |
+   | external infrastructure  |                          |                          |
+---+--------------------------+--------------------------+--------------------------+--------------
+ 2 | A message with no route  | Agent (Stores pending    | PacketBuffer (class from | Clear
+   | will be stored in the    | messages in a buffer until  Core)                   |
+   | node's memory until it   | a fitting connection is  |                          |
+   | expires, and will be     | astablished or TTL ends) |                          |
+   | delivered as soon as a   |                          |                          |
+   | connection with a suitable                          |                          |
+   | node is established      |                          |                          |
+---+--------------------------+--------------------------+--------------------------+--------------
+ 3 | Every message will be    | Agent (Encrypts messages | Crypto (class from Core) | Clear
+   | encrypted and digitally  | before ever sending)     |                          |
+   | signed. An forwarding node                          |                          |
+   | will not be able to read |                          |                          |
+   | the content              |                          |                          |
+---+--------------------------+--------------------------+--------------------------+--------------
+ 4 | The system will identify | Agent (Identifies break  | NetAnalyser (class from  | Clear
+   | breaking nodes and bridges points after each        | Core)                    |
+   | in the network graph in  | 'connectivity' broadcast |                          |
+   | real time and alert the  | messages and network     |                          |
+   | commander                | changes)                 |                          |
+---+--------------------------+--------------------------+--------------------------+--------------
+ 5 | Upon receiving a report of  Agent (Executes routing | Router (class from       | Clear
+   | a casualty, the system   | algorithms upon receving | Core)                    |
+   | will calculate three     | the report from the UI)  |                          |
+   | evacuation routes        |                          |                          |
+---+--------------------------+--------------------------+--------------------------+--------------
+ 6 | The system operates fully| All Projects.            | (No single definition)   | Clear
+   | without any central server                          |                          |
+---+--------------------------+--------------------------+--------------------------+--------------
+ 7 | The same executable will | All Projects.            | (No single definition)   | Clear
+   | run in two modes without |                          |                          |
+   | code changes             |                          |                          |
+---+--------------------------+--------------------------+--------------------------+--------------
+ 8 | A scenario created by the|  --                      |  --                      | To be decided
+   | user is saved to a file, |                          |                          |
+   | Restoring this file      |                          |                          |
+   | reproduces the same      |                          |                          |
+   | scenario                 |                          |                          |
+---+--------------------------+--------------------------+--------------------------+--------------
+ 9 | Each node constructs a   | Agent (Builds Graph)     | GraphCalculator (class   | Clear
+   | local estimate of the    |                          | from Core)               |
+   | entire network graph based                          |                          |
+   | on connectivity records  |                          |                          |
+   | distributed across the   |                          |                          |
+   | network                  |                          |                          |
+---+--------------------------+--------------------------+--------------------------+--------------
+ 10| The Mission Package      | Offline tool.            |  --                      | To be decided
+   | builder will define users,                          |                          |
+   | roles, and permissions,  |                          |                          |
+   | issue the keys, and sign |                          |                          |
+   | the package with the     |                          |                          |
+   | mission key              |                          |                          |
+   |                          |                          |                          |
 ```
