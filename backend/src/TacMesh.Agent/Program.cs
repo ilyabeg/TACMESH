@@ -1,17 +1,25 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using TacMesh.Core.clocks;
+using TacMesh.Core.communication;
+using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.communication.simulation_communication;
-using TacMesh.Core.configurations;
 using TacMesh.Core.database_related;
+using TacMesh.Core.graph_related;
+using TacMesh.Core.interfaces;
+using TacMesh.Core.interfaces.beacon___destination;
+using TacMesh.Core.models;
+using TacMesh.Core.serializers;
 using TacMesh.Core.socket_related;
 using TacMesh.Core.tables.node_related;
+using TacMesh.Core.utils.configurations;
 
 namespace TacMesh.Agent
 {
     public class Program
     {
-        // arguments length should be exactly 2: NodeID, config file path
+        // arguments length should be exactly 2: NodeID, scenario file path
         const int arguments_length = 2;
 
         static void Main(string[] args)
@@ -24,28 +32,33 @@ namespace TacMesh.Agent
                     return;
                 }
 
-
-                // TEMPORARY TEST
-                //Console.WriteLine("Enter node id:");            
-
-
-                // the arguments
+                // arguments
                 string nodeId = args[0];
-                string configFile = args[1]; // @"..\..\..\config.json"
+                string scenarioFile = args[1];
 
-                // load configurations before starting node process
-                SystemConfigurations.LoadConfigurations(configFile, nodeId);
+                // load scenario into memory
+                SystemConfigurations.LoadConfigurations(scenarioFile);                
 
-                // TEMPORARILY SET EACH NODES STATIC PORT NUMBER
-                int portNum = SystemConfigurations.StaticNodes[nodeId].Port; // .Port because it is IPEndPoint
+                // --- create dependencies ---
 
-                // create all dependencies
-                Socket socket = GetSocket(portNum);
-                SimTransport simTransport = GetSimTransport(socket);
-                NeighbourTable neighbourTable = GetNeighbourTable();
-                HeartbeatLogger logger = new HeartbeatLogger();
+                Socket radio_socket = GetRadioSocket();
+                IReceiver radioReceiver = new SimReceiver(radio_socket);
+                // TEMPORARILY inject max range as magic number for the test, WILL BE CHANGED!
+                VirtualRadioModel radioModel = new VirtualRadioModel(maximum_range: 100, radioReceiver);
 
-                Node node = new Node(nodeId, simTransport, neighbourTable, logger);
+                Socket agent_socket = GetAgentSocket();
+                ITransport simTransport = new SimTransport(agent_socket, radioModel);
+
+                // start transmitting beacon to virtual radio model
+                int assignedPort = ((IPEndPoint)agent_socket.LocalEndPoint).Port;
+                StartEmittingBeacon(nodeId, assignedPort);
+
+                HeartBeater heartBeater = GetHeartBeater(nodeId, simTransport, radioModel);
+                NeighbourTable neighbourTable = new NeighbourTable(new SystemClock());
+
+                // --- inject all dependencies --- 
+
+                Node node = new Node(nodeId, simTransport, neighbourTable, heartBeater);
                 Thread.Sleep(Timeout.Infinite);
             }
             catch (Exception e)
@@ -54,14 +67,54 @@ namespace TacMesh.Agent
             }
         }
 
-        static Socket GetSocket(int port)
+        // TEMPORARILY START TRANSMITING THE MOCK POSITIONS FROM THE SCENARIO FILE HERE,
+        // THIS IS NOT INTENDED TO STAY HERE, I KNOW IT IS INCORRECT TO ADD THIS LOGIC 
+        // TO THE AGENT PROJECT, BUT FOR TEMPORARY TESTING REASONS I TEST THIS HERE.
+        static void StartEmittingBeacon(string nodeId, int assignedPort)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    // THE POSITION IS CURRENTLY STATIC. IT WILL CHANGE IN THE FUTURE AND 
+                    // WILL NOT BE SENT LIKE THIS. THE LOCATIONS WILL BE SENT VIA THE HEARTBEAT PACKET
+                    // PAYLOAD BUT BECAUSE I CURRENTLY DON'T HAVE A FULL DATAPACKET OBJECT I SEND THE
+                    // LOCATIONS TO THE RADIO MODEL AND CHECK THE RANGE AND ALL THE OTHER TESTS USING
+                    // THIS TEMPORARILY STATIC LOCATION FOR EVERY NODE.
+                    GraphPoint position = SystemConfigurations.NodePositions[nodeId];
+                    string positionReport = $"{nodeId}|{assignedPort}|{position.X}|{position.Y}";
+                    byte[] beacon = Encoding.UTF8.GetBytes(positionReport);
+
+                    // open emitter and inject mcast group endpoint
+                    IBeaconEmitter emitter = new SimBeaconEmitter(SystemConfigurations.McastEndPoint);
+
+                    while (true)
+                    {
+                        emitter.EmitBeacon(beacon);
+
+                        // TEMPORARILY MATCH DELAY TO HEARTBEAT DELAY
+                        await Task.Delay(SystemConfigurations.HeartbeatDelayMs);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            });
+        }
+
+        static Socket GetAgentSocket()
         {
             // create and bind socket to a random free port assigned by the OS and the localhoast ip
             Socket s = SocketGenerator.GenerateUdpSocket();
-            SocketGenerator.BindSocket(s, IPAddress.Loopback, port);
+            SocketGenerator.BindSocket(s, IPAddress.Loopback);
             return s;
         }
-        static SimTransport GetSimTransport(Socket s) => new SimTransport(s);
-        static NeighbourTable GetNeighbourTable() => new NeighbourTable(new SystemClock());
+
+        static Socket GetRadioSocket() 
+            => SocketGenerator.GenerateMcastListenerSocket(SystemConfigurations.McastGroupIp, SystemConfigurations.McastPort);
+
+        static HeartBeater GetHeartBeater(string nodeId, ITransport transport, IDestinationProvider provider) 
+            => new HeartBeater(nodeId, new HeartbeatLogger(), new PacketHeaderSerializer(), transport, provider);
     }
 }

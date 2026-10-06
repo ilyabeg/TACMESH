@@ -3,23 +3,28 @@ using System.Net.Sockets;
 using TacMesh.Core.custom_events;
 using TacMesh.Core.events;
 using TacMesh.Core.interfaces;
+using TacMesh.Core.interfaces.communication_interfaces;
 
 namespace TacMesh.Core.communication.simulation_communication
 {
     public class SimTransport : ITransport
     {
-        // private RX, TX, and source socket
-        private SimReceiver _receiver;
-        private SimTransmitter _transmitter;
-        private Socket _srcSocket;
+        // private RX, TX, and source socket+id
+        private readonly SimReceiver _receiver;
+        private readonly SimTransmitter _transmitter;
+        private readonly Socket _srcSocket;
 
         // event handlers
         public event EventHandler<CrashEventArgs> CrashedEventHandler;
         public event EventHandler<MessageReceivedEventArgs> MessageReceivedEventHandler;
 
-        public SimTransport(Socket source)
+        // injected radio model
+        private readonly IRadioModel _radioModel;
+
+        public SimTransport(Socket source, IRadioModel radioModel)
         {
             _srcSocket = source;
+            _radioModel = radioModel;
             _receiver = new SimReceiver(source);
             _transmitter = new SimTransmitter(source);
 
@@ -33,7 +38,26 @@ namespace TacMesh.Core.communication.simulation_communication
         /// </summary>
         /// <param name="data"></param>
         /// <param name="destination"></param>
-        public void Transmit(byte[] data, IPEndPoint destination) => _transmitter.Transmit(data, destination);
+        public void Transmit(byte[] data, IPEndPoint destinationAddress)
+        {
+            Task.Run(async () => 
+            {
+                try
+                {
+                    // pull local enpoint from source socket
+                    IPEndPoint sourceAddress = (IPEndPoint)_srcSocket.LocalEndPoint!;
+
+                    // check via radio model if packet can be sent
+                    // if denied, packet gets abandoned.
+                    if (await _radioModel.TestConnection(sourceAddress, destinationAddress))
+                        _transmitter.Transmit(data, destinationAddress);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            });
+        }
 
         /// <summary>
         /// Receives messages from any remote endpoint using the receiver

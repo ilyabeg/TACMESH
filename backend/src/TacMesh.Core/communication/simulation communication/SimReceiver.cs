@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using TacMesh.Core.custom_events;
 using TacMesh.Core.events;
 using TacMesh.Core.interfaces;

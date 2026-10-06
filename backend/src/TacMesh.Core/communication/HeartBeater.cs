@@ -1,9 +1,10 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
+using System.Net;
 using TacMesh.Core.builders;
-using TacMesh.Core.configurations;
 using TacMesh.Core.database_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.serializers;
+using TacMesh.Core.utils.configurations;
 
 namespace TacMesh.Core.communication
 {
@@ -12,21 +13,21 @@ namespace TacMesh.Core.communication
         private const int _initialization_delay = 10;//ms
 
         // heart beater dependencies
-        private HeartbeatLogger _logger;
-        private Dictionary<string, IPEndPoint> _destinations;
-        private PacketHeaderSerializer _serializer;
-        private ITransport _transporter;
-        private string _srcID;       
+        private readonly string _srcID;
+        private readonly HeartbeatLogger _logger;
+        private readonly PacketHeaderSerializer _serializer;
+        private readonly ITransport _transporter;
+        private readonly IDestinationProvider _destinationProvider;              
 
 
         // inject dependencies through constructor
-        public HeartBeater(string sourceID, HeartbeatLogger logger, Dictionary<string, IPEndPoint> destinations, PacketHeaderSerializer serializer, ITransport transporter)
+        public HeartBeater(string sourceID, HeartbeatLogger logger, PacketHeaderSerializer serializer, ITransport transporter, IDestinationProvider destinationProvider)
         {
             _srcID = sourceID;
             _logger = logger;
-            _destinations = destinations;
             _serializer = serializer;
             _transporter = transporter;
+            _destinationProvider = destinationProvider;
         }
 
         /// <summary>
@@ -43,18 +44,30 @@ namespace TacMesh.Core.communication
                 // heartbeat loop
                 while (true)
                 {
-                    foreach (string destinationID in _destinations.Keys)
+                    ConcurrentDictionary<IPEndPoint, IDestination> destinations = _destinationProvider.ProvideDestinations();
+                    
+                    foreach (IDestination dest in destinations.Values)
                     {
                         // NOTE: DATA PACKET NOT IMPLEMENTED YET SO I USE ONLY
                         // THE PACKET HEADER OBJECT FOR NOW INSTEAD.
+                        
+                        // pull node id and address from destination object
+                        string destID = dest.NodeId;
+                        IPEndPoint destAddress = dest.Address;
+
+                        // filter out packets sent to myself to not create unnecessary packets
+                        if (_srcID == destID) continue;
 
                         // serialize each header for each destination
-                        PacketHeader header = CreateHeader(destinationID);
+                        PacketHeader header = CreateHeader(destID);
                         byte[] headerBytes = _serializer.Serialize(header);
 
-                        // treansmit header and log
-                        _transporter.Transmit(headerBytes, _destinations[destinationID]);
-                        _logger.FormatAndLogHeartbeat(LoggingMode.Sent, _srcID, destinationID);
+                        // transmit header and log
+                        _transporter.Transmit(headerBytes, destAddress);
+                        _logger.FormatAndLogHeartbeat(LoggingMode.Sent, _srcID, destID);
+
+                        // test heartbeats received and sent
+                        //_logger.PrintLogs();
                     }
                     await Task.Delay(SystemConfigurations.HeartbeatDelayMs);
                 }
@@ -82,14 +95,7 @@ namespace TacMesh.Core.communication
             return builder.BuildHeader();
         }
 
-        // IMPORTANT NOTE: I KNOW THIS UPDATE FUNCTION IS NOT GOOD, IT CAN CAUSE RACE CONDITIONS
-        // AND A 'COLLECTION MODIFIED' ERROR, IT IS SIMPLY A SORT OF BOILERPLATE SO I DON'T FORGET
-        // TO UPDATE AND ADD THIS KIND OF METHOD LATER. I DO NOT INTED ON LEAVING IT THIS WAY.
-
-        /// <summary>
-        /// Updates old destinations if new provided
-        /// </summary>
-        /// <param name="newDestinations"></param>
-        public void UpdateDestinations(Dictionary<string, IPEndPoint> newDestinations) => _destinations = newDestinations;
+        // logs heartbeat
+        public void LogHeartbeat(LoggingMode mode, string src, string dst) => _logger.FormatAndLogHeartbeat(mode, src, dst);
     }
 }

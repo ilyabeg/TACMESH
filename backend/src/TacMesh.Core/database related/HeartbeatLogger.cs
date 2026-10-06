@@ -1,6 +1,6 @@
 ﻿using System.Text;
-using TacMesh.Core.configurations;
 using TacMesh.Core.interfaces.data_interfaces;
+using TacMesh.Core.utils.design;
 
 namespace TacMesh.Core.database_related
 {
@@ -45,8 +45,8 @@ namespace TacMesh.Core.database_related
 
                 str.AppendLine("┌──────────────────────────────────────────────────────────┐");
 
-                string title = $" LOGS (Total: {Logs.Count})";
-                str.AppendLine($"│{title.PadRight(SystemConfigurations._58_padRight)}│");
+                string title = $" HEARTBEAT LOGS (Total: {Logs.Count})";
+                str.AppendLine($"│{title.PadRight(ConsoleDesign._58_padRight)}│");
 
                 str.AppendLine("├──────────┬────────────┬────────────┬─────────────────────┤");
                 str.AppendLine("│ ACTION   │ SOURCE     │ DEST       │ TIMESTAMP           │");
@@ -66,10 +66,10 @@ namespace TacMesh.Core.database_related
         {
             string action = (mode == LoggingMode.Sent) ? "Sent" : "Received";
 
-            action = $"{action, SystemConfigurations._8_padRight}";
-            src = $"{src, SystemConfigurations._10_padRight}";
-            dst = $"{dst, SystemConfigurations._10_padRight}";
-            string time = $"{DateTime.Now, SystemConfigurations._10_padRight}";
+            action = $"{action,ConsoleDesign._8_padRight}";
+            src = $"{src,ConsoleDesign._10_padRight}";
+            dst = $"{dst,ConsoleDesign._10_padRight}";
+            string time = $"{DateTime.Now,ConsoleDesign._10_padRight}";
 
             string log = $"| {action} | {src} | {dst} | {time} |";
             Log(log);

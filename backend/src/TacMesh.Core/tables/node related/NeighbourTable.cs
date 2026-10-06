@@ -1,9 +1,9 @@
-﻿using System.Collections.Concurrent;
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using TacMesh.Core.assets.read_write_lock;
-using TacMesh.Core.configurations;
 using TacMesh.Core.interfaces.clock_interfaces;
+using TacMesh.Core.utils.configurations;
+using TacMesh.Core.utils.design;
 
 namespace TacMesh.Core.tables.node_related
 {
@@ -94,7 +94,7 @@ namespace TacMesh.Core.tables.node_related
             str.AppendLine("┌───────────────────────────────────────────────┐");
 
             string title = $" NEIGHBOUR TABLE";
-            str.AppendLine($"│{title.PadRight(SystemConfigurations._47_padRight)}│");
+            str.AppendLine($"│{title.PadRight(ConsoleDesign._47_padRight)}│");
 
             str.AppendLine("├────────────┬────────────┬─────────────────────┤");
             str.AppendLine("│ Neighbour  │ Address    │ Last Heartbeat      │");
@@ -119,9 +119,9 @@ namespace TacMesh.Core.tables.node_related
         // method to pad record string and visualy read what is happening
         private string PadRecordString(string id, string address, string heartbeat)
         {
-            string padded_id = $"{id, SystemConfigurations._10_padRight}";
-            string padded_address = $"{address, SystemConfigurations._10_padRight}";
-            string padded_heartbeat = $"{heartbeat,SystemConfigurations._10_padRight}";
+            string padded_id = $"{id,ConsoleDesign._10_padRight}";
+            string padded_address = $"{address,ConsoleDesign._10_padRight}";
+            string padded_heartbeat = $"{heartbeat,ConsoleDesign._10_padRight}";
 
             return $"| {padded_id} | {padded_address} | {padded_heartbeat} |";
         }

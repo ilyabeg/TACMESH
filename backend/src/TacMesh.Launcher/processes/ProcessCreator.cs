@@ -8,9 +8,9 @@ namespace TacMesh.Launcher.processes
     public class ProcessCreator
     {
         // paths relative to folder: Final-Project-2027/project-files/TACMESH/backend/src/TacMesh.Launcher/
-        private const string _agaent_exe = @"..\TacMesh.Agent\bin\Debug\net10.0\TacMesh.Agent.exe";
-        private const string _config_file = @"..\TacMesh.Agent\config.json";        
-        private static string _configPath = Path.GetFullPath(_config_file);
+        private const string _agaentExe = @"..\TacMesh.Agent\bin\Debug\net10.0\TacMesh.Agent.exe";
+        private const string _scenario_file = @"..\TacMesh.Agent\scenario.json";        
+        private static string _scenarioPath = Path.GetFullPath(_scenario_file);
 
         // generate N agents
         public static Dictionary<string, Process> CreateAgents(int num_of_agents)
@@ -19,10 +19,10 @@ namespace TacMesh.Launcher.processes
 
             for (int i = 0; i < num_of_agents; i++)
             {
-                string nodeId = $"Node-0{i + 1}";
+                string nodeId = $"Node-{i+1:D2}";
 
                 // init start info
-                ProcessStartInfo start_info = InitStartInfo(_agaent_exe, nodeId, _configPath);
+                ProcessStartInfo start_info = InitStartInfo(_agaentExe, nodeId, _scenarioPath);
 
                 // init agent process with the start info
                 Process agent = InitAgent(start_info);
@@ -36,7 +36,7 @@ namespace TacMesh.Launcher.processes
         public static Process CreateNewAgentInstance(string nodeId)
         {
             // init start info
-            ProcessStartInfo start_info = InitStartInfo(_agaent_exe, nodeId, _configPath);
+            ProcessStartInfo start_info = InitStartInfo(_agaentExe, nodeId, _scenarioPath);
 
             // init agent process with the start info
             return InitAgent(start_info);
