@@ -76,8 +76,13 @@ namespace TacMesh.Core.tables.node_related
         {
             Task.Run(async () =>
             {
+                int TEMP_COUNT = 1;
                 while (true)
                 {
+                    // TMPORARILY SHOW ON SCRREN WHICH PULSE OF CHECK IS SHOWN
+                    Console.WriteLine($"~~~~~~~~~ [PULSE #{TEMP_COUNT}] ~~~~~~~~~");
+                    TEMP_COUNT++;
+
                     CheckExpiration();
                     PrintTable(); // table test
                     await Task.Delay(SystemConfigurations.HeartbeatDelayMs); // match heartbeat delay

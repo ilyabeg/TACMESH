@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
-using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.events;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces;
@@ -93,9 +92,6 @@ namespace TacMesh.Core.models
             try
             {
                 string message = Encoding.UTF8.GetString(e.MessageBytes);
-
-                // TEST IF VRM GOT ANYTHING
-                //Console.WriteLine($"[VIRTUAL RADIO MODEL] Received: '{message}'");
 
                 // try to parse the signal
                 var parsingResult = TempLocationReport.ParseSignal(message);
