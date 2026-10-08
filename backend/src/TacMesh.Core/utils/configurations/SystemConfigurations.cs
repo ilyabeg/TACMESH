@@ -13,7 +13,7 @@ namespace TacMesh.Core.utils.configurations
         // TEMPORARILY SAVE STATIC SCENARIO NODE POSITIONS HERE SO IT'S EASIER TO PULL IN
         // NODE CLASS FOR TESTING PURPOSES, THE POSITIONS AREN'T INTENDED IN STAYING
         // STATIC OR SAVED THIS WAY. WILL BE FIXED IN THE FUTURE.
-        public static Dictionary<string, GraphPoint> NodePositions { get; private set; }
+        public static Dictionary<string, Location> NodePositions { get; private set; }
 
         // TEMPORARILY USE THESE MAGIC NUMBERS FOR BINDING AND ADDING THE RADIO SOCKET TO THE
         // MCAST GROUP. WILL BE FIXED. UNTILL I ADD A CONFIGURATIONS OR SETTINGS FILE OR JUST
@@ -30,7 +30,7 @@ namespace TacMesh.Core.utils.configurations
             string scenario_positions = File.ReadAllText(filePath);
 
             // if positions are null throw exception
-            NodePositions = JsonSerializer.Deserialize<Dictionary<string, GraphPoint>>(scenario_positions) 
+            NodePositions = JsonSerializer.Deserialize<Dictionary<string, Location>>(scenario_positions) 
                 ?? throw new ArgumentNullException("Scenario file can't be empty.");
         }
     }

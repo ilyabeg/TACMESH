@@ -9,6 +9,8 @@ using TacMesh.Core.database_related;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.beacon___destination;
+using TacMesh.Core.interfaces.raster;
+using TacMesh.Core.map_related;
 using TacMesh.Core.models;
 using TacMesh.Core.serializers;
 using TacMesh.Core.socket_related;
@@ -43,8 +45,10 @@ namespace TacMesh.Agent
 
                 Socket radio_socket = GetRadioSocket();
                 IReceiver radioReceiver = new SimReceiver(radio_socket);
+                ILineOfSight terrainLoS = new TerrainLineOfSight();
+
                 // TEMPORARILY inject max range as magic number for the test, WILL BE CHANGED!
-                VirtualRadioModel radioModel = new VirtualRadioModel(maximum_range: 100, radioReceiver);
+                VirtualRadioModel radioModel = new VirtualRadioModel(maximum_range: 100, radioReceiver, terrainLoS);
 
                 Socket agent_socket = GetAgentSocket();
                 ITransport simTransport = new SimTransport(agent_socket, radioModel);
@@ -81,7 +85,7 @@ namespace TacMesh.Agent
                     // PAYLOAD BUT BECAUSE I CURRENTLY DON'T HAVE A FULL DATAPACKET OBJECT I SEND THE
                     // LOCATIONS TO THE RADIO MODEL AND CHECK THE RANGE AND ALL THE OTHER TESTS USING
                     // THIS TEMPORARILY STATIC LOCATION FOR EVERY NODE.
-                    GraphPoint position = SystemConfigurations.NodePositions[nodeId];
+                    Location position = SystemConfigurations.NodePositions[nodeId];
                     string positionReport = $"{nodeId}|{assignedPort}|{position.X}|{position.Y}";
                     byte[] beacon = Encoding.UTF8.GetBytes(positionReport);
 

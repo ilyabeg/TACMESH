@@ -7,6 +7,6 @@ namespace TacMesh.Core.interfaces
     {
         public string NodeId { get; }
         public IPEndPoint Address { get; }
-        public GraphPoint LocationPoint { get; }
+        public Location LocationPoint { get; }
     }
 }

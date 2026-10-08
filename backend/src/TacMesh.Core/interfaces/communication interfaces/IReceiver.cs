@@ -1,5 +1,4 @@
-﻿using System.Net;
-using TacMesh.Core.custom_events;
+﻿using TacMesh.Core.custom_events;
 using TacMesh.Core.events;
 
 namespace TacMesh.Core.interfaces

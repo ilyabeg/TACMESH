@@ -5,6 +5,7 @@ using TacMesh.Core.events;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
+using TacMesh.Core.interfaces.raster;
 
 namespace TacMesh.Core.models
 {
@@ -14,8 +15,8 @@ namespace TacMesh.Core.models
     {
         public string NodeId { get; private set; }
         public IPEndPoint Address { get; private set; }
-        public GraphPoint LocationPoint { get; private set; }
-        public TempLocationReport(string nodeId, IPEndPoint address, GraphPoint locationPoint)
+        public Location LocationPoint { get; private set; }
+        public TempLocationReport(string nodeId, IPEndPoint address, Location locationPoint)
         {
             NodeId = nodeId;
             Address = address;
@@ -42,7 +43,7 @@ namespace TacMesh.Core.models
 
                 // create endpoint and graph point from the parsed string
                 IPEndPoint address = new IPEndPoint(IPAddress.Loopback, port);
-                GraphPoint location = new GraphPoint(x,y);
+                Location location = new Location(x,y);
 
                 return (true, new TempLocationReport(nodeId, address, location));
             }
@@ -64,7 +65,10 @@ namespace TacMesh.Core.models
         // Radio Receiver to provide an independed component that can receive radio signals
         // that come from the simulated "wireless" VirtualRadio space 
         private readonly IReceiver _radioReceiver;
-        
+
+        // ILineOfSight implementor to check the Line of Sight on the DEM
+        private readonly ILineOfSight _terrianTester;
+
         // virtual radio model field according to the design document
         private readonly ConcurrentDictionary<IPEndPoint, IDestination> _agent_locations;
         private readonly Random _random_generator;
@@ -74,7 +78,7 @@ namespace TacMesh.Core.models
 
 
         // inject max range in constructor
-        public VirtualRadioModel(int maximum_range, IReceiver radioReceiver)
+        public VirtualRadioModel(int maximum_range, IReceiver radioReceiver, ILineOfSight terrianTester)
         {
             _agent_locations = new ConcurrentDictionary<IPEndPoint, IDestination>();
             _random_generator = new Random(_SEED);            
@@ -82,8 +86,9 @@ namespace TacMesh.Core.models
 
             _radioReceiver = radioReceiver;
             _radioReceiver.StartReceiving(); // start locations send to virtual space
+            _radioReceiver.MessageReceivedEventHandler += (s, e) => OnMessageReceived(s, e);
 
-            _radioReceiver.MessageReceivedEventHandler += (s,e) => OnMessageReceived(s,e);
+            _terrianTester = terrianTester;
         }
 
         // update location report based on the sender
@@ -112,23 +117,25 @@ namespace TacMesh.Core.models
 
 
         /// <summary>
-        /// Method to check connection between two agent nodes
+        /// Method to check connection between two agent nodes.
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="destination"></param>
+        /// <param name="source">Source EndPoint</param>
+        /// <param name="destination">Destination EndPoint</param>
         /// <returns>True if a connection is valid. False otherwise.</returns>
         public async Task<bool> TestConnection(IPEndPoint source, IPEndPoint destination)
         {
-            var test1_result = TestRange(source, destination);
-            if (!test1_result.Result) 
-                return false;
+            // get both points
+            Location point1 = _agent_locations[source].LocationPoint;
+            Location point2 = _agent_locations[destination].LocationPoint;
+            // distance between the points
+            double distance = point1.Distance(point2);
 
-            if (!TestRelativeDistance(test1_result.Distance)) 
-                return false;
+            // the 3 radio model tests
+            if (!TestRange(distance)) return false;
+            if (!TestRelativeDistance(distance)) return false;
+            if (!_terrianTester.TestLineOfSight(point1, point2)) return false;
 
-            if (!TestLineOfSight(source, destination)) 
-                return false;
-
+            // if all successful, generate delay
             await GenerateDelay();
             return true;
         }
@@ -143,14 +150,8 @@ namespace TacMesh.Core.models
         // --- private testing methods ---
 
         // Max range test
-        private (bool Result, double Distance) TestRange(IPEndPoint source, IPEndPoint destination)
-        {
-            GraphPoint point1 = _agent_locations[source].LocationPoint;
-            GraphPoint point2 = _agent_locations[destination].LocationPoint;
+        private bool TestRange(double distance) => distance <= _MAX_RANGE;
 
-            double distance = point1.Distance(point2);
-            return distance > _MAX_RANGE ? (false, double.MinValue) : (true, distance);
-        }
 
         // constants for upper/lower bound for random number
         private const int _upperBound = 101;
@@ -176,13 +177,6 @@ namespace TacMesh.Core.models
 
             // if number is in the 'probability side'
             return num <= probability_percent;
-        }
-
-        // valid Line of Sight test
-        private bool TestLineOfSight(IPEndPoint source, IPEndPoint destination)
-        {
-            // TEMPORARILY ALWAYS TRUE UNTILL ACTUALY IMPLEMENTED LINE OF SIGHT ALGORITHM.
-            return true;
         }
 
         // rolls a random generated delay to simulate latency
