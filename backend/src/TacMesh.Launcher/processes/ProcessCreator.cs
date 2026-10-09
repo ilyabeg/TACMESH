@@ -10,7 +10,7 @@ namespace TacMesh.Launcher.processes
         // paths relative to folder: Final-Project-2027/project-files/TACMESH/backend/src/TacMesh.Launcher/
         private const string _agaentExe = @"..\TacMesh.Agent\bin\Debug\net10.0\TacMesh.Agent.exe";
         private const string _scenario_file = @"..\TacMesh.Agent\scenario.json";        
-        private static string _scenarioPath = Path.GetFullPath(_scenario_file);
+        private static readonly string _scenarioPath = Path.GetFullPath(_scenario_file);
 
         // generate N agents
         public static Dictionary<string, Process> CreateAgents(int num_of_agents)
@@ -47,7 +47,8 @@ namespace TacMesh.Launcher.processes
             return new ProcessStartInfo(filename, [nodeId, path])
             {
                 UseShellExecute = false,
-                RedirectStandardOutput = true,
+                RedirectStandardOutput = true, // redirect output stream to the launcher process
+                RedirectStandardInput = true, // redirect input stream to the launcher process
                 CreateNoWindow = false
             };
         }

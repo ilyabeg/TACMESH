@@ -9,58 +9,12 @@ using TacMesh.Core.interfaces.raster;
 
 namespace TacMesh.Core.models
 {
-
-    // TEMPORARY RADIO MODEL LOCATION REPORT CLASS TO HOLD LOCATION REPORT FROM AGENTS
-    public class TempLocationReport : IDestination
-    {
-        public string NodeId { get; private set; }
-        public IPEndPoint Address { get; private set; }
-        public Location LocationPoint { get; private set; }
-        public TempLocationReport(string nodeId, IPEndPoint address, Location locationPoint)
-        {
-            NodeId = nodeId;
-            Address = address;
-            LocationPoint = locationPoint;
-        }
-
-        /// <summary>
-        /// static method to create a location report out of a parsed string
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <returns>The result of the parsing with the matching location report value</returns>
-        public static (bool Result, TempLocationReport? LocationReport) ParseSignal(string signal)
-        {
-            try
-            {
-                // CURRENT signal structure: "ID|PORT|X|Y" (MAY CHANGE IN FUTURE)
-                // for example: "Node-01|51001|10|10"
-                string[] splitted = signal.Split('|');
-
-                string nodeId = splitted[0];       // "ID|....|.|."
-                int port = int.Parse(splitted[1]); // "..|PORT|.|."
-                int x = int.Parse(splitted[2]);    // "..|....|X|."
-                int y = int.Parse(splitted[3]);    // "..|....|.|Y"
-
-                // create endpoint and graph point from the parsed string
-                IPEndPoint address = new IPEndPoint(IPAddress.Loopback, port);
-                Location location = new Location(x,y);
-
-                return (true, new TempLocationReport(nodeId, address, location));
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Received invalid beacon signal: '{e.Message}'");
-                return (false, null);
-            }
-        }
-    }
-
     /// <summary>
     /// Layer inside the Node process that determines before sending a Packet if the 
     /// communication can be established with the destination node. It simulates a radio communication layer.
     /// When using physical hardware this layer will be turned off and not used.
     /// </summary>
-    public class VirtualRadioModel : IRadioModel, IDestinationProvider
+    public class VirtualRadioModel : IRadioModel
     {       
         // Radio Receiver to provide an independed component that can receive radio signals
         // that come from the simulated "wireless" VirtualRadio space 
@@ -69,8 +23,9 @@ namespace TacMesh.Core.models
         // ILineOfSight implementor to check the Line of Sight on the DEM
         private readonly ILineOfSight _terrianTester;
 
+
         // virtual radio model field according to the design document
-        private readonly ConcurrentDictionary<IPEndPoint, IDestination> _agent_locations;
+        private readonly ConcurrentDictionary<string, IPEndPoint> _agent_locations;
         private readonly Random _random_generator;
         private const int _SEED = 13021995; // fixed seed to generate the same Randoms to repeat tests
         private const int _DELAY_RANGE = 5; // the random delay range 
@@ -80,7 +35,7 @@ namespace TacMesh.Core.models
         // inject max range in constructor
         public VirtualRadioModel(int maximum_range, IReceiver radioReceiver, ILineOfSight terrianTester)
         {
-            _agent_locations = new ConcurrentDictionary<IPEndPoint, IDestination>();
+            _agent_locations = new ConcurrentDictionary<string, IPEndPoint>();
             _random_generator = new Random(_SEED);            
             _MAX_RANGE = maximum_range;
 
@@ -96,18 +51,12 @@ namespace TacMesh.Core.models
         {
             try
             {
-                string message = Encoding.UTF8.GetString(e.MessageBytes);
-
                 // try to parse the signal
-                var parsingResult = TempLocationReport.ParseSignal(message);
+                string signal = Encoding.UTF8.GetString(e.MessageBytes);
+                if (!TryParseSignal(signal, out string senderID, out IPEndPoint endPoint)) return;
 
-                // if the signal couldn't be parsed, ignore it
-                if (!parsingResult.Result) return;
-
-                TempLocationReport locationReport = parsingResult.LocationReport;
-
-                // add or update the node's the new report
-                _agent_locations[locationReport.Address] = locationReport;
+                // add or update the node's address
+                _agent_locations[senderID!] = endPoint!;
             }
             catch (Exception ex)
             {
@@ -115,25 +64,53 @@ namespace TacMesh.Core.models
             }
         }
 
+        /// <summary>
+        /// Tries to parse the given string signal as a beacon signal containing the SenderID and Endpoint
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="senderID"></param>
+        /// <param name="endPoint"></param>
+        /// <returns>True if successfult parsed the signal or False otherwise</returns>
+        private bool TryParseSignal(string signal, out string? senderID, out IPEndPoint? endPoint)
+        {
+            try
+            {
+                // CURRENT signal structure: "ID|PORT" (MAY CHANGE IN FUTURE)
+                // for example: "Node-01|51001"
+                string[] splitted = signal.Split('|');
+
+                senderID = splitted[0];            // "ID|...."
+                int port = int.Parse(splitted[1]); // "..|PORT"
+
+                // create endpoint from the parsed port
+                endPoint = new IPEndPoint(IPAddress.Loopback, port);
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Couldn't parse virtual destination: '{e.Message}'");
+                senderID = null;
+                endPoint = null;
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// Method to check connection between two agent nodes.
         /// </summary>
-        /// <param name="source">Source EndPoint</param>
-        /// <param name="destination">Destination EndPoint</param>
+        /// <param name="source">Source location</param>
+        /// <param name="destination">Destination location</param>
         /// <returns>True if a connection is valid. False otherwise.</returns>
-        public async Task<bool> TestConnection(IPEndPoint source, IPEndPoint destination)
+        public async Task<bool> TestConnection(Location source, Location destination)
         {
-            // get both points
-            Location point1 = _agent_locations[source].LocationPoint;
-            Location point2 = _agent_locations[destination].LocationPoint;
             // distance between the points
-            double distance = point1.Distance(point2);
+            double distance = source.Distance(destination);
 
             // the 3 radio model tests
             if (!TestRange(distance)) return false;
             if (!TestRelativeDistance(distance)) return false;
-            if (!_terrianTester.TestLineOfSight(point1, point2)) return false;
+            if (!_terrianTester.TestLineOfSight(source, destination)) return false;
 
             // if all successful, generate delay
             await GenerateDelay();
@@ -144,7 +121,7 @@ namespace TacMesh.Core.models
         /// Method that provides the current neighbours the node can theoretically reach
         /// </summary>
         /// <returns></returns>
-        public ConcurrentDictionary<IPEndPoint, IDestination> ProvideDestinations() => _agent_locations;
+        public ConcurrentDictionary<string, IPEndPoint> GetNetworkDevices() => _agent_locations;
 
 
         // --- private testing methods ---

@@ -13,17 +13,20 @@ namespace TacMesh.Agent
         // Node Fields
         public string NodeID { get; private set; }
         public int AssignedPort { get; private set; }
+        public ILocation NodeLocacation { get; private set; }
 
         private readonly ITransport _transporter;
         private readonly HeartBeater _heartbeater;
         private readonly NeighbourTable _neighbourTable;
-        private readonly PacketBuffer _packetBuffer;        
+        private readonly PacketBuffer _packetBuffer;
 
 
         // Constructors
-        public Node(string nodeID, ITransport transporter, NeighbourTable neighbourTable, HeartBeater heartbeater)
+        public Node(string nodeID, ILocation location, ITransport transporter, NeighbourTable neighbourTable, HeartBeater heartbeater)
         {
+            // save node id and initial location
             NodeID = nodeID;
+            NodeLocacation = location;
 
             // start receiving background thread            
             _transporter = transporter;
@@ -60,7 +63,7 @@ namespace TacMesh.Agent
                 _heartbeater.LogHeartbeat(LoggingMode.Received, header.SrcID, header.DstID);
 
                 // add/update record of peer in neighbour table
-                _neighbourTable.UpdateRecord(header.SrcID, e.RemoteEndPoint);
+                _neighbourTable.UpdateRecord(header.SrcID, e.RemoteEndPoint, );
             }
         }
 

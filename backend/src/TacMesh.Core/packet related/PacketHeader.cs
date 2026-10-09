@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using TacMesh.Core.builders;
+using TacMesh.Core.utils.design;
 
 namespace TacMesh.Core
 {
@@ -220,23 +220,37 @@ namespace TacMesh.Core
         {
             StringBuilder str = new StringBuilder();
 
-            str.AppendLine("---------------------------------");
-            str.AppendLine("         HEADER FIELDS:");
-            str.AppendLine("---------------------------------\n");
-            str.AppendLine($"Protocol Version: {ProtocolVersion}");
-            str.AppendLine($"Message Type:     {MsgType}");
-            str.AppendLine($"MsgID:            {MsgID}");
-            str.AppendLine($"SrcID:            {SrcID}");
-            str.AppendLine($"DstID:            {DstID}");
-            str.AppendLine($"Hop Count:        {HopCount}");
-            str.AppendLine($"Logical Clock:    {LogicalClock}");
-            str.AppendLine($"TTL:              {TTL}");
-            str.AppendLine($"Priority:         {Priority}");
-            str.AppendLine($"Sender Count:     {SenderCounter}");
+            str.AppendLine("┌────────────────────────────────────────────────────────────────────────┐");
+
+            string title = $" PACKET HEADER (Size: {HeaderSize} Bytes)";
+            str.AppendLine($"│{title.PadRight(ConsoleDesign._72_padRight)}│");
+
+            str.AppendLine("├────────────────────┬──────────┬────────────────────────────────────────┤");
+            str.AppendLine("│ Field              │ Size     │ Value                                  │");
+            str.AppendLine("├────────────────────┼──────────┼────────────────────────────────────────┤");
+
+            str.AppendLine(FormatHeaderRow("Protocol Version", "1 B", ProtocolVersion.ToString()));
+            str.AppendLine(FormatHeaderRow("Message Type", "1 B", MsgType.ToString()));
+            str.AppendLine(FormatHeaderRow("Message ID", "16 B", MsgID.ToString()));
+            str.AppendLine(FormatHeaderRow("Source ID", "16 B", SrcID));
+            str.AppendLine(FormatHeaderRow("Destination ID", "16 B", DstID));
+            str.AppendLine(FormatHeaderRow("Hop Count", "1 B", HopCount.ToString()));
+            str.AppendLine(FormatHeaderRow("Logical Clock", "8 B", LogicalClock.ToString()));
+            str.AppendLine(FormatHeaderRow("TTL", "8 B", $"{TTL}s"));
+            str.AppendLine(FormatHeaderRow("Priority", "1 B", Priority.ToString()));
+            str.AppendLine(FormatHeaderRow("Sender Counter", "8 B", SenderCounter.ToString()));
+
+            str.AppendLine("└────────────────────┴──────────┴────────────────────────────────────────┘");
 
             // TO DO: visually see all bytes
 
             return str.ToString();
+        }
+
+        // format a header row specificaly by the field
+        private string FormatHeaderRow(string fieldName, string size, string value)
+        {
+            return $"│ {fieldName,ConsoleDesign._18_padRight} │ {size,ConsoleDesign._8_padRight} │ {value,ConsoleDesign._38_padRight} │";
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text;
 using TacMesh.Core.assets.read_write_lock;
+using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.clock_interfaces;
 using TacMesh.Core.utils.configurations;
 using TacMesh.Core.utils.design;
@@ -31,11 +32,11 @@ namespace TacMesh.Core.tables.node_related
         }
 
         // adds new record if doesn't exist OR overrides an existing one
-        public void UpdateRecord(string neighbourId, IPEndPoint address)
+        public void UpdateRecord(string neighbourId, IPEndPoint address, ILocation location)
         {
             using (_rwLock.Write())
             {
-                NeighbourRecords[neighbourId] = new NeighbourRecord(neighbourId, address, _tableClock.GetTime());
+                NeighbourRecords[neighbourId] = new NeighbourRecord(neighbourId, address, location, _tableClock.GetTime());
             }
         }
 
@@ -96,36 +97,38 @@ namespace TacMesh.Core.tables.node_related
             // ai design...
             StringBuilder str = new StringBuilder();
 
-            str.AppendLine("┌───────────────────────────────────────────────┐");
+            str.AppendLine("┌────────────────────────────────────────────────────────────────────┐");
 
             string title = $" NEIGHBOUR TABLE";
-            str.AppendLine($"│{title.PadRight(ConsoleDesign._47_padRight)}│");
+            str.AppendLine($"│{title.PadRight(ConsoleDesign._68_padRight)}│");
 
-            str.AppendLine("├────────────┬────────────┬─────────────────────┤");
-            str.AppendLine("│ Neighbour  │ Address    │ Last Heartbeat      │");
-            str.AppendLine("├────────────┼────────────┼─────────────────────┤");
+            str.AppendLine("├────────────┬────────────┬────────────────────┬─────────────────────┤");
+            str.AppendLine("│ Neighbour  │ Address    │ Location           │ Last Heartbeat      │");
+            str.AppendLine("├────────────┼────────────┼────────────────────┼─────────────────────┤");
 
             using (_rwLock.Read())
             {
                 foreach (string neighbourID in NeighbourRecords.Keys)
                 {
                     string address = NeighbourRecords[neighbourID].Address.Port.ToString();
+                    string location = NeighbourRecords[neighbourID].Location.ToString();
                     string heartbeat = NeighbourRecords[neighbourID].LastHeartbeatTime.ToString();
 
-                    string padded_string = PadRecordString(neighbourID, address, heartbeat);
+                    string padded_string = PadRecordString(neighbourID, address, location, heartbeat);
                     str.AppendLine(padded_string);
                 }
-            }            
-            str.AppendLine("└────────────┴────────────┴─────────────────────┘");
+            }
 
+            str.AppendLine("└────────────┴────────────┴────────────────────┴─────────────────────┘");
             Console.WriteLine(str);
         }
 
         // method to pad record string and visualy read what is happening
-        private string PadRecordString(string id, string address, string heartbeat)
+        private string PadRecordString(string id, string address, string location, string heartbeat)
         {
             string padded_id = $"{id,ConsoleDesign._10_padRight}";
             string padded_address = $"{address,ConsoleDesign._10_padRight}";
+            string padded_location = $"{location,ConsoleDesign._12_padRight}";
             string padded_heartbeat = $"{heartbeat,ConsoleDesign._10_padRight}";
 
             return $"| {padded_id} | {padded_address} | {padded_heartbeat} |";

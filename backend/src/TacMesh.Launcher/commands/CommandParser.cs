@@ -36,9 +36,10 @@ namespace TacMesh.Launcher.commands
         // constant command indexes
         private const int _command_index = 0;
         private const int _id_index = 1;
+        private const int _pos_index = 2;
 
         // parse command with switch case - KISS principle
-        // (no need to over-engineer with memory heavy dictionary for 3 simple commands)
+        // (no need to over-engineer with memory heavy dictionary for 4 simple commands)
         private void ParseCommand(string str)
         {
             try
@@ -51,7 +52,7 @@ namespace TacMesh.Launcher.commands
                     case "list":
                     {
                         // 'list' command should be a single command word
-                        if (splitted.Length > 1) throw new Exception();
+                        if (splitted.Length != 1) throw new Exception();
 
                         _agentManager.PrintAgents();
                         break;
@@ -59,7 +60,7 @@ namespace TacMesh.Launcher.commands
                     case "kill":
                     {
                         // 'kill' command should be a single command word and id only
-                        if (splitted.Length > 2) throw new Exception();
+                        if (splitted.Length != 2) throw new Exception();
 
                         string id = splitted[_id_index];
                         _agentManager.KillAgent(id);
@@ -67,11 +68,22 @@ namespace TacMesh.Launcher.commands
                     }
                     case "start":
                     {
-                        // 'start' command should be a single command word and id onlyword
-                        if (splitted.Length > 2) throw new Exception();
+                        // 'start' command should be a single command word and id only 
+                        if (splitted.Length != 2) throw new Exception();
 
                         string id = splitted[_id_index];
                         _agentManager.StartAgent(id);
+                        break;
+                    }
+                    case "pos":
+                    {
+                        // 'pos' command should be only 3 parts
+                        if (splitted.Length > 3) throw new Exception();
+
+                        string id = splitted[_id_index];
+                        string pos = splitted[_pos_index];
+
+                        _agentManager.WriteToInputStream(id, pos);
                         break;
                     }
                     default: throw new Exception();

@@ -6,7 +6,8 @@ using TacMesh.Core.socket_related;
 namespace TacMesh.Core.communication.radio_communication
 {
     /// <summary>
-    /// Simulated beacon emitter used to simulate ...
+    /// Simulated beacon emitter used to send a Beacon to a remote endpoint to simulate
+    /// a radio wave device broadcast to a wireless network.
     /// </summary>
     public class SimBeaconEmitter : IBeaconEmitter
     {
@@ -25,16 +26,6 @@ namespace TacMesh.Core.communication.radio_communication
         /// </summary>
         /// <param name="beacon"></param>
         /// <param name="remoteEndpoint"></param>
-        public void EmitBeacon(byte[] beacon)
-        {
-            try
-            {                
-                _emittingSocket.SendTo(beacon, _virtualEndpoint);                
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[BEACON EMITTER ERROR]: '{e.Message}'");
-            }
-        }
+        public void EmitBeacon(byte[] beacon) => _emittingSocket.SendTo(beacon, _virtualEndpoint);
     }
 }

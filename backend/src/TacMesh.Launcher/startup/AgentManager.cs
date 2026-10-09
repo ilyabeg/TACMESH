@@ -11,7 +11,7 @@ namespace TacMesh.Launcher.startup
         // concurrent because many threads may write to the dictionary when receiving 'PORT=...' on stdout
         private ConcurrentDictionary<string, ProcessRecord> _nodeRecords = new();
 
-        // keep track of all agent processes
+        // keep track of all agent processes by the agent ID
         // regular dictionary because only the main thread alters this (command executions)
         private Dictionary<string, Process> _agents;
 
@@ -40,7 +40,7 @@ namespace TacMesh.Launcher.startup
 
         // each EchoOutput gets spesific agentId by the agent attatching this handler with their id on creation
         private void EchoOutput(string agentId, object sender, DataReceivedEventArgs e)
-        {
+        {            
             string output = e.Data;
             if (output == null) return;
 
@@ -54,6 +54,14 @@ namespace TacMesh.Launcher.startup
                 string processId = ((Process)sender).Id.ToString();
                 AddRecord(agentId, processId, port);
             }
+        }
+
+        // writes input to the input stream of a specfic agent
+        public void WriteToInputStream(string agentId, string input)
+        {
+            // find the specific process and write a line to it's input stream
+            Process agentProcess = _agents[agentId];
+            agentProcess.StandardInput.WriteLine(input);
         }
 
         private void AddRecord(string agentId, string pId, int port)

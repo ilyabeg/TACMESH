@@ -1,0 +1,2935 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TACMESH - הצעת נושא לפרויקט הנדסאי</title>
+  <style>
+    :root {
+      --blue: #2e74b5;
+      --ink: #000000;
+      --green: #70ad47;
+      --line: #000000;
+      --soft: #f2f2f2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: #e6e6e6;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Assistant", "Segoe UI", "Arial", sans-serif;
+      font-size: 11.5pt;
+      line-height: 1.62;
+      counter-reset: pg;
+    }
+
+    /* ============ מודל הגיליון ============ */
+    .sheet {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 13mm 17mm 11mm;
+      margin: 0 auto 8mm;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 1px 7px rgba(0, 0, 0, .22);
+      counter-increment: pg;
+    }
+
+    .sheet-body {
+      flex: 1;
+    }
+
+    .sheet-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 9mm;
+    }
+
+    .sheet-head .ttl {
+      color: var(--blue);
+      font-weight: 700;
+      font-size: 11pt;
+      line-height: 1.35;
+    }
+
+    .sheet-head .crest {
+      display: flex;
+      align-items: center;
+      gap: 4mm;
+      direction: ltr;
+    }
+
+    .sheet-head .crest img {
+      height: 13mm;
+      width: auto;
+      display: block;
+    }
+
+    .sheet-head .crest img.tall {
+      height: 15mm;
+    }
+
+    .signiture-img {
+      height: 15mm;
+      width: auto;
+    }
+
+    .sheet-foot {
+      display: flex;
+      align-items: flex-end;
+      border-top: 2.5pt solid var(--green);
+      padding-top: 2.5mm;
+      margin-top: 8mm;
+      font-size: 9.5pt;
+      font-weight: 700;
+    }
+
+    .sheet-foot .fcol {
+      flex: 1 1 0;
+    }
+
+    .sheet-foot .fr {
+      text-align: right;
+    }
+
+    .sheet-foot .fm {
+      text-align: center;
+      color: var(--blue);
+      line-height: 1.5;
+    }
+
+    .sheet-foot .fl {
+      text-align: left;
+    }
+
+    .sheet-foot .pgn {
+      display: block;
+      color: var(--ink);
+      font-weight: 400;
+      font-size: 9pt;
+    }
+
+    .sheet-foot .pgn::after {
+      content: "עמוד " counter(pg);
+    }
+
+    .sheet:first-of-type .pgn {
+      display: none;
+    }
+
+    .sheet-foot .blank {
+      display: inline-block;
+      min-width: 38mm;
+      border-bottom: 1px dotted #999;
+      font-weight: 400;
+    }
+
+    /* ============ כותרות ============ */
+    h1 {
+      font-size: 16pt;
+      color: var(--blue);
+      font-weight: 700;
+      margin: 9mm 0 5mm;
+      line-height: 1.3;
+    }
+
+    h2 {
+      font-size: 13pt;
+      color: var(--blue);
+      font-weight: 700;
+      margin: 7mm 0 3mm;
+    }
+
+    h3 {
+      font-size: 12pt;
+      color: var(--blue);
+      font-weight: 700;
+      margin: 5mm 0 2mm;
+    }
+
+    h1:first-child,
+    h2:first-child,
+    h3:first-child {
+      margin-top: 0;
+    }
+
+    p {
+      margin: 0 0 3.4mm;
+      text-align: justify;
+    }
+
+    .term {
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    .lat {
+      direction: ltr;
+      unicode-bidi: isolate;
+    }
+
+    /* ============ תבליטים ============ */
+    ul.d1,
+    ul.d2,
+    ul.d3 {
+      list-style: none;
+      margin: 0 0 3.4mm;
+      padding: 0 6mm 0 0;
+    }
+
+    ul.d1>li,
+    ul.d2>li,
+    ul.d3>li {
+      position: relative;
+      margin: 0 0 1.8mm;
+      padding-inline-start: 1mm;
+    }
+
+    ul.d1>li::before {
+      content: "\2756";
+      position: absolute;
+      right: -6mm;
+      color: var(--blue);
+    }
+
+    ul.d2>li::before {
+      content: "\25CF";
+      position: absolute;
+      right: -6mm;
+      font-size: 8pt;
+    }
+
+    ul.d3>li::before {
+      content: "\25CB";
+      position: absolute;
+      right: -6mm;
+      font-size: 8pt;
+    }
+
+    ul.d2 ul.d3 {
+      margin: 1.8mm 0 0;
+      padding-inline-start: 6mm;
+    }
+
+    ol.gloss {
+      margin: 0;
+      padding: 0 6mm 0 0;
+    }
+
+    ol.gloss>li {
+      margin: 0 0 3mm;
+      text-align: justify;
+    }
+
+    ol.gloss>li:target {
+      background: #eaf2fa;
+    }
+
+    a.gl {
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 700;
+      padding: 0 1px;
+    }
+
+    a.gl:hover {
+      text-decoration: underline;
+    }
+
+    /* ============ טבלאות ============ */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 10.5pt;
+      margin: 0 0 4mm;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 1.6mm 2.4mm;
+      text-align: right;
+      vertical-align: top;
+      line-height: 1.45;
+    }
+
+    th {
+      background: var(--soft);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    td.c,
+    th.c {
+      text-align: center;
+    }
+
+    table.gantt {
+      font-size: 9.5pt;
+      text-align: center;
+    }
+
+    table.gantt th,
+    table.gantt td {
+      text-align: center;
+      padding: 1.8mm 1mm;
+    }
+
+    table.gantt td.stage {
+      text-align: right;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    table.gantt td.v {
+      font-weight: 700;
+      font-size: 11pt;
+    }
+
+    /* ============ איורים ============ */
+    figure {
+      margin: 4mm 0;
+      padding: 0;
+    }
+
+    figure svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      direction: ltr;
+    }
+
+    figure svg text {
+      unicode-bidi: plaintext;
+    }
+
+    figcaption {
+      margin-top: 2mm;
+      font-size: 10pt;
+      color: #404040;
+      text-align: center;
+    }
+
+    /* ============ לוגואים ============ */
+    .logos {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 9mm;
+      margin: 0 0 5mm;
+    }
+
+    .logos svg {
+      width: 14mm;
+      height: 14mm;
+      direction: ltr;
+    }
+
+    .logos svg text {
+      unicode-bidi: plaintext;
+    }
+
+    /* ============ שער ============ */
+    .cover-title {
+      text-align: center;
+      font-size: 17pt;
+      font-weight: 700;
+      text-decoration: underline;
+      color: var(--blue);
+      margin: 6mm 0 8mm;
+      line-height: 1.4;
+    }
+
+    .cover-name {
+      text-align: center;
+      font-size: 14pt;
+      margin: 0 0 2mm;
+    }
+
+    .cover-name span {
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    .cover-sub {
+      text-align: center;
+      font-size: 12pt;
+      font-style: italic;
+      margin: 0 0 6mm;
+    }
+
+    .ident {
+      margin-top: 8mm;
+      font-size: 12pt;
+      line-height: 2.1;
+    }
+
+    .ident b {
+      text-decoration: underline;
+    }
+
+    .ident .fill {
+      display: inline-block;
+      min-width: 70mm;
+      border-bottom: 1px dotted #666;
+    }
+
+    /* ============ תוכן עניינים ============ */
+    .toc {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      font-size: 11pt;
+    }
+
+    .toc li {
+      display: flex;
+      align-items: baseline;
+      margin: 0 0 1.15mm;
+    }
+
+    .toc li.sub {
+      padding-inline-start: 8mm;
+      font-size: 10.5pt;
+    }
+
+    .toc .nm {
+      white-space: nowrap;
+    }
+
+    .toc .dots {
+      flex: 1;
+      border-bottom: 1px dotted #9a9a9a;
+      margin: 0 2mm;
+      transform: translateY(-2px);
+    }
+
+    .toc .pg {
+      white-space: nowrap;
+    }
+
+    .toc a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    /* ============ חתימות ============ */
+    .sigline {
+      margin: 4mm 0 0;
+      font-size: 12pt;
+    }
+
+    .sigline .fill {
+      display: inline-block;
+      min-width: 75mm;
+      border-bottom: 1px solid #333;
+    }
+
+    /* ============ הדפסה ============ */
+    @page {
+      size: A4;
+      margin: 13mm 17mm 11mm;
+    }
+
+    @media print {
+      html {
+        background: #fff;
+      }
+
+      .sheet {
+        width: auto;
+        min-height: 271mm;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        page-break-after: always;
+      }
+
+      .sheet:last-child {
+        page-break-after: auto;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ==================== שער ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+
+      <div class="cover-title">הצעת נושא לפרויקט הנדסאי במגמת הנדסת תוכנה</div>
+
+      <p class="cover-name"><span>שם פרויקט:</span> TACMESH</p>
+      <p class="cover-sub">רשת קשר מבוזרת ומוצפנת לכוח קרקעי הפועל ללא תשתית תקשורת</p>
+
+      <figure>
+        <svg viewBox="0 0 700 330" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="100%" stop-color="#eef3f8" />
+            </linearGradient>
+            <marker id="cvarrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0,0 L9,4.5 L0,9 z" fill="#2e74b5" />
+            </marker>
+          </defs>
+
+          <rect x="0" y="0" width="700" height="330" fill="url(#sky)" stroke="#2e74b5" stroke-width="1.5" />
+
+          <!-- רכסים -->
+          <path
+            d="M0 250 L 90 205 L 165 232 L 250 172 L 330 210 L 420 160 L 505 208 L 590 178 L 700 224 L 700 330 L 0 330 Z"
+            fill="#dfe7ef" stroke="#8fa7bd" stroke-width="1.2" />
+          <path d="M0 285 L 110 258 L 205 282 L 300 245 L 395 278 L 495 250 L 600 280 L 700 262 L 700 330 L 0 330 Z"
+            fill="#c9d6e3" stroke="#7d94aa" stroke-width="1.2" />
+
+          <!-- קשתות הרשת -->
+          <g stroke="#2e74b5" stroke-width="1.6" opacity="0.85">
+            <line x1="105" y1="120" x2="205" y2="82" />
+            <line x1="205" y1="82" x2="318" y2="118" />
+            <line x1="318" y1="118" x2="418" y2="70" />
+            <line x1="418" y1="70" x2="528" y2="112" />
+            <line x1="528" y1="112" x2="612" y2="76" />
+            <line x1="105" y1="120" x2="318" y2="118" />
+            <line x1="418" y1="70" x2="612" y2="76" />
+          </g>
+          <g fill="#ffffff" stroke="#2e74b5" stroke-width="2.2">
+            <circle cx="105" cy="120" r="12" />
+            <circle cx="205" cy="82" r="12" />
+            <circle cx="318" cy="118" r="12" />
+            <circle cx="418" cy="70" r="12" />
+            <circle cx="528" cy="112" r="12" />
+            <circle cx="612" cy="76" r="12" />
+          </g>
+          <circle cx="318" cy="118" r="19" fill="none" stroke="#2e74b5" stroke-width="1" stroke-dasharray="4 3" />
+
+          <!-- מסלול פינוי -->
+          <path d="M92 300 Q 230 262 330 288 Q 450 316 610 268" fill="none" stroke="#c0504d" stroke-width="2.6"
+            stroke-dasharray="9 5" marker-end="url(#cvarrow)" />
+          <circle cx="92" cy="300" r="7" fill="#c0504d" />
+          <circle cx="612" cy="266" r="7" fill="#c0504d" />
+        </svg>
+      </figure>
+
+      <div class="ident">
+        <div><b>סמל מוסד</b>: <span class="fill"></span></div>
+        <div><b>שם מכללה</b>: <span class="fill"></span></div>
+        <div><b>שם</b>: <span class="fill"></span></div>
+        <div><b>ת.ז</b>: <span class="fill"></span></div>
+      </div>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== תוכן עניינים ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1>תוכן עניינים</h1>
+      <ul class="toc">
+        <li><span class="nm"><a href="#s1">תיאור הנושא</a></span><span class="dots"></span><span class="pg">3</span>
+        </li>
+        <li><span class="nm"><a href="#s2">רקע תיאורטי בתחום הפרויקט</a></span><span class="dots"></span><span
+            class="pg">4</span></li>
+        <li class="sub"><span class="nm"><a href="#s2a">רקע היסטורי ומטרתו של הפרויקט</a></span><span
+            class="dots"></span><span class="pg">4</span></li>
+        <li class="sub"><span class="nm"><a href="#s2b">תחומי הפרויקט</a></span><span class="dots"></span><span
+            class="pg">5</span></li>
+        <li class="sub"><span class="nm"><a href="#s2c">רקע תיאורטי מושגים</a></span><span class="dots"></span><span
+            class="pg">6</span></li>
+        <li><span class="nm"><a href="#s3">תיאור הפרויקט</a></span><span class="dots"></span><span class="pg">9</span>
+        </li>
+        <li><span class="nm"><a href="#s4">הגדרת הבעיה האלגוריתמית</a></span><span class="dots"></span><span
+            class="pg">12</span></li>
+        <li><span class="nm"><a href="#s5">הליכים עיקריים בפתרון בעיה בטכנולוגיות הנדסה מתקדמות</a></span><span
+            class="dots"></span><span class="pg">17</span></li>
+        <li class="sub"><span class="nm"><a href="#s5a">ארכיטקטורת ההרצה</a></span><span class="dots"></span><span
+            class="pg">17</span></li>
+        <li class="sub"><span class="nm"><a href="#s5b">דרישות פונקציונאליות ודרישות משתמש קצה</a></span><span
+            class="dots"></span><span class="pg">19</span></li>
+        <li class="sub"><span class="nm"><a href="#s5c">מודל הסימולציה</a></span><span class="dots"></span><span
+            class="pg">20</span></li>
+        <li class="sub"><span class="nm"><a href="#s5e">מגבלות ידועות וסיכונים</a></span><span class="dots"></span><span
+            class="pg">22</span></li>
+        <li><span class="nm"><a href="#s6">הליכים עיקריים בתחום מערכות הפעלה/רשתות מחשבים/תקשורת נתונים/אבטחת
+              מידע</a></span><span class="dots"></span><span class="pg">23</span></li>
+        <li class="sub"><span class="nm"><a href="#s6a">תהליכים בצומת</a></span><span class="dots"></span><span
+            class="pg">23</span></li>
+        <li class="sub"><span class="nm"><a href="#s6b">גילוי שכנים ובניית הגרף</a></span><span
+            class="dots"></span><span class="pg">24</span></li>
+        <li class="sub"><span class="nm"><a href="#s6f">הפצת מצב קישוריות ובניית האומדן</a></span><span
+            class="dots"></span><span class="pg">24</span></li>
+        <li class="sub"><span class="nm"><a href="#s6c">ניתוב, המתנה ומסירה</a></span><span class="dots"></span><span
+            class="pg">25</span></li>
+        <li class="sub"><span class="nm"><a href="#s6d">הצפנה מקצה לקצה</a></span><span class="dots"></span><span
+            class="pg">26</span></li>
+        <li class="sub"><span class="nm"><a href="#s6e">מודל האיום</a></span><span class="dots"></span><span
+            class="pg">28</span></li>
+        <li><span class="nm"><a href="#s7">תיאור פרוטוקולי תקשורת</a></span><span class="dots"></span><span
+            class="pg">29</span></li>
+        <li><span class="nm"><a href="#s8">פיתוחים עתידיים</a></span><span class="dots"></span><span
+            class="pg">31</span></li>
+        <li><span class="nm"><a href="#s9">תיאור טכנולוגיה הנדסה</a></span><span class="dots"></span><span
+            class="pg">32</span></li>
+        <li><span class="nm"><a href="#s10">מסד נתונים</a></span><span class="dots"></span><span class="pg">33</span>
+        </li>
+        <li><span class="nm"><a href="#s11">לוחות זמנים</a></span><span class="dots"></span><span class="pg">34</span>
+        </li>
+        <li><span class="nm"><a href="#s12">מנחות פרויקט</a></span><span class="dots"></span><span class="pg">35</span>
+        </li>
+        <li><span class="nm"><a href="#s13">חתימת סטודנט</a></span><span class="dots"></span><span class="pg">35</span>
+        </li>
+        <li><span class="nm"><a href="#s14">חתימת רכז המגמה</a></span><span class="dots"></span><span
+            class="pg">35</span></li>
+      </ul>
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== תיאור הנושא ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s1">תיאור הנושא</h1>
+
+      <p>במסגרת הפרויקט אבנה מערכת קשר לכוח קרקעי הפועל בשטח שאין בו תשתית תקשורת זמינה. המכשירים של אנשי הכוח מהווים
+        בעצמם את הרשת. כל מכשיר הוא גם משתמש וגם נתב, והודעות עוברות ביניהם בקפיצות עד שהן מגיעות ליעדן.</p>
+
+      <p>לרשת מסוג זה קוראים רשת אד-הוק ניידת<a class="gl" href="#g1">*</a>. אין בה צומת מרכזי, אין בה תחנת בסיס,
+        והקישוריות בין המכשירים משתנה כל הזמן ככל שהאנשים זזים בשטח. המערכת שאבנה מטפלת בשני קשיים שנובעים ישירות מהמבנה
+        הזה, והם מסירת הודעות כאשר אין מסלול רציף בין השולח לנמען, וזיהוי מוקדם של הנקודות שבהן הרשת עלולה להיקרע
+        לשניים.</p>
+
+      <p>מעבר לרשת עצמה, המערכת מחשבת מסלול פינוי לפצוע. החישוב נעשה על מפת שטח אמיתית ומשקלל שלושה גורמים, ולא רק את
+        המרחק.</p>
+
+      <p>המערכת אחראית על:</p>
+      <ul class="d1">
+        <li>העברת הודעות מוצפנות בין צמתי הרשת, גם כאשר נדרשות מספר קפיצות</li>
+        <li>שמירת הודעות שאין להן כרגע מסלול, ומסירתן ברגע שנוצר מפגש עם צומת מתאים</li>
+        <li>בניית תמונת הגרף של הרשת בזמן אמת ועדכונה בכל שינוי קישוריות</li>
+        <li>זיהוי החוליות שנפילתן תפצל את הכוח, והתרעה עליהן לפני האירוע</li>
+        <li>חישוב מסלולי פינוי לפצועים לפי זמן נסיעה, חשיפה לאיום ואיכות קשר</li>
+        <li>ניהול משתמשים, תפקידים והרשאות</li>
+      </ul>
+
+      <p>תפקידי הצומת הבודד:</p>
+      <ul class="d1">
+        <li>שידור פעימת נוכחות חתומה בקצב קבוע, וקליטת הפעימות של האחרים</li>
+        <li>הצפנת ההודעות שהוא שולח וחתימה דיגיטלית עליהן</li>
+        <li>העברת הודעות של אחרים מבלי לקרוא את תוכנן</li>
+        <li>אחסון מקומי של הודעות שטרם נמסרו</li>
+        <li>הצגת מפה, הודעות ומצב הרשת למשתמש בהתאם לתפקידו</li>
+      </ul>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== רקע תיאורטי ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s2">רקע תיאורטי בתחום הפרויקט</h1>
+
+      <h2 id="s2a">רקע היסטורי ומטרתו של הפרויקט</h2>
+
+      <p>כוח קרקעי הפועל בשטח פתוח נשען היום על קשר קולי במכשירי קשר, ועל מערכות מודעות מצבית הדורשות תשתית או שרת
+        מרכזי. בשני המקרים קיימת נקודת כשל אחת. אם התשתית אינה זמינה, בין אם בשל היעדרה באזור ובין אם בשל שיבוש מכוון,
+        הכוח מאבד את היכולת להעביר מידע כתוב ומדויק.</p>
+
+      <p>הבעיה מחריפה כאשר הכוח מפוצל למספר צוותים שאינם רואים זה את זה. במצב כזה ייתכן שבין שני צוותים אין בשום רגע
+        נתון מסלול רציף של מכשירים, ולכן הודעה שנשלחת הולכת לאיבוד. תחום המחקר שעוסק בבעיה הזו נקרא רשתות סובלות
+        השהיות<a class="gl" href="#g2">*</a>, והרעיון המרכזי בו הוא שהודעה יכולה להמתין בזיכרון המכשיר ולהיות נישאת
+        בתנועה הפיזית של האדם עד שנוצר מפגש.</p>
+
+      <p>קושי שני הוא שברשת מבוזרת אף צומת אינו רואה את התמונה המלאה. לוחם שנמצא בנקודה מסוימת עשוי להיות החוליה היחידה
+        המחברת בין שני חלקי הכוח, ואיש אינו יודע זאת. כשהוא נופל או מתרחק, הניתוק מתגלה רק בדיעבד.</p>
+
+      <p>מטרת הפרויקט היא לבנות מערכת אחת שמטפלת בשני הקשיים, ומשתמשת בגרף התקשורת גם לצורך נוסף, תכנון מסלול פינוי
+        לפצוע. הקשר בין שני החלקים אינו מקרי. מנוע חישוב קווי הראייה<a class="gl" href="#g10">*</a> הנדרש להערכת החשיפה
+        לאיום הוא אותו מנוע המעריך אם שני מכשירים יוכלו לתקשר, משום שרכס שחוסם עין חוסם גם אנטנה.</p>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== תחומי הפרויקט ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2 id="s2b">תחומי הפרויקט</h2>
+
+      <p>הפרויקט נוגע בארבעה תחומים מרכזיים.</p>
+
+      <p><span class="term">תחום רשתות מחשבים ותקשורת נתונים</span>: אגדיר את הפרוטוקול שהצמתים מדברים בו מעל <span
+          class="lat">UDP</span>. אקבע איך נראית הודעה שדה אחר שדה, איך צומת מגלה מי נמצא בטווח שלו, כמה קפיצות מותר
+        להודעה לעבור לפני שהיא נזרקת, וכמה זמן היא נשמרת בזיכרון לפני שהיא נמחקת. בתחום זה אחקור גישות ניתוב לרשת סובלת
+        השהיות<a class="gl" href="#g2">*</a> ואשווה ביניהן על אותם תרחישים, כאשר מדדי ההשוואה הם אחוז המסירה מול העומס
+        שכל גישה מייצרת. בעיה נוספת בתחום היא קביעת סדר בין עדכונים שהגיעו במסלולים שונים, ללא שעון משותף.</p>
+
+      <p><span class="term">תחום אבטחת מידע</span>: כל הודעה במערכת תוצפן כך שרק הנמען יוכל לקרוא אותה, וצומת שמעביר
+        אותה בדרך יראה רק את שדות הניתוב ולא את התוכן. אחקור בתחום זה ארבע בעיות: הגעה לסוד משותף בין שני צדדים שלא
+        נפגשו מעולם וללא גורם מרכזי, הצפנת תוכן ההודעה בצורה שמגלה כל שינוי בה, אימות זהות השולח על כל הודעה ועל כל
+        דיווח מיקום, וגלגול המפתח לאורך זמן כך שחשיפת מפתח אחד לא תחשוף את מה שנשלח לפניו ואחריו.</p>
+
+      <p><span class="term">תחום מערכות הפעלה</span>: בכל מחשב ירוצו שני <span class="lat">processes</span> נפרדים. אחד
+        מציג את המסך למשתמש, והשני עושה את כל עבודת הרשת. תהליך המסך מפעיל את השני כ-<span class="lat">child
+          process</span>, עוקב אחריו, ומפעיל אותו מחדש אם הוא נופל. בתוך תהליך הרשת ירוצו כמה <span
+          class="lat">threads</span> במקביל: אחד מאזין ל-<span class="lat">packets</span> שמגיעים, אחד משדר את פעימת
+        הנוכחות כל חמש שניות, ואחד מחשב מחדש את הגרף. שלושתם ניגשים לאותה רשימת שכנים, ולכן אשתמש ב-<span
+          class="lat">reader-writer lock</span> שימנע <span class="lat">race condition</span> שבו שניים כותבים לרשימה
+        באותו רגע ומשאירים אותה במצב לא עקבי.</p>
+
+      <p><span class="term">תחום מבני נתונים ואלגוריתמים</span>: שתי בעיות גרפים עומדות במרכז הפרויקט. הראשונה היא זיהוי
+        בזמן אמת של הצמתים והקשרים שנפילתם מפצלת את הכוח לרכיבי קשירות<a class="gl" href="#g7">*</a> שאין ביניהם מעבר
+        מידע. השנייה היא חישוב מסלול פינוי על משקל שאינו מרחק, אלא צירוף של זמן נסיעה, חשיפה לאיום ואיכות קשר, ובנוסף
+        הצגת מספר חלופות מובחנות למפקד. זהו החלק הכבד ביותר בפרויקט מבחינת החשיבה האלגוריתמית, ולכן אקדיש לו את החלק
+        הגדול ביותר מזמן הפיתוח.</p>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מושגים א ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2 id="s2c">רקע תיאורטי מושגים</h2>
+
+      <p>המונחים המסומנים בכוכבית לאורך המסמך מוגדרים כאן. בגרסה הדיגיטלית לחיצה על הכוכבית מקפיצה ישירות אל ההגדרה.</p>
+
+      <ol class="gloss">
+        <li id="g1"><span class="term">רשת אד-הוק ניידת</span> (<span class="lat">MANET, Mobile Ad-hoc Network</span>) -
+          רשת הנוצרת בין מכשירים ניידים ללא תשתית קבועה וללא תחנת בסיס. כל מכשיר משמש גם כמשתמש וגם כנתב עבור האחרים,
+          והקישוריות בין המכשירים משתנה עם תנועתם בשטח.</li>
+
+        <li id="g2"><span class="term">רשת סובלת השהיות</span> (<span class="lat">DTN, Delay Tolerant Network</span>) -
+          גישת תקשורת המיועדת לרשתות שאין בהן מסלול רציף בין השולח לנמען. במקום לזרוק הודעה שאין לה מסלול, המכשיר שומר
+          אותה ומעביר אותה בהזדמנות מאוחרת יותר.</li>
+
+        <li id="g3"><span class="term">המתנה ומסירה</span> (<span class="lat">Store, Carry and Forward</span>) - שיטת
+          המסירה של רשת סובלת השהיות. ההודעה נשמרת בזיכרון המכשיר, נישאת בתנועה הפיזית של נושא המכשיר, ונמסרת ברגע שנוצר
+          מפגש עם מכשיר שקרוב יותר ליעד.</li>
+
+        <li id="g4"><span class="term">גרף, צומת וקשת</span> - גרף הוא מבנה נתונים המורכב מקבוצת צמתים ומקבוצת קשתות
+          המחברות ביניהם. בפרויקט זה כל מכשיר הוא צומת, וקשת קיימת בין שני מכשירים היכולים לתקשר ישירות זה עם זה.</li>
+
+        <li id="g5"><span class="term">נקודת חיתוך</span> (<span class="lat">Articulation Point</span>) - צומת שהסרתו
+          מהגרף מגדילה את מספר הרכיבים המנותקים. במונחי הפרויקט זהו לוחם שנפילתו מנתקת חלק מהכוח מן השאר.</li>
+
+        <li id="g6"><span class="term">גשר</span> (<span class="lat">Bridge</span>) - קשת שהסרתה מפצלת את הגרף. במונחי
+          הפרויקט זהו קשר יחיד שדרכו עובר כל המידע בין שני חלקי הכוח.</li>
+
+        <li id="g7"><span class="term">רכיב קשירות</span> (<span class="lat">Connected Component</span>) - תת-קבוצה של
+          צמתים שקיים מסלול בין כל שניים מהם. כאשר הרשת נקרעת היא מתפצלת לשני רכיבים או יותר, ובין רכיבים שונים אין כלל
+          מעבר מידע ישיר.</li>
+
+        <li id="g8"><span class="term">שעון לוגי</span> (<span class="lat">Lamport Clock</span>) - מונה אירועים המאפשר
+          לקבוע סדר סיבתי בין אירועים במערכת מבוזרת ללא שעון משותף. כל צומת מצרף את ערך המונה שלו לכל הודעה, ובקבלת
+          הודעה הוא מעדכן את מונהו לערך הגבוה מבין שלו לבין זה שהתקבל ומקדם אותו באחד.</li>
+      </ol>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מושגים ב ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <ol class="gloss" start="9">
+        <li id="g9"><span class="term">מפת גבהים</span> (<span class="lat">DEM, Digital Elevation Model</span>) - קובץ
+          המכיל את הגובה מעל פני הים עבור כל נקודה ברשת קבועה על פני השטח. רשת כזו נקראת <span class="term">רסטר</span>
+          (<span class="lat">raster</span>): מערך דו-ממדי של תאים שווי גודל, שלכל תא בו ערך יחיד. בפרויקט אשתמש
+          ברזולוציה של 30 מטר, כלומר כל תא מכסה ריבוע של 30 על 30 מטר בשטח, מנתוני גובה ציבוריים פתוחים.</li>
+
+        <li id="g10"><span class="term">קו ראייה</span> (<span class="lat">Line of Sight</span>) - בדיקה האם קיימת על
+          מפת הגבהים נקודה החוסמת את הקו הישר בין שתי נקודות. הבדיקה משמשת גם להערכת החשיפה לאיום וגם להערכת האפשרות
+          לקיים קשר אלחוטי.</li>
+
+        <li id="g11"><span class="term">הצפנה סימטרית מאומתת</span> (<span class="lat">AES-GCM</span>) - אלגוריתם הצפנה
+          המשתמש באותו מפתח להצפנה ולפענוח, ומוסיף להצפנה תג אימות. כל שינוי בטקסט המוצפן מתגלה בעת הפענוח, והפענוח נכשל
+          במקום להחזיר תוצאה שגויה.</li>
+
+        <li id="g12"><span class="term">החלפת מפתחות דיפי-הלמן על עקומה אליפטית</span> (<span class="lat">ECDH</span>) -
+          שיטה שבה שני צדדים מגיעים לסוד משותף מבלי להעביר אותו ברשת. כל צד מחשב את הסוד מן המפתח הפרטי שלו ומן המפתח
+          הציבורי של הצד השני.</li>
+
+        <li id="g13"><span class="term">פונקציית גזירת מפתחות</span> (<span class="lat">HKDF</span>) - פונקציה המקבלת
+          סוד משותף אחד ומפיקה ממנו מספר מפתחות נפרדים לשימושים שונים, כך שחשיפת אחד מהם אינה חושפת את האחרים.</li>
+
+        <li id="g14"><span class="term">חתימה דיגיטלית</span> (<span class="lat">ECDSA</span>) - מנגנון המאפשר לנמען
+          לוודא שההודעה נכתבה על ידי בעל מפתח פרטי מסוים ולא שונתה בדרך. החותם משתמש במפתח הפרטי, והמאמת במפתח הציבורי
+          המתאים לו.</li>
+
+        <li id="g15"><span class="term">גלגול מפתחות מתמשך</span> (<span class="lat">Double Ratchet</span>) - פרוטוקול
+          המייצר מפתח הצפנה חדש לכל הודעה. חשיפת מפתח של הודעה אחת אינה מאפשרת לפענח הודעות קודמות או עתידיות.</li>
+
+        <li id="g16"><span class="term">ניתוב בהצפה</span> (<span class="lat">Epidemic Routing</span>) - אלגוריתם ניתוב
+          שבו כל צומת מעביר עותק של ההודעה לכל צומת שהוא נפגש עמו. מגיע לאחוז המסירה הגבוה ביותר האפשרי, במחיר עומס גבוה
+          על הרשת ועל הזיכרון.</li>
+
+        <li id="g17"><span class="term">ניתוב הסתברותי לפי מפגשים</span> (<span class="lat">PRoPHET</span>) - אלגוריתם
+          ניתוב השומר לכל צומת הערכה מספרית של הסיכוי שייפגש עם כל יעד. ההערכה מתעדכנת בכל מפגש ודועכת עם הזמן, וההודעה
+          מועברת רק לצומת שהערכתו גבוהה משל המחזיק הנוכחי.</li>
+      </ol>
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מושגים ג ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <ol class="gloss">
+        <li id="g18"><span class="term">חבילת משימה</span> - קובץ יחיד הנבנה מראש לפני היציאה לשטח ומועתק לכל מכשיר. הוא
+          מכיל את רשימת המפתחות הציבוריים של כל אנשי הכוח חתומה במפתח המשימה, את הגדרות המשתמשים והתפקידים, את מפת
+          הגבהים של האזור ואת רסטר החשיפה שחושב עליה מראש לכל נקודת איום. זהו עוגן האמון של המערכת, והוא מה שמאפשר לכל
+          צומת לאמת כל צומת אחר בלי לפנות לגורם מרכזי.</li>
+
+        <li id="g19"><span class="term">מודל רדיו וירטואלי</span> - שכבה בתוך הצומת המכריעה, לפני מסירת המנה ל-<span
+            class="lat">socket</span>, האם הקשר ליעד מתקיים. ההכרעה נעשית בשלושה שלבים, טווח, קו ראייה, והסתברות מעבר
+          התלויה במרחק היחסי, ולאחריה מתווספת השהיה מוגרלת. במצב הסימולציה המודל מדמה את רשת הרדיו האמיתית. כשהמערכת רצה
+          על חומרה, המודל מכובה וה-packets עוברים ברשת האלחוטית הפיזית.</li>
+
+        <li id="g20"><span class="term">הפצת מצב קישוריות</span> (<span class="lat">Link-State Dissemination</span>) -
+          שיטה שבה כל צומת מפרסם ברשת את רשימת שכניו החתומה ובעלת מונה גרסה, וכל צומת מקבל בונה מרשומות אלה אומדן מקומי
+          של הגרף כולו. זו הדרך שבה צומת מגיע לתמונה רחבה מן הקשתות היוצאות ממנו בלבד, ללא גורם מרכזי המחזיק את הגרף.
+        </li>
+
+        <li id="g21"><span class="term">שדה ראייה</span> (<span class="lat">Viewshed</span>) - קבוצת כל התאים על מפת
+          הגבהים הנצפים מנקודה אחת נתונה. בפרויקט מחושב שדה ראייה לכל נקודת איום, והתוצאה היא רסטר חשיפה המשמש כגורם
+          משקל בחישוב מסלול הפינוי.</li>
+      </ol>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== תיאור הפרויקט א ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s3">תיאור הפרויקט</h1>
+
+      <p>למערכת שני חלקים, ורק אחד מהם רץ בשטח:</p>
+
+      <ul class="d2">
+        <li><span class="term">הרשת הטקטית</span>, הרצה על כל מכשיר. היא אחראית על גילוי שכנים, על ניתוב ומסירה, על
+          ההצפנה, על בניית גרף הרשת ועדכונו, על זיהוי נקודות החיתוך<a class="gl" href="#g5">*</a> ועל חישוב מסלולי
+          הפינוי.</li>
+        <li><span class="term">בונה חבילת המשימה</span>, כלי שולחני שרץ פעם אחת לפני היציאה לשטח ואינו מגיע לשדה. בו
+          מגדירים את המשתמשים והתפקידים ומנפיקים את המפתחות, והתוצר שלו הוא חבילת המשימה<a class="gl" href="#g18">*</a>.
+        </li>
+      </ul>
+
+      <p>אין במערכת שרת, ואף יכולת אינה פונה לגורם מרכזי בזמן הפעילות. גם בתוך הרשת עצמה אין צומת מרכזי. כל מכשיר מחובר
+        ישירות רק למי שנמצא בטווח שלו, ולכן הגרף<a class="gl" href="#g4">*</a> המתקבל דליל ומשתנה כל הזמן. קשתות נוצרות
+        ונעלמות תוך שניות ככל שהאנשים זזים. המבנה הזה הוא שמייצר את האתגר האלגוריתמי, שכן אילו כל מכשיר היה מחובר לכל
+        מכשיר אחר לא היה מה לנתב.</p>
+
+      <figure>
+        <svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif"
+          font-size="13">
+          <defs>
+            <marker id="ar1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0,0 L9,4.5 L0,9 z" fill="#333" />
+            </marker>
+          </defs>
+
+          <rect x="97" y="26" width="566" height="108" fill="#f2f2f2" stroke="#333" stroke-width="1.4" />
+          <text x="643" y="52" text-anchor="end" font-size="15" font-weight="600" fill="#2e74b5">בונה חבילת המשימה, כלי
+            לא-מקוון</text>
+          <text x="643" y="77" text-anchor="end" font-size="13">משתמשים והרשאות, הנפקת מפתחות וחתימה על רשימת
+            המפתחות</text>
+          <text x="643" y="99" text-anchor="end" font-size="13">מפת גבהים ורסטר חשיפה מחושב מראש</text>
+          <text x="643" y="122" text-anchor="end" font-size="12" fill="#5a5a5a">רץ פעם אחת בלבד, לפני היציאה לשטח</text>
+
+          <line x1="380" y1="134" x2="380" y2="182" stroke="#333" stroke-width="1.4" marker-end="url(#ar1)" />
+          <text x="392" y="163" font-size="12" fill="#5a5a5a">העתקה חד-פעמית של החבילה לכל מכשיר</text>
+
+          <rect x="40" y="186" width="680" height="196" fill="#fff" stroke="#333" stroke-width="1.8" />
+          <text x="700" y="212" text-anchor="end" font-size="15" font-weight="600" fill="#2e74b5">הרשת הטקטית, כל
+            היכולות של המערכת</text>
+          <g fill="#f2f2f2" stroke="#333" stroke-width="1.4">
+            <circle cx="620" cy="286" r="26" />
+            <circle cx="500" cy="261" r="26" />
+            <circle cx="380" cy="301" r="26" />
+            <circle cx="255" cy="266" r="26" />
+            <circle cx="140" cy="296" r="26" />
+          </g>
+          <g stroke="#333" stroke-width="1.4">
+            <line x1="594" y1="286" x2="526" y2="261" />
+            <line x1="474" y1="261" x2="406" y2="301" />
+            <line x1="354" y1="301" x2="281" y2="266" />
+            <line x1="229" y1="266" x2="166" y2="296" />
+          </g>
+          <text x="620" y="291" text-anchor="middle" font-size="12">צומת</text>
+          <text x="500" y="266" text-anchor="middle" font-size="12">צומת</text>
+          <text x="380" y="306" text-anchor="middle" font-size="12">צומת</text>
+          <text x="255" y="271" text-anchor="middle" font-size="12">צומת</text>
+          <text x="140" y="301" text-anchor="middle" font-size="12">צומת</text>
+          <text x="380" y="348" text-anchor="middle" font-size="12" fill="#5a5a5a">ניתוב, הצפנה, המתנה ומסירה, ניתוח
+            חוסן, פינוי</text>
+
+          <text x="380" y="370" text-anchor="middle" font-size="12" fill="#2e74b5">בזמן הפעילות אין פנייה לשום גורם
+            מרכזי</text>
+        </svg>
+        <figcaption>איור 1: אין במערכת שרת. חבילת המשימה נבנית פעם אחת מראש, ומרגע היציאה לשטח הרשת עצמאית לחלוטין
+        </figcaption>
+      </figure>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== תיאור הפרויקט ב ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2>מבנה הצומת</h2>
+
+      <p>כל מחשב מריץ צומת מלא, המורכב משני תהליכים נפרדים:</p>
+
+      <ul class="d2">
+        <li><span class="term">TacMesh.Agent</span>, תהליך <span class="lat">C#</span> הנושא את כל ההיגיון של המערכת:
+          ניתוב, המתנה ומסירה, הצפנה, מצב הגרף ואחסון מקומי. תהליך זה הוא שמתקשר ישירות עם צמתים אחרים ברשת.</li>
+        <li><span class="term">אפליקציית Electron</span>, האחראית על התצוגה בלבד. היא עצמה מפוצלת לשניים לפי המודל של
+          <span class="lat">Electron</span>: <span class="lat">main process</span>, שמפעיל את הסוכן כ-<span
+            class="lat">child process</span> ומנהל את ה-<span class="lat">lifecycle</span> שלו, ו-<span
+            class="lat">renderer process</span>, שמריץ את ממשק ה-<span class="lat">React</span> ומצייר את המפה.
+        </li>
+      </ul>
+
+      <p>בין שני התהליכים עובר ערוץ מקומי. הסוכן מאזין על כתובת ה-<span class="lat">loopback</span> של המחשב בלבד, כלומר
+        127.0.0.1, ועל <span class="lat">port</span> המוקצה דינמית בכל הפעלה ונמסר ל-<span class="lat">main
+          process</span>.</p>
+
+      <p>העברת המידע מהסוכן אל הממשק נעשית ב-<span class="lat">streaming</span> ולא ב-<span class="lat">polling</span>.
+        משמע החיבור נשאר פתוח, והסוכן דוחף עדכון ברגע שהגרף משתנה, במקום שהממשק ישאל אותו כל כמה שניות אם יש חדש. הסיבה
+        אינה חיסכון בתעבורה. <span class="lat">polling</span> בקצב קבוע מוסיף השהיה בגודל מחזור התשאול בין רגע האירוע
+        לבין הצגתו על המסך, וההשהיה הזו נכנסת ישירות לקריטריון זיהוי קריעת הרשת שהגדרתי.</p>
+
+      <p>ההאזנה על 127.0.0.1 ולא על כתובת חיצונית היא שיקול אבטחה ולא פרט טכני. מנת רשת שמגיעה מחוץ למחשב לעולם אינה
+        מגיעה לכתובת הזו, ולכן הסוכן אינו חשוף לרשת. מה שכן חשוף הוא כל תהליך אחר שרץ על אותו מחשב, ובכלל זה דף אינטרנט
+        פתוח בדפדפן, ולכן הערוץ מוגן גם ב-<span class="lat">access token</span> הנוצר מחדש בכל הפעלה.</p>
+
+      <figure>
+        <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif"
+          font-size="13">
+          <rect x="120" y="24" width="520" height="248" fill="#fff" stroke="#333" stroke-width="1.8" />
+          <text x="620" y="50" text-anchor="end" font-size="14" font-weight="600" fill="#2e74b5">מחשב בודד, צומת
+            אחד</text>
+
+          <rect x="150" y="70" width="460" height="62" fill="#f2f2f2" stroke="#333" stroke-width="1.3" />
+          <text x="590" y="94" text-anchor="end" font-size="14" font-weight="600">Electron: main process + renderer
+            process</text>
+          <text x="590" y="117" text-anchor="end" font-size="12" fill="#5a5a5a">מפה, הודעות, בריאות רשת, פינוי,
+            ניהול</text>
+
+          <line x1="380" y1="132" x2="380" y2="168" stroke="#333" stroke-width="1.3" />
+          <text x="392" y="154" font-size="12" fill="#5a5a5a">ערוץ מקומי, 127.0.0.1, access token</text>
+
+          <rect x="150" y="168" width="460" height="80" fill="#f2f2f2" stroke="#333" stroke-width="1.3" />
+          <text x="590" y="192" text-anchor="end" font-size="14" font-weight="600">TacMesh.Agent, תהליך C#</text>
+          <text x="590" y="215" text-anchor="end" font-size="12" fill="#5a5a5a">ניתוב, הצפנה, מצב גרף, אחסון
+            מקומי</text>
+          <text x="590" y="236" text-anchor="end" font-size="12" fill="#5a5a5a">מתקשר ישירות עם צמתים אחרים</text>
+
+          <path d="M150 208 L 60 208" stroke="#333" stroke-width="1.5" marker-end="url(#ar2)" />
+          <text x="66" y="196" font-size="12" fill="#5a5a5a">אל הרשת</text>
+          <defs>
+            <marker id="ar2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0,0 L9,4.5 L0,9 z" fill="#333" />
+            </marker>
+          </defs>
+        </svg>
+        <figcaption>איור 2: מבנה הצומת והפרדת התצוגה מן ההיגיון</figcaption>
+      </figure>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== תיאור הפרויקט ג ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2>תפקידים ומסכים</h2>
+
+      <p>במערכת ארבעה תפקידים. כל תפקיד רואה מסך אחר ומקבל הרשאות שונות. ההרשאות מצטברות, כך שכל תפקיד רואה את מה שרואה
+        התפקיד שמתחתיו ובנוסף לו.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:20%">תפקיד</th>
+            <th>הרשאות ותצוגה</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>לוחם</td>
+            <td>מפה, מיקומי הכוח, שליחה וקבלה של הודעות</td>
+          </tr>
+          <tr>
+            <td>חובש</td>
+            <td>כל האמור לעיל, ובנוסף פתיחת דיווח פצוע וקביעת דרגת הדחיפות</td>
+          </tr>
+          <tr>
+            <td>מפקד</td>
+            <td>כל האמור לעיל, ובנוסף מדדי בריאות הרשת, התרעת נקודות חיתוך, וצפייה בחלופות מסלול הפינוי ואישורן</td>
+          </tr>
+          <tr>
+            <td>מנהל</td>
+            <td>מפעיל את בונה חבילת המשימה לפני היציאה לשטח: מגדיר משתמשים ותפקידים, מנפיק מפתחות, ואורז את החבילה. אינו
+              משתתף בפעילות בשטח</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>תסריט השימוש</h2>
+
+      <p>כדי להמחיש כיצד המערכת פועלת בפועל, זהו הרצף שאדגים בסיום הפרויקט:</p>
+
+      <ul class="d2">
+        <li>עשרות צמתים פרוסים על מפת שטח אמיתית. לוחם שולח הודעה ראשונה לנמען שלא נפגש איתו מעולם. ההודעה מוצפנת,
+          ומאומתת על סמך חבילת המשימה, ונצפית קופצת בין הצמתים עד שהיא מגיעה ליעדה, ללא כל פנייה לגורם חיצוני ובלי לחיצת
+          יד מוקדמת.</li>
+        <li>המערכת מסמנת צומת מסוים כנקודת חיתוך<a class="gl" href="#g5">*</a>. הצומת מוסר מהרשת, והמסך מראה את הרשת
+          נקרעת לשני רכיבים מנותקים.</li>
+        <li>הודעה נשלחת בין שני הרכיבים. היא אינה אובדת אלא ממתינה בזיכרון, נישאת בתנועה, ונמסרת ברגע שנוצר מפגש.</li>
+        <li>מדווח פצוע בדרגת דחיפות נמוכה ומתקבל מסלול מוגן וארוך. אותו פצוע משתנה לדרגה קריטית, והמסלול משתנה למהיר
+          וחשוף.</li>
+      </ul>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== בעיה אלגוריתמית א ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s4">הגדרת הבעיה האלגוריתמית</h1>
+
+      <p>לכל בעיה בפרק זה מוצגים הקלט, הפלט והאילוץ שמקשה עליה, ולאחריהם האלגוריתמים הרלוונטיים לה והנימוק לרלוונטיות
+        שלהם.</p>
+
+      <h2>בעיה 1: מסירת הודעה בגרף המשתנה בזמן</h2>
+
+      <p><b>קלט</b>: גרף <span class="lat">G(t) = (V, E(t))</span> שקשתותיו נוצרות ונעלמות עם תנועת האנשים, הודעה בעלת
+        שולח, יעד וזמן תפוגה, והידע המקומי שברשות הצומת ברגע ההחלטה. <b>פלט</b>: רצף החלטות ההעברה, מי מוסר למי ובאיזה
+        מפגש.</p>
+
+      <p><b>האילוץ שמקשה</b>: ייתכן שלא קיים אף רגע שבו יש מסלול רציף בין השולח לנמען, ולכן ההגדרה הקלאסית של מסלול בגרף
+        סטטי אינה חלה. מה שעשוי להתקיים הוא מסלול על פני זמן, רצף קפיצות שבו כל קפיצה מתרחשת אחרי שקודמתה הסתיימה.
+        ההחלטה מתקבלת מקומית, בלי ידיעת העתיד ובלי ידיעת הגרף המלא, וזיכרון הצומת סופי. שני מדדי האיכות מושכים לכיוונים
+        מנוגדים: אחוז המסירה עולה ככל שמעבירים יותר, והעומס עולה איתו.</p>
+
+      <p><b>אלגוריתמים רלוונטיים</b>. ניתוב בהצפה<a class="gl" href="#g16">*</a> (<span class="lat">Epidemic</span>)
+        רלוונטי משום שהוא מגדיר את הגבול העליון של אחוז המסירה, ולכן הוא קו ייחוס שמולו נמדדת כל גישה אחרת. ניתוב
+        הסתברותי לפי מפגשים<a class="gl" href="#g17">*</a> (<span class="lat">PRoPHET</span>) רלוונטי משום שהוא מכוון
+        לאותו אחוז מסירה בעומס נמוך בהרבה. ניתוב המבוסס על ידע גלובלי או על לוח זמנים ידוע מראש אינו רלוונטי כאן, משום
+        שאין במערכת גורם המחזיק ידע כזה.</p>
+
+      <p><b>בעיה נלווית</b>: קביעת סדר בין עדכונים שהגיעו בשני מסלולים. שעון לוגי<a class="gl" href="#g8">*</a> (<span
+          class="lat">Lamport</span>) רלוונטי משום שהוא מפיק סדר סיבתי בלי שעון משותף, וללא סדר כזה עדכון מיקום ישן עלול
+        לדרוס עדכון חדש ממנו.</p>
+
+      <figure>
+        <svg viewBox="0 12 760 274" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif"
+          font-size="14">
+          <text x="700" y="26" text-anchor="end" font-size="15" font-weight="600" fill="#2e74b5">מצב 1, קיים מסלול
+            רציף</text>
+          <line x1="150" y1="70" x2="600" y2="70" stroke="#333" stroke-width="1.5" />
+          <circle cx="600" cy="70" r="22" fill="#f2f2f2" stroke="#333" stroke-width="1.5" />
+          <circle cx="375" cy="70" r="22" fill="#f2f2f2" stroke="#333" stroke-width="1.5" />
+          <circle cx="150" cy="70" r="22" fill="#f2f2f2" stroke="#333" stroke-width="1.5" />
+          <text x="600" y="75" text-anchor="middle">א׳</text>
+          <text x="375" y="75" text-anchor="middle">ב׳</text>
+          <text x="150" y="75" text-anchor="middle">ג׳</text>
+          <text x="487" y="58" text-anchor="middle" font-size="12" fill="#5a5a5a">קפיצה 1</text>
+          <text x="262" y="58" text-anchor="middle" font-size="12" fill="#5a5a5a">קפיצה 2</text>
+          <text x="375" y="112" text-anchor="middle" font-size="12" fill="#5a5a5a">ב׳ מעביר מבלי לקרוא, התוכן
+            מוצפן</text>
+
+          <line x1="60" y1="145" x2="700" y2="145" stroke="#c9c9c9" stroke-width="1" stroke-dasharray="4 4" />
+
+          <text x="700" y="180" text-anchor="end" font-size="15" font-weight="600" fill="#2e74b5">מצב 2, אין מסלול,
+            המתנה ומסירה</text>
+          <circle cx="600" cy="230" r="22" fill="#f2f2f2" stroke="#333" stroke-width="1.5" />
+          <circle cx="150" cy="230" r="22" fill="#f2f2f2" stroke="#333" stroke-width="1.5" />
+          <text x="600" y="235" text-anchor="middle">א׳</text>
+          <text x="150" y="235" text-anchor="middle">ג׳</text>
+          <rect x="566" y="188" width="68" height="20" fill="#fff" stroke="#333" stroke-width="1" />
+          <text x="600" y="203" text-anchor="middle" font-size="11">בהמתנה</text>
+          <path d="M578 230 L 470 230" stroke="#333" stroke-width="1.5" marker-end="url(#ar)" />
+          <text x="500" y="218" text-anchor="middle" font-size="12" fill="#5a5a5a">א׳ נע</text>
+          <text x="330" y="235" text-anchor="middle" font-size="13" fill="#5a5a5a">פער ללא קשר</text>
+          <defs>
+            <marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0,0 L9,4.5 L0,9 z" fill="#333" />
+            </marker>
+          </defs>
+          <text x="375" y="278" text-anchor="middle" font-size="12" fill="#5a5a5a">ההודעה נשמרת, נישאת בתנועה, ונמסרת
+            ברגע שנוצר מפגש</text>
+        </svg>
+        <figcaption>איור 3: מסירה רב-קפיצתית, ומסירה בהמתנה כאשר אין מסלול רציף</figcaption>
+      </figure>
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== בעיה אלגוריתמית ב ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2>בעיה 2: זיהוי שבירות מבנית בזמן אמת</h2>
+
+      <p><b>קלט</b>: גרף לא מכוון המייצג את הקישוריות ברגע נתון. <b>פלט</b>: קבוצת נקודות החיתוך<a class="gl"
+          href="#g5">*</a> וקבוצת הגשרים<a class="gl" href="#g6">*</a>, ולאחר קריעה גם חלוקת הצמתים לרכיבי קשירות<a
+          class="gl" href="#g7">*</a>.</p>
+
+      <p><b>האילוץ שמקשה</b>: הגרף משתנה בכל פעימת נוכחות, כלומר מספר פעמים בדקה, וההתרעה נדרשת לפני שהחוליה נופלת ולא
+        אחריה. הגישה הישירה, הסרת כל צומת בתורו ובדיקת קשירות מחדש, מחזירה תשובה נכונה אך עלותה גדלה ריבועית עם גודל
+        הכוח, ולכן היא אינה עומדת בדרישת זמן האמת.</p>
+
+      <p><b>אלגוריתמים רלוונטיים</b>: אלגוריתמי סריקת עומק למציאת נקודות חיתוך וגשרים, ובראשם <span
+          class="lat">Tarjan</span>. הם רלוונטיים משום שהם מפיקים את אותה תשובה במעבר יחיד על הגרף במקום במעבר לכל צומת,
+        ומשום שאותו מעבר מייצר גם את חלוקת הצמתים לרכיבי קשירות, כך ששתי הדרישות נענות מסריקה אחת.</p>
+
+      <p><b>בעיה נלווית</b>: רעש. ברשת דלילה כמעט כל צומת הוא נקודת חיתוך, ולכן התרעה גולמית על כל נקודת חיתוך חסרת ערך
+        מעשי. נדרש מדד המצטלב עם אינדיקציה נוספת, כגון מגמת היחלשות של הקשר לאורך זמן.</p>
+
+      <figure>
+        <svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif"
+          font-size="13">
+          <text x="700" y="24" text-anchor="end" font-size="15" font-weight="600" fill="#2e74b5">לפני, רשת אחת
+            מחוברת</text>
+          <g stroke="#333" stroke-width="1.3">
+            <line x1="700" y1="90" x2="640" y2="150" />
+            <line x1="700" y1="90" x2="620" y2="80" />
+            <line x1="620" y1="80" x2="640" y2="150" />
+            <line x1="620" y1="80" x2="530" y2="115" />
+            <line x1="640" y1="150" x2="530" y2="115" />
+            <line x1="530" y1="115" x2="430" y2="115" />
+            <line x1="430" y1="115" x2="340" y2="80" />
+            <line x1="430" y1="115" x2="350" y2="155" />
+            <line x1="340" y1="80" x2="350" y2="155" />
+          </g>
+          <g fill="#f2f2f2" stroke="#333" stroke-width="1.3">
+            <circle cx="700" cy="90" r="15" />
+            <circle cx="620" cy="80" r="15" />
+            <circle cx="640" cy="150" r="15" />
+            <circle cx="340" cy="80" r="15" />
+            <circle cx="350" cy="155" r="15" />
+            <circle cx="430" cy="115" r="15" />
+          </g>
+          <circle cx="530" cy="115" r="18" fill="#2e74b5" stroke="#2e74b5" />
+          <text x="530" y="120" text-anchor="middle" fill="#fff" font-size="13" font-weight="600">ח</text>
+          <text x="530" y="160" text-anchor="middle" font-size="12" fill="#2e74b5" font-weight="600">נקודת חיתוך</text>
+
+          <line x1="60" y1="205" x2="700" y2="205" stroke="#c9c9c9" stroke-dasharray="4 4" />
+
+          <text x="700" y="238" text-anchor="end" font-size="15" font-weight="600" fill="#2e74b5">אחרי נפילתה, שני
+            רכיבים מנותקים</text>
+          <g stroke="#333" stroke-width="1.3">
+            <line x1="700" y1="295" x2="640" y2="355" />
+            <line x1="700" y1="295" x2="620" y2="285" />
+            <line x1="620" y1="285" x2="640" y2="355" />
+            <line x1="430" y1="320" x2="340" y2="285" />
+            <line x1="430" y1="320" x2="350" y2="360" />
+            <line x1="340" y1="285" x2="350" y2="360" />
+          </g>
+          <g fill="#f2f2f2" stroke="#333" stroke-width="1.3">
+            <circle cx="700" cy="295" r="15" />
+            <circle cx="620" cy="285" r="15" />
+            <circle cx="640" cy="355" r="15" />
+            <circle cx="340" cy="285" r="15" />
+            <circle cx="350" cy="360" r="15" />
+            <circle cx="430" cy="320" r="15" />
+          </g>
+          <circle cx="530" cy="320" r="18" fill="none" stroke="#c9c9c9" stroke-width="1.3" stroke-dasharray="4 4" />
+          <line x1="530" y1="256" x2="530" y2="296" stroke="#c9c9c9" stroke-width="1" stroke-dasharray="4 4" />
+          <line x1="530" y1="344" x2="530" y2="382" stroke="#c9c9c9" stroke-width="1" stroke-dasharray="4 4" />
+          <text x="617" y="392" text-anchor="middle" font-size="12" fill="#5a5a5a">רכיב א׳</text>
+          <text x="440" y="392" text-anchor="middle" font-size="12" fill="#5a5a5a">רכיב ב׳</text>
+        </svg>
+        <figcaption>איור 4: זיהוי נקודת חיתוך בגרף התקשורת</figcaption>
+      </figure>
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== בעיה אלגוריתמית ג ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2>בעיה 3: שחזור גרף מתצפית חלקית ומבוזרת</h2>
+
+      <p>שתי הבעיות הקודמות מניחות שקיים גרף שאפשר להריץ עליו אלגוריתם. במערכת מבוזרת ההנחה הזו אינה מובנת מאליה, ולכן
+        זו בעיה בפני עצמה.</p>
+
+      <p><b>קלט</b>, מנקודת המבט של צומת יחיד: רשימת שכניו הישירים, שאותה הוא יודע בוודאות, ורשומות של רשימות שכנים של
+        צמתים אחרים שהגיעו אליו דרך הרשת, כל אחת עם מזהה בעליה, ערך שעון לוגי<a class="gl" href="#g8">*</a> וזמן.
+        <b>פלט</b>: אומדן מקומי של גרף הרשת כולה, ולצדו מידה של טריות האומדן.
+      </p>
+
+      <p><b>האילוץ שמקשה</b>: אין במערכת שום גורם שמחזיק את הגרף האמיתי. כל צומת רואה בוודאות רק את הקשתות היוצאות ממנו,
+        וכל שאר הגרף מגיע אליו כעדות ממקור שני שיצאה לדרך לפני פרק זמן לא ידוע. מכאן שלושה קשיים: הכרעה בין רשומות
+        סותרות ללא שעון משותף, קשתות שאינן קיימות יותר שרשומה ישנה מעידה על קיומן, וחוסר היכולת להבחין בין צד שנעלם
+        לבין צד שקיים אך העדות עליו אינה מגיעה.</p>
+
+      <p><b>ההשלכה על בעיה 2</b>: אלגוריתם השבירות רץ על אומדן ולא על הגרף האמיתי. אומדן ישן מדי יפיק התרעת שווא, ואומדן
+        שמרני מדי יחמיץ חוליה שנעשתה קריטית זה עתה.</p>
+
+      <p><b>אלגוריתמים רלוונטיים</b>: הפצת מצב קישוריות<a class="gl" href="#g20">*</a> (<span
+          class="lat">Link-State</span>), דעיכת קשת לפי גיל הרשומה שהעידה עליה, והכרעת סתירות לפי מונה גרסה. שלושתם
+        רלוונטיים משום שכולם מקומיים ואינם דורשים הסכמה גלובלית, שהיא בלתי אפשרית ברשת שעשויה להיקרע באמצע תהליך ההסכמה.
+      </p>
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== בעיה אלגוריתמית ד ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2>בעיה 4: מסלול פינוי במשקל מרובה גורמים</h2>
+
+      <p><b>קלט</b>: גרף דרכים הנבנה על מפת הגבהים<a class="gl" href="#g9">*</a> של אזור התרחיש, נקודת החילוץ שממנה יוצא
+        צוות הפינוי, מיקום הפצוע, רשימת דיווחי איום שלכל אחד רמת ודאות וחותמת זמן, ודרגת הדחיפות שקבע החובש. <b>פלט</b>:
+        מסלול מנקודת החילוץ אל הפצוע וחזרה, ולצדו מספר חלופות מובחנות. בנוסף, דיווח איום הוא קלט אנושי ולא קריאת חיישן,
+        ולכן תרומתו למשקל נגזרת גם מרמת הוודאות שלו ומגילו.</p>
+
+      <p><b>האילוץ שמקשה</b>: משקל הקשת אינו מרחק אלא צירוף של זמן נסיעה, חשיפת הקטע לקווי ראייה<a class="gl"
+          href="#g10">*</a> מנקודות האיום, וזמן שהייה ללא קשר. המקדם היחסי של כל גורם נגזר מדרגת הדחיפות, ולכן
+        אותו גרף מייצר מסלולים שונים לקלטים שונים. </p>
+
+      <p><b>אלגוריתמים רלוונטיים</b>: אלגוריתמי מסלול קצר ביותר במשקל לא שלילי, ובראשם <span
+          class="lat">Dijkstra</span>, רלוונטיים משום ששלושת גורמי המשקל אי-שליליים מעצם הגדרתם. אלגוריתמי <span
+          class="lat">K</span> המסלולים הקצרים ביותר ללא לולאות, כגון <span class="lat">Yen's K-Shortest Paths</span>,
+        רלוונטיים לדרישת החלופות, משום שהם מייצרים מסלולים מובחנים ולא וריאציות זניחות של אותו מסלול.</p>
+
+      <figure>
+        <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif"
+          font-size="13">
+          <path d="M40 230 L 140 230 L 240 150 L 330 138 L 420 205 L 520 212 L 620 230 L 720 230" fill="#f2f2f2"
+            stroke="#333" stroke-width="1.4" />
+          <text x="330" y="128" text-anchor="middle" font-size="12" fill="#5a5a5a">רכס</text>
+
+          <circle cx="620" cy="120" r="8" fill="#2e74b5" />
+          <text x="620" y="105" text-anchor="middle" font-size="12" fill="#2e74b5">נקודת איום</text>
+          <line x1="620" y1="120" x2="470" y2="200" stroke="#2e74b5" stroke-width="1" stroke-dasharray="3 3" />
+          <line x1="620" y1="120" x2="330" y2="138" stroke="#2e74b5" stroke-width="1" stroke-dasharray="3 3" />
+          <text x="500" y="180" text-anchor="middle" font-size="11" fill="#2e74b5">קווי ראייה</text>
+
+          <circle cx="690" cy="230" r="12" fill="#fff" stroke="#333" stroke-width="1.5" />
+          <text x="690" y="256" text-anchor="middle" font-size="12">חילוץ</text>
+          <circle cx="90" cy="230" r="12" fill="#fff" stroke="#333" stroke-width="1.5" />
+          <text x="90" y="256" text-anchor="middle" font-size="12">פצוע</text>
+
+          <path d="M678 228 Q 400 250 102 228" fill="none" stroke="#333" stroke-width="2.4" />
+          <text x="390" y="268" text-anchor="middle" font-size="12">מסלול מהיר, 12 דקות, חשיפה גבוהה</text>
+
+          <path d="M690 218 Q 660 90 470 60 Q 250 34 90 218" fill="none" stroke="#333" stroke-width="2.4"
+            stroke-dasharray="7 5" />
+          <text x="400" y="48" text-anchor="middle" font-size="12">מסלול מוגן, 19 דקות, מוסתר מאחורי הרכס</text>
+        </svg>
+        <figcaption>איור 5: שתי חלופות פינוי על אותו שטח. הבחירה נגזרת מדרגת הדחיפות</figcaption>
+      </figure>
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== בעיה אלגוריתמית ה ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2>בעיה 5: חסימת קו ראייה על מפת גבהים</h2>
+
+      <p><b>קלט:</b> מפת גבהים ושתי נקודות עליה. <b>פלט:</b> האם השטח ביניהן חוסם את קו הראייה<a class="gl"
+          href="#g10">*</a>.</p>
+
+      <p><b>האילוץ שמקשה:</b> הבדיקה עצמה פשוטה: עוברים לאורך הקו מנקודה א' לנקודה ב', ומשווים בכל תא את גובה השטח לגובה
+        הקו. אלא שהמערכת נזקקת לה לשתי מטרות, השונות זו מזו בכמות הבדיקות:</p>
+
+      <ul class="d2">
+        <li><span class="term">קשר בין צמתים.</span> גבעה שחוסמת את העין חוסמת גם גל רדיו, ולכן הבדיקה קובעת אם שני
+          צמתים יכולים לתקשר. כאן נבדקים רק זוגות של מיקומי צמתים, ומספרם קטן, כך שמספיק לבדוק כל זוג בנפרד.</li>
+        <li><span class="term">חשיפה לאיום,</span> המשמשת את חישוב מסלול הפינוי. המסלול עשוי לעבור במקומות שאף צומת אינו
+          נמצא בהם, ולכן צריך לדעת לגבי כל תא בטווח האיום אם הוא נראה מנקודת האיום. אם בודקים כל תא בנפרד, כמו בקשר בין
+          צמתים, העבודה חוזרת על עצמה: הקווים מנקודת האיום אל תאים סמוכים עוברים כמעט באותם תאים, ולכן אותם תאים נבדקים
+          שוב ושוב.</li>
+      </ul>
+
+      <p>זה מה שמקשה: אותה בעיה דורשת שני אלגוריתמים שונים.</p>
+
+      <p><b>אלגוריתמים רלוונטיים:</b> אלגוריתמי מעקב קרן על רסטר, כגון <span class="lat">Bresenham</span>, רלוונטיים
+        לבדיקת זוג נקודות בודד, משום שהם דוגמים את פרופיל הגובה לאורך הקו במספר צעדים פרופורציוני לאורכו. אלגוריתמי שדה
+        ראייה<a class="gl" href="#g21">*</a> (<span class="lat">Viewshed</span>) רלוונטיים לחישוב החשיפה, משום שהם
+        מנצלים את העובדה שתאים הנמצאים על אותה קרן חולקים חישוב.</p>
+
+      <h2>בעיה 6: שמירת סודיות לאורך זמן בערוץ לא אמין</h2>
+
+      <p><b>קלט</b>: זרם הודעות בין שני צמתים בערוץ שבו הודעות עלולות להגיע לא לפי סדר שליחתן, להגיע פעמיים, או לא
+        להגיע בכלל. שני הצדדים מחזיקים מראש את המפתח הציבורי הקבוע זה של זה. <b>פלט</b>: מפתח הצפנה נפרד לכל הודעה.</p>
+
+      <p><b>האילוץ שמקשה</b>: אין ערוץ אמין ואין לחיצת יד מקדימה בין שני משתמשי קצה, ולכן הם חייבים לגזור מפתח הודעה
+        מן הכותרת הגלויה
+        ומן המצב שברשותיהם בלבד כדי להגיע לסוד משותף בצורה מאובטחת. בנוסף, הודעה שאבדה או נפרצה על ידי גורם צד שלישי,
+        אינה יכולה לשבור את הפענוח של היסטורית השיחות או את ההודעות שיבואו אחריה. נדרשות שלוש תכונות שאינן זהות:
+        סודיות קדימה, התאוששות מחשיפה, ועמידות לשידור חוזר.</p>
+
+      <p><b>אלגוריתמים רלוונטיים</b>: שרשרת גזירת מפתחות סימטרית<a class="gl" href="#g13">*</a> רלוונטית לסודיות קדימה,
+        אך לא להתאוששות
+        מחשיפה. גלגול מפתחות דו-צירי<a class="gl" href="#g15">*</a> (<span class="lat">Double Ratchet</span>) רלוונטי
+        משום שמטפל במפורש בסודיות היסטורית הצ'אט, בהתאוששות מחשיפת מפתח להודעה ספציפית ובהגעה מחוץ לסדר. שידור חוזר
+        אוטומטי של הודעה רלוונטי כאשר השולח לא קיבל סימן מהנמען על קבלת ההודעה בחלון זמן מסוים. אבני הבניין
+        שעליהן נשענות המשפחות האלה הן הצפנה סימטרית
+        מאומתת<a class="gl" href="#g11">*</a>, החלפת מפתחות על עקומה אליפטית<a class="gl" href="#g12">*</a> וחתימה
+        דיגיטלית<a class="gl" href="#g14">*</a>.</p>
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+
+
+  <!-- ==================== הנדסה מתקדמת א ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s5">הליכים עיקריים בפתרון בעיה בטכנולוגיות הנדסה מתקדמות</h1>
+
+      <h2 id="s5a">ארכיטקטורת ההרצה</h2>
+
+      <p>למערכת שני מצבי הרצה, ושניהם חלק מהפרויקט: על מחשב יחיד כשכל צומת הוא תהליך נפרד, ועל חומרה נפרדת כשלכל צומת
+        מכשיר משלו מעל רשת אלחוטית. ההחלטה ההנדסית המרכזית היא ששניהם חולקים מסלול קוד אחד ואותו קובץ הרצה, ולכן מה
+        שנמדד הוא מה שרץ.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:20%">מצב</th>
+            <th style="width:24%">צמתים</th>
+            <th style="width:28%">התעבורה</th>
+            <th>הקישוריות נקבעת על ידי</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ריבוי תהליכים</td>
+            <td>20 עד 40 על מחשב אחד</td>
+            <td><span class="lat">UDP</span> על 127.0.0.1, <span class="lat">port</span> לכל צומת</td>
+            <td>מודל רדיו וירטואלי<a class="gl" href="#g19">*</a></td>
+          </tr>
+          <tr>
+            <td>חומרה</td>
+            <td>ארבעה, מכשיר לכל צומת</td>
+            <td><span class="lat">UDP</span> על ממשק הרשת האלחוטי</td>
+            <td>התפשטות פיזית אמיתית</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>בשני המצבים כל צומת הוא <span class="lat">process</span> נפרד של <span class="lat">TacMesh.Agent</span>. במצב
+        ריבוי התהליכים הוא מאזין על כתובת ה-<span class="lat">loopback</span> 127.0.0.1 עם <span class="lat">port</span>
+        משלו, המוקצה דינמית בהפעלה, ובמצב החומרה על כתובת המכשיר ברשת. התקשורת היא <span class="lat">UDP</span> אמיתי על
+        <span class="lat">sockets</span> אמיתיים בשני המקרים. אין במערכת מימוש תעבורה שני ואין ליבה שיודעת באיזה מצב היא
+        פועלת.
+      </p>
+
+      <p>הבעיה שנוצרת במצב ריבוי התהליכים היא שעל <span class="lat">loopback</span> כל התהליכים שכנים מושלמים זה של זה:
+        אין איבוד מנות, ההשהיה היא עשיריות מילישנייה, וכל אחד יכול להגיע לכל אחד. רשת כזו אינה מייצגת דבר. הפתרון הוא
+        <b>מודל רדיו וירטואלי</b><a class="gl" href="#g19">*</a>, שכל צומת מריץ בעצמו לפני שהוא מוסר את המנה ל-<span
+          class="lat">socket</span>. המודל מחזיק את המיקומים המדומים, ולכל יעד מכריע בשלושה שלבים: האם המרחק קטן מהטווח
+        המרבי, האם קיים קו ראייה<a class="gl" href="#g10">*</a> ביניהם על מפת הגבהים, והאם המנה עוברת לפי הסתברות התלויה
+        במרחק היחסי. מנה שעברה משודרת אחרי השהיה מוגרלת. מדומה כאן רק ההתפשטות האלחוטית. הרשת, הפרוטוקול והקוד אמיתיים.
+      </p>
+
+      <p>מכאן נובע גם שהשידור אינו <span class="lat">broadcast</span>. פעימת הנוכחות נשלחת ב-<span
+          class="lat">unicast</span> לרשימת היעדים שמודל הרדיו אישר באותו רגע, ולכן צומת שמעבר לרכס אינו מקבל אותה כלל.
+        זו הסיבה שהגרף נשאר דליל אף שכל התהליכים יושבים על אותה כתובת.</p>
+
+      <p>על גבי זה פועל <b>מסך מנהל התרחיש</b>, המאפשר ליצור ולהרוג <span class="lat">instances</span> בזמן ריצה, להזיז
+        צומת על המפה ולשנות את טווח הקשר. הריגת התהליך של חוליה מרכזית היא נפילת צומת אמיתית, וכל השאר מגלים אותה דרך
+        היעדר פעימות. כל <span class="lat">instance</span> יכול לפתוח חלון ממשק משלו, ולכן אפשר להציג את אותה רשת מנקודת
+        המבט של מספר תפקידים בו-זמנית.</p>
+
+      <p>אותו קוד בדיוק משמש גם לשחזור תרחיש שמור ללא ממשק גרפי, שהוא הדרך שבה מופקות המדידות.</p>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מצב החומרה ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <figure>
+        <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif"
+          font-size="13">
+          <rect x="40" y="40" width="680" height="180" fill="none" stroke="#c9c9c9" stroke-width="1.2"
+            stroke-dasharray="5 4" />
+          <text x="710" y="60" text-anchor="end" font-size="13" fill="#5a5a5a">מחשב אחד, כתובת 127.0.0.1</text>
+
+          <g fill="#f2f2f2" stroke="#333" stroke-width="1.4">
+            <rect x="570" y="85" width="130" height="62" rx="4" />
+            <rect x="410" y="85" width="130" height="62" rx="4" />
+            <rect x="250" y="85" width="130" height="62" rx="4" />
+            <rect x="70" y="85" width="130" height="62" rx="4" />
+          </g>
+          <g text-anchor="middle" font-size="13" fill="#000">
+            <text x="635" y="108">צומת 1</text><text x="475" y="108">צומת 2</text>
+            <text x="315" y="108">צומת 3</text><text x="135" y="108">צומת n</text>
+          </g>
+          <g text-anchor="middle" font-size="11" fill="#5a5a5a">
+            <text x="635" y="126">סוכן ‎+‎ מודל רדיו</text><text x="475" y="126">סוכן ‎+‎ מודל רדיו</text>
+            <text x="315" y="126">סוכן ‎+‎ מודל רדיו</text><text x="135" y="126">סוכן ‎+‎ מודל רדיו</text>
+          </g>
+          <g text-anchor="middle" font-size="11" fill="#2e74b5" font-weight="600">
+            <text x="635" y="141">‎:51001</text><text x="475" y="141">‎:51002</text>
+            <text x="315" y="141">‎:51003</text><text x="135" y="141">‎:5100n</text>
+          </g>
+
+          <g stroke="#333" stroke-width="1.4" fill="none">
+            <path d="M570 116 L 540 116" />
+            <path d="M410 116 L 380 116" />
+          </g>
+          <line x1="250" y1="116" x2="200" y2="116" stroke="#c9c9c9" stroke-width="1.4" stroke-dasharray="5 4" />
+          <text x="225" y="107" text-anchor="middle" font-size="11" fill="#5a5a5a">חסום</text>
+          <text x="555" y="172" text-anchor="middle" font-size="11" fill="#5a5a5a">‎UDP‎</text>
+          <text x="395" y="172" text-anchor="middle" font-size="11" fill="#5a5a5a">‎UDP‎</text>
+
+          <text x="710" y="205" text-anchor="end" font-size="11.5" fill="#5a5a5a">כל מנה עוברת קודם במודל הרדיו: טווח,
+            קו ראייה, הסתברות מעבר, השהיה</text>
+
+          <rect x="250" y="270" width="260" height="52" rx="4" fill="#fff" stroke="#2e74b5" stroke-width="1.6" />
+          <text x="380" y="293" text-anchor="middle" font-size="13" fill="#2e74b5" font-weight="600">מסך מנהל
+            התרחיש</text>
+          <text x="380" y="311" text-anchor="middle" font-size="11" fill="#5a5a5a">יוצר והורג ‎instances‎ בזמן
+            ריצה</text>
+          <g stroke="#2e74b5" stroke-width="1.2" stroke-dasharray="4 3" fill="none">
+            <path d="M470 270 L 600 152" />
+            <path d="M430 270 L 460 152" />
+            <path d="M330 270 L 320 152" />
+            <path d="M290 270 L 160 152" />
+          </g>
+        </svg>
+        <figcaption>איור 6: כל צומת הוא תהליך נפרד על אותו מחשב. הרשת דלילה משום שמודל הרדיו הווירטואלי מסנן, ולא משום
+          שהתעבורה מדומה</figcaption>
+      </figure>
+
+      <h3>מצב החומרה</h3>
+
+      <p>במצב זה רצים ארבעה צמתים, כל אחד על מחשב <span class="lat">Raspberry Pi 5</span> משלו תחת <span
+          class="lat">Linux</span> על <span class="lat">ARM64</span>. הסוכן והממשק זהים לאלה שרצים על מחשב שולחני, משום
+        ש-<span class="lat">.NET</span> ו-<span class="lat">Electron</span> נתמכים בסביבה הזו, ולכן לא נדרש קוד ייעודי
+        לחומרה. שני הבדלים בלבד: ה-<span class="lat">socket</span> נפתח על ממשק הרשת האלחוטי ולא על ה-<span
+          class="lat">loopback</span>, ומודל הרדיו הווירטואלי מכובה. הטווח, החסימה בשל שטח ואיבוד המנות נקבעים כאן על
+        ידי ההתפשטות הפיזית ולא על ידי חישוב.</p>
+
+      <p>זהו המצב שמראה שהפרוטוקול, ההצפנה, גילוי השכנים והניתוב עובדים מול קשר אלחוטי אמיתי, על מכשירים בעלי מעבד חלש
+        בהרבה ממחשב הפיתוח. הוא אינו מחליף את מצב ריבוי התהליכים, משום שארבעה מכשירים אינם מאפשרים לבחון רשת בגודל פלוגה
+        ואינם מאפשרים לשחזר תרחיש פעמיים.</p>
+
+      <p>בארבעה מכשירים בחדר אחד כולם נמצאים בטווח זה של זה, ולכן מסירה רב-קפיצתית לא תיווצר מעצמה. כדי להדגים אותה
+        אפעיל <b>מסנן טופולוגיה</b>: לכל צומת רשימת שכנים מותרים, ומנה שהגיעה מצומת שאינו ברשימה נדחית לפני העיבוד.
+        המסנן פועל מעל הקשר האלחוטי האמיתי ואינו מחליף אותו, והוא מאפשר לייצר קריעת רשת מבוקרת מבלי להרחיק מכשירים
+        פיזית.</p>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+
+  <!-- ==================== הנדסה מתקדמת ב ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2 id="s5b">דרישות פונקציונאליות ודרישות משתמש קצה</h2>
+
+      <ul class="d2">
+        <li><span class="term">דרישות פונקציונאליות</span>
+          <ul class="d3">
+            <li>המערכת תעביר הודעות בין צמתים בקפיצות מרובות, ללא צומת מרכזי וללא תשתית חיצונית.</li>
+            <li>הודעה שאין לה מסלול תישמר בזיכרון הצומת עד לתפוגתה, ותימסר ברגע שנוצר מפגש עם צומת מתאים.</li>
+            <li>כל הודעה תוצפן מקצה לקצה ותיחתם דיגיטלית. צומת מעביר לא יוכל לקרוא את התוכן.</li>
+            <li>המערכת תזהה בזמן אמת נקודות חיתוך וגשרים בגרף הרשת ותתריע עליהם למפקד.</li>
+            <li>בקבלת דיווח פצוע תחשב המערכת שלוש חלופות מסלול פינוי, לפי זמן נסיעה, חשיפה לאיום ואיכות קשר.</li>
+            <li>המערכת תפעל במלואה ללא כל רכיב מרכזי. אין בה שרת, ואין בה יכולת הפונה לגורם חיצוני בזמן ריצה.</li>
+            <li>אותו קובץ הרצה יפעל בשני מצבים ללא שינוי קוד: מספר תהליכים על מחשב יחיד, וצומת לכל מכשיר חומרה מעל רשת
+              אלחוטית.</li>
+            <li>תרחיש שהמשתמש חיבר יישמר לקובץ, ובו הצמתים ותפקידיהם, מסלולי התנועה, נקודות האיום ונקודת החילוץ. שחזור
+              של אותו קובץ מפיק את אותו תרחיש, ולכן ההשוואה בין אלגוריתמים נעשית על קלט זהה.</li>
+            <li>כל צומת יבנה אומדן מקומי של גרף הרשת כולה מרשומות קישוריות המופצות ברשת, ולא רק את רשימת שכניו הישירים.
+            </li>
+            <li>בונה חבילת המשימה<a class="gl" href="#g18">*</a> יגדיר משתמשים, תפקידים והרשאות, ינפיק את המפתחות,
+              ויחתום על החבילה במפתח המשימה.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <ul class="d2">
+        <li><span class="term">דרישות משתמש קצה</span>
+          <ul class="d3">
+            <li>המשתמש יראה מפה ועליה מיקומי הכוח. כל מיקום יוצג כעיגול אי-ודאות ולא כנקודה, כדי שלא ייווצר רושם של דיוק
+              שאינו קיים.</li>
+            <li>על אותה מפה יוצגו גם קשתות הקישוריות, כלומר מי מסוגל לדבר עם מי, ולא רק שכניו הישירים של הצומת המציג.
+              הקשתות מצוירות מן האומדן המקומי, ולכן קשת שהעדות עליה ישנה תסומן אחרת מקשת טרייה, ומספר הרכיבים המנותקים
+              יוצג במפורש.</li>
+            <li>המשתמש יוכל לשלוח ולקבל הודעות ולסמן להן דרגת דחיפות, שתקבע את סדר המסירה.</li>
+            <li>חובש יוכל לפתוח דיווח פצוע ולקבוע את דרגת הדחיפות שלו ישירות מהמפה.</li>
+            <li>מפקד יראה את מדדי בריאות הרשת ואת ההתרעות, ויוכל לאשר חלופת מסלול פינוי.</li>
+            <li>כל תפקיד יראה מסך המותאם לו, ללא אפשרויות שאינן בהרשאתו.</li>
+            <li>המשתמש יוכל לחבר תרחיש על המפה, לשמור אותו ולהריץ אותו, ולהתערב בו תוך כדי ריצה.</li>
+            <li>המשתמש יקבל התקנה אחת, ללא הגדרות ידניות וללא התקנת סביבת הרצה מראש.</li>
+          </ul>
+        </li>
+      </ul>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== הנדסה מתקדמת ג ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2 id="s5c">מודל הסימולציה</h2>
+
+      <p>זהו המצב שבו המערכת כולה רצה על מחשב אחד, ללא מכשירים נוספים. הוא אינו הרצה אוטומטית שמתרחשת מעצמה. <b>המשתמש
+          הוא שמגדיר את התרחיש ונוהג בו</b>, והמערכת מציגה לו כיצד הרשת מגיבה.</p>
+
+      <p>מה שהמשתמש עושה במצב הזה:</p>
+
+      <ul class="d2">
+        <li>מציב צמתים על מפת השטח וקובע לכל אחד את תפקידו.</li>
+        <li>מסמן לצומת מסלול תנועה שיילך בו, או מזיז אותו ידנית תוך כדי ריצה.</li>
+        <li>מוריד צומת מהרשת ומחזיר אותו, וכך מייצר קריעת רשת.</li>
+        <li>מוסיף נקודת איום על המפה וקובע לה רמת ודאות.</li>
+        <li>פותח דיווח פצוע, קובע את דרגת הדחיפות, ומציב את נקודת החילוץ.</li>
+        <li>שולח הודעות בין צמתים ועוקב אחר מסלולן בפועל.</li>
+        <li>משנה את טווח הקשר בזמן ריצה ורואה את הגרף מתפרק ומתחבר מחדש.</li>
+      </ul>
+
+      <p>מה שמאפשר את כל זה הוא מודל הרדיו הווירטואלי<a class="gl" href="#g19">*</a>, שכן ללא מנגנון שמגביל את הקישוריות
+        כל הצמתים על אותו מחשב היו שכנים מושלמים. קיום קשר בין שני צמתים נקבע בשלושה שלבים. תחילה נבדק שהמרחק ביניהם קטן
+        מהטווח המרבי, לאחר מכן נבדק אם קיים קו ראייה<a class="gl" href="#g10">*</a> ביניהם על מפת הגבהים<a class="gl"
+          href="#g9">*</a>, ולבסוף המנה עוברת בהצלחה לפי הסתברות התלויה במרחק היחסי. זהו מודל מפושט במכוון, ואינו כולל
+        עקיפה מעבר למכשולים, הדהודים או הפרעות הדדיות.</p>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מודל הסימולציה ב ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h3>שמירת תרחיש ושחזורו</h3>
+
+      <p>התרחיש שהמשתמש חיבר נשמר לקובץ, ובו הצמתים ותפקידיהם, מסלולי התנועה, נקודות האיום ונקודת החילוץ. מכאן שתי
+        כניסות לאותו קוד. <b>נגן</b> מריץ את התרחיש מול המשתמש עם ממשק, והוא יכול להתערב בו באמצע. <b>שחזר</b> מריץ את
+        אותו קובץ עשר פעמים ללא חלון, וכותב את התוצאות למסד תוצאות המדידה.</p>
+
+      <p>השחזור הוא מקור המספרים שבפרק המדידות של ספר הפרויקט, והוא גם מה שמאפשר להשוות על קלט זהה בין שתי גישות הניתוב
+        שאבחן, ניתוב בהצפה<a class="gl" href="#g16">*</a> וניתוב הסתברותי לפי מפגשים<a class="gl" href="#g17">*</a>. מה
+        שמשוחזר הוא התרחיש ולא הריצה: התהליכים, ה-<span class="lat">sockets</span> וההודעות אמיתיים, ולכן תזמון מערכת
+        ההפעלה וסדר הגעת המנות אינם דטרמיניסטיים. משום כך התוצאה המדווחת היא ממוצע עשר החזרות ולצדו סטיית התקן.</p>
+
+      <p>לסביבה הזו יתרון שפריסה בשטח אינה יכולה לספק. כל צומת בונה לעצמו תמונה של הרשת מתוך רשימות השכנים שהוא מקבל,
+        והתמונה הזו עלולה להיות ישנה או חלקית. בשטח אין דרך לדעת עד כמה היא שגויה, משום שאין מקום שבו הרשת האמיתית
+        ידועה. בסימולציה יש מקום כזה: מנהל התרחיש קובע את מיקומו של כל צומת, ולכן אפשר לחשב ממנו אילו צמתים מחוברים
+        בפועל, ולהשוות לכך את התמונה שבנה כל צומת. מנהל התרחיש הוא כלי של הסימולציה ואינו חלק מהרשת. הצמתים אינם מקבלים
+        ממנו מידע על הגרף, אלא רק את המיקום שלהם.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:32%">פרמטר</th>
+            <th class="c" style="width:24%">ערך</th>
+            <th>הערה</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>מספר צמתים</td>
+            <td class="c">20 עד 40</td>
+            <td>סדר גודל של פלוגה</td>
+          </tr>
+          <tr>
+            <td>שטח התרחיש</td>
+            <td class="c">כ-4 על 4 ק״מ</td>
+            <td>מפת גבהים אמיתית של אזור בישראל</td>
+          </tr>
+          <tr>
+            <td>רזולוציית מפת הגבהים</td>
+            <td class="c">30 מטר</td>
+            <td>מנתוני גובה ציבוריים פתוחים</td>
+          </tr>
+          <tr>
+            <td>טווח קשר מרבי</td>
+            <td class="c">150 עד 400 מטר</td>
+            <td>ניתן לשינוי בזמן ריצה</td>
+          </tr>
+          <tr>
+            <td>מהירות תנועה</td>
+            <td class="c">0 עד 6 קמ״ש</td>
+            <td>הליכה, עצירות ותנועה מהירה</td>
+          </tr>
+          <tr>
+            <td>קצב פעימת נוכחות</td>
+            <td class="c">אחת ל-5 שניות</td>
+            <td>איזון בין זמן הזיהוי לבין העומס</td>
+          </tr>
+          <tr>
+            <td>חזרות בשחזור תרחיש</td>
+            <td class="c">10</td>
+            <td>להפקת הממוצע וסטיית התקן</td>
+          </tr>
+          <tr>
+            <td>הקצאת כתובות</td>
+            <td class="c">127.0.0.1</td>
+            <td><span class="lat">port</span> דינמי נפרד לכל <span class="lat">instance</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== הנדסה מתקדמת ה ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2 id="s5e">מגבלות ידועות וסיכונים</h2>
+
+      <p>המגבלות הבאות מוצהרות מראש כחלק מהיושרה המקצועית של העבודה:</p>
+
+      <ul class="d2">
+        <li>מודל הרדיו מפושט ואינו כולל עקיפה, הדהודים והפרעות הדדיות. מסקנות המדידה תקפות בגבולות המודל הזה.</li>
+        <li>במצב ריבוי התהליכים הקישוריות נקבעת על ידי מודל רדיו וירטואלי ולא על ידי קשר אלחוטי אמיתי. ההחלטה מכוונת,
+          ומבודדת את מושא הבדיקה מגורמים שאינם נבדקים בפרויקט. שכבת הקשר האלחוטית נבדקת במצב החומרה, על ארבעה צמתים
+          בלבד.</li>
+        <li>במצב החומרה הטופולוגיה נאכפת בתוכנה כדי לייצר מסירה רב-קפיצתית בין מכשירים באותו חדר. הקשר האלחוטי אמיתי, אך
+          הפריסה הגיאוגרפית אינה, ולכן המרחקים שם אינם מייצגים מרחקי שטח.</li>
+        <li>צריכת האנרגיה אינה נמדדת. קשר פעיל ברציפות משפיע על הסוללה, והמודל אינו משקף זאת.</li>
+        <li>מיקומי האיום הם קלט אנושי ולא חיישן, ולכן הם עלולים להיות שגויים או להתיישן. לכל דיווח מצורפות רמת ודאות
+          וחותמת זמן, ותרומתו למשקל הקשת דועכת עם גילו.</li>
+        <li>המיקום מגיע מקלט חיצוני ולא מחיישן אמיתי. מנהל התרחיש מזין אותו ממסלולי תנועה מוגדרים מראש או מהזזה ידנית של
+          צומת על המפה.</li>
+        <li>התנהגות המשתמש בתנאי לחץ אינה נבדקת, ואין בפרויקט ניסוי שדה.</li>
+      </ul>
+
+      <p>הסיכונים המרכזיים והתגובה המתוכננת לכל אחד מהם:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:34%">סיכון</th>
+            <th class="c" style="width:14%">השפעה</th>
+            <th>תגובה מתוכננת</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>שגיאה במצב גלגול המפתחות מתגלה מאוחר</td>
+            <td class="c">גבוהה</td>
+            <td>הפרוטוקול נבדק מול וקטורי בדיקה רשמיים מן היום הראשון, ובנוסף בבדיקת הלוך ושוב אוטומטית המגרילה סדר
+              הגעה, הודעות כפולות והודעות חסרות</td>
+          </tr>
+          <tr>
+            <td>עיבוד מפת הגבהים מורכב מהצפוי</td>
+            <td class="c">בינונית</td>
+            <td>רסטר החשיפה מחושב בבונה חבילת המשימה ואינו בדרך הקריטית של זמן הריצה. בדיקת קו ראייה בודדת נבדקת בנפרד
+              מול חתכי גובה מחושבים ידנית</td>
+          </tr>
+          <tr>
+            <td>שילוב ה-<span class="lat">main process</span> עם תהליך הליבה מתעכב</td>
+            <td class="c">בינונית</td>
+            <td>הליבה נבדקת דרך הסימולטור ללא ממשק גרפי, ולכן הממשק אינו חוסם התקדמות</td>
+          </tr>
+          <tr>
+            <td>ריצה של עשרות תהליכים מעוותת את מדידות הזמן</td>
+            <td class="c">בינונית</td>
+            <td>המדידות נעשות בשחזור ללא ממשק גרפי, וכל תרחיש חוזר עשר פעמים עם דיווח סטיית תקן</td>
+          </tr>
+          <tr>
+            <td>התרחבות ההיקף במהלך הפיתוח</td>
+            <td class="c">גבוהה</td>
+            <td>הנושאים שמחוץ להיקף מוגדרים במפורש בסעיף הפיתוחים העתידיים. כל שינוי מחייב החלטה מול המנחה</td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מע' הפעלה ורשתות א ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s6">הליכים עיקריים בתחום מערכות הפעלה, רשתות מחשבים, תקשורת נתונים ואבטחת מידע</h1>
+
+      <p>להלן התהליכים העיקריים בתחומים שבכותרת:</p>
+
+      <h2 id="s6a">תהליכים בצומת</h2>
+
+      <p>הצומת מורכב משני <span class="lat">processes</span> הרצים על אותו מחשב. תהליך הסוכן הוא תהליך <span
+          class="lat">C#</span> הנושא את כל ההיגיון של המערכת: ניתוב, המתנה ומסירה, הצפנה, מצב הגרף ואחסון מקומי. תהליך
+        זה הוא שמתקשר ישירות עם צמתים אחרים ברשת, שומר את רשימת השכנים שבטווחו, מנתב הודעות מצומת אל צומת, נושא הודעות
+        ממתינות ומצפין מקצה לקצה. ה-<span class="lat">main process</span> של <span class="lat">Electron</span> מפעיל
+        אותו כ-<span class="lat">child process</span>, מעביר לו את פרטי החיבור, ועוקב אחר מצבו. אם הסוכן נופל, ה-<span
+          class="lat">main process</span> מזהה זאת ומפעיל אותו מחדש. בסגירת החלון הוא סוגר גם את הסוכן, כדי שלא יישאר
+        במערכת <span class="lat">orphan process</span> שממשיך לשדר לרשת.</p>
+
+      <p>מכיוון שכל צומת הוא תהליך עצמאי, אותו מנגנון משמש גם להרצת רשת שלמה על מחשב אחד. מסך מנהל התרחיש מפעיל ומסיים
+        תהליכי סוכן לפי דרישה, ומחזיק לכל אחד מהם את מזהה התהליך ואת ה-<span class="lat">port</span> שהוקצה לו. סיום
+        תהליך הוא נפילת צומת אמיתית מבחינת כל השאר, והם מגלים אותה מהיעדר פעימות ולא מהודעה מסודרת.</p>
+
+      <p>בתוך תהליך הסוכן פועלים מספר <span class="lat">threads</span> במקביל: אחד קולט <span class="lat">packets</span>
+        מהרשת, אחד משדר את פעימות הנוכחות בקצב קבוע, אחד מחשב מחדש את הגרף בכל שינוי קישוריות, ואחד משרת את הערוץ המקומי
+        מול הממשק. כולם ניגשים לאותם מבני נתונים, ובראשם רשימת השכנים וה-<span class="lat">buffer</span> של ההודעות
+        הממתינות.</p>
+
+      <p>ללא <span class="lat">synchronization</span> על המבנים המשותפים ייווצר <span class="lat">race condition</span>,
+        ורשימת השכנים תישאר במצב לא עקבי. במקומות שבהם פעולת הקריאה נפוצה הרבה יותר מפעולת הכתיבה, כמו רשימת השכנים
+        הנקראת בכל חישוב מסלול ומתעדכנת רק בשינוי קישוריות, אשתמש ב-<span class="lat">reader-writer lock</span> שמתיר
+        מספר קוראים במקביל וכותב יחיד.</p>
+
+      <p><span class="lat">mutex</span> גורף אינו יעיל במקום כזה משום שהוא <span class="lat">serialize</span>, כלומר
+        מסדר בתור, כל פעולה על המשאב, גם קריאה שאינה משנה דבר. התוצאה היא <span class="lat">bottleneck</span>: חישוב
+        הגרף וחישוב המסלול ממתינים זה לזה אף ששניהם רק קוראים. נעילת קוראים וכותבים מתירה להם לרוץ יחד, ועוצרת רק כאשר
+        מגיע עדכון קישוריות. המחיר הוא סיכון הרעבת הכותב, ולכן המימוש יעדיף כותב ממתין על פני קוראים חדשים שביקשו את
+        הנעילה אחריו.</p>
+
+      <p>בסדר הנעילות אקפיד על סדר קבוע, כדי שלא ייווצר <span class="lat">deadlock</span> בין שני <span
+          class="lat">threads</span> שנועלים את אותם שני מבנים בסדר הפוך.</p>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מע' הפעלה ורשתות א2 ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2 id="s6b">גילוי שכנים ובניית הגרף</h2>
+
+      <p>צומת אינו יודע מראש מי נמצא בסביבתו. כל צומת משדר בקצב קבוע פעימת נוכחות חתומה, הכוללת את מזההו, את מפתחו
+        הציבורי, את ערך השעון הלוגי<a class="gl" href="#g8">*</a> שלו ואת דיווח המיקום שלו. צומת הקולט פעימה מאמת את
+        החתימה מול רשימת המפתחות שבחבילת המשימה, ומוסיף את השולח לרשימת שכניו. שכן שלא נשמעה ממנו פעימה במשך מספר
+        מחזורים מוסר מהרשימה, והקשת המתאימה נמחקת מהגרף.</p>
+
+      <p>המנגנון הזה נותן לצומת את הקשתות היוצאות ממנו בלבד. הוא אינו נותן לו גרף.</p>
+
+      <h2 id="s6f">הפצת מצב קישוריות ובניית האומדן</h2>
+
+      <p>כדי שצומת יוכל להריץ ניתוח שבירות הוא זקוק ליותר מרשימת שכניו. לכן כל צומת מפרסם ברשת <b>רשומת קישוריות</b>:
+        רשימת שכניו הנוכחיים, חתומה במפתחו הפרטי, ונושאת את ערך השעון הלוגי<a class="gl" href="#g8">*</a> שלו כמונה גרסה
+        ואת זמן היצירה. הרשומות מופצות באותו מנגנון המתנה ומסירה<a class="gl" href="#g3">*</a> המשמש להודעות רגילות,
+        ולכן הן מגיעות גם לצמתים שאינם בטווח ישיר.</p>
+
+      <p>הגרף שכל צומת מחזיק הוא איחוד רשומות הקישוריות העדכניות ביותר שברשותו. זהו אומדן מקומי ולא עובדה: הוא עלול
+        להיות ישן, והוא עלול להיות חלקי. אין במערכת מקום אחד שבו הגרף האמיתי קיים, וזו תוצאה ישירה של הוויתור על גורם
+        מרכזי.</p>
+
+      <p>שלושה הליכים מטפלים באיכות האומדן. <b>הכרעת סתירות</b>: כששתי רשומות על אותו צומת מגיעות בשני מסלולים, גוברת זו
+        שמונה הגרסה שלה גבוה יותר, ולא זו שהגיעה אחרונה. <b>דעיכת קשת</b>: לכל קשת באומדן נשמר גיל הרשומה שהעידה עליה,
+        וקשת שגילה עבר סף נחשבת לא מהימנה ויוצאת מהחישוב. בלי זה האומדן היה מצטבר לקשתות שלא קיימות ומציג רשת מחוברת
+        יותר
+        ממה שהיא בפועל. <b>סף טריות להתרעה</b>: התרעה על נקודת חיתוך<a class="gl" href="#g5">*</a> מוצגת רק כאשר כל
+        הקשתות
+        שהשתתפו בהכרעה טריות מספיק.</p>
+
+      <p>ההתנהגות שנובעת מכך נכונה גם כאשר הרשת נקרעת. מרגע הקריעה, רשומות מן הצד השני מפסיקות להגיע, קשתותיהן דועכות
+        ונושרות, וכל אי רואה בסופו של דבר רק את עצמו. המפקד רואה שהכוח מפוצל, ומי מאנשי הכוח נמצא מחוץ לקשר. מה שאף צומת
+        אינו
+        יכול לדעת הוא אם הצד השני קיים ואינו מצליח להעביר עדות, או שאינו קיים עוד.</p>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מע' הפעלה ורשתות ב ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2 id="s6c">ניתוב, המתנה ומסירה</h2>
+
+      <p>כאשר משתמש שולח הודעה, הסוכן מצפין אותה, חותם עליה, ומכניס אותה ל-<span class="lat">buffer</span> ההודעות
+        הממתינות. משם מתחיל תהליך רציף שרץ ברקע. בכל פעם שמתגלה שכן חדש, הסוכן עובר על ההודעות שב-<span
+          class="lat">buffer</span> ובודק לגבי כל אחת אם כדאי להעביר אותה לשכן הזה. הבדיקה עצמה היא ההבדל בין שתי גישות
+        הניתוב, ניתוב בהצפה<a class="gl" href="#g16">*</a> וניתוב הסתברותי לפי מפגשים<a class="gl" href="#g17">*</a>.
+      </p>
+
+      <p>צומת המקבל הודעה שאינה מיועדת לו בודק תחילה את מזהה ההודעה מול רשימת המזהים שכבר ראה, וכך נמנעות כפילויות
+        ולולאות. לאחר מכן הוא מגדיל את ה-<span class="lat">hop count</span>, ואם המונה עבר את המקסימום ההודעה נזרקת. אם
+        לא, ההודעה נכנסת גם ל-<span class="lat">buffer</span> שלו והוא הופך לנושא נוסף שלה.</p>
+
+      <h2>שעון לוגי וסדר אירועים</h2>
+
+      <p>שלושה מנגנונים במערכת תלויים בזמן: תפוגת הודעות, סדר גלגול המפתחות, ומיזוג דיווחי מיקום לפי הכלל שהמאוחר גובר.
+        בהיעדר קליטה לוויינית אין מקור זמן משותף, ושעוני המכשירים נסחפים זה מזה, ולכן שני צמתים עלולים לחלוק על סדר
+        האירועים. הפתרון שלי הוא דו-שכבתי:</p>
+
+      <ul class="d2">
+        <li><span class="term">שעון קיר</span> (<span class="lat">wall clock</span>) המסונכרן ברגע הקצאת המשימה, ומשמש
+          לתפוגה בלבד. שם סטייה של שניות אינה מהותית.</li>
+        <li><span class="term">שעון לוגי</span> המצורף לכל הודעה. בקבלת הודעה מעדכן הצומת את מונהו לערך הגבוה מבין שלו
+          לבין זה שהתקבל, ומקדם אותו באחד. כך נשמר סדר סיבתי עקבי בין הצמתים גם ללא שעון משותף, וזהו הסדר המשמש למיזוג
+          עדכונים.</li>
+      </ul>
+
+      <h2>מדיניות אחסון ותפוגה</h2>
+
+      <p>צומת נושא הודעות שטרם נמסרו, אך זיכרונו סופי. המדיניות שאגדיר:</p>
+
+      <ul class="d2">
+        <li>הודעה שחלף ה-<span class="lat">TTL</span> שלה נמחקת, ללא תלות במצב ה-<span class="lat">buffer</span>.</li>
+        <li>התקבל <span class="lat">ACK</span> על ההודעה, וכל עותקיה ברשת נמחקים.</li>
+        <li>ה-<span class="lat">buffer</span> מלא, ואז מפונה תחילה מה שדרגת דחיפותו הנמוכה ביותר. בתוך אותה דרגה מפונה
+          מה שקרוב יותר לתפוגה.</li>
+      </ul>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מע' הפעלה ורשתות ג ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2 id="s6d">הצפנה מקצה לקצה</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:26%">רכיב</th>
+            <th style="width:28%">מנגנון</th>
+            <th>תפקיד</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>החלפת מפתחות</td>
+            <td>דיפי-הלמן על עקומה אליפטית</td>
+            <td>יצירת סוד משותף בין שני צדדים מבלי להעביר אותו ברשת</td>
+          </tr>
+          <tr>
+            <td>גזירת מפתחות</td>
+            <td>פונקציית גזירה מבוססת <span class="lat">hash</span></td>
+            <td>הפקת מפתחות נפרדים לכל הודעה מתוך הסוד המשותף</td>
+          </tr>
+          <tr>
+            <td>הצפנת תוכן</td>
+            <td>הצפנה סימטרית מאומתת, מפתח 256 סיביות</td>
+            <td>סודיות ושלמות בפעולה אחת. שינוי בטקסט המוצפן מזוהה ופענוחו נכשל</td>
+          </tr>
+          <tr>
+            <td>חתימה דיגיטלית</td>
+            <td>חתימה על עקומה אליפטית</td>
+            <td>אימות זהות השולח על כל הודעה ועל כל דיווח מיקום</td>
+          </tr>
+          <tr>
+            <td>גלגול מפתחות מתמשך</td>
+            <td>גלגול דו-צירי של מפתח זמני ושרשרת סימטרית</td>
+            <td>מפתח חדש לכל הודעה. חשיפת מפתח אינה חושפת את העבר</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>תהליך גזירת המפתחות והגלגול</h3>
+
+      <p>המפתח הפרטי הקבוע של הצומת אינו מתגלגל ואינו משתנה. מה שמתגלגל הוא מפתחות זמניים. בכל הודעה מצרף השולח לכותרת
+        הגלויה מפתח ציבורי זמני ומספר הודעה. הנמען לוקח את המפתח הזמני הזה ואת מפתחו הפרטי, מריץ <span
+          class="lat">ECDH</span>, ומגיע בדיוק לאותו סוד משותף שהשולח הגיע אליו מן הצד שלו. מן הסוד הזה גוזרת פונקציית
+        הגזירה שרשרת מפתחות, ומפתח ההודעה נגזר ממנה לפי מספר ההודעה.</p>
+
+      <p>מכאן שהנמען תמיד מסוגל לגזור את המפתח, משום שכל מה שהוא זקוק לו נמצא בכותרת הגלויה ובמפתח הפרטי שברשותו. מה
+        שמייצר את הסודיות קדימה אינו קושי בגזירה אלא העובדה שהמפתח נמחק מיד לאחר השימוש בו, ולכן אינו ניתן לשחזור
+        בדיעבד. הודעות שהגיעו שלא לפי הסדר מטופלות בשמירה זמנית של מפתחות שדולגו, עד שההודעות החסרות מגיעות או עד שחלף
+        זמן התפוגה שלהן.</p>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מע' הפעלה ורשתות ד2 ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2>עוגן האמון וחבילת המשימה</h2>
+
+      <p>שאלת היסוד בכל מערכת מוצפנת היא כיצד שני צדדים שלא נפגשו מעולם מאמתים זה את מפתחו של זה. במערכת שאין בה גורם
+        מרכזי אין למי לפנות בזמן אמת, ולכן נדרש פתרון אחר.</p>
+
+      <p>עוגן האמון הוא <b>מפתח המשימה</b>: זוג מפתחות על עקומה אליפטית שהמנהל מייצר פעם אחת בבונה חבילת המשימה. המפתח
+        הפרטי חותם על תוכן החבילה ואינו עוזב את מחשב הבונה לעולם. המפתח הציבורי מוטמע בכל עותק של החבילה. כל צומת מאמת
+        בעזרתו שרשימת המפתחות הציבוריים שברשותו אותנטית, ומכאן שכל מפתח ברשימה אמין. זהו התפקיד שממלא במערכות אחרות גורם
+        אישורים מרכזי, והוא מועבר כאן לרגע אחד מבוקר לפני היציאה לשטח.</p>
+
+      <p>מכאן נובעות שתי תוצאות. הראשונה היא שכל צומת יכול לאמת כל צומת אחר ללא גישה לרשת. השנייה היא שלוחם יכול לשלוח
+        הודעה ראשונה מוצפנת לנמען שלא נפגש עמו מעולם, ללא לחיצת יד מוקדמת.</p>
+
+      <h3>סכמת חבילת המשימה</h3>
+
+      <p>החבילה היא חוזה, ולכן שדותיה מוגדרים פורמלית. הבונה מאמת את הסכמה ומסרב לחתום על חבילה שאינה עומדת בה.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:34%">שדה</th>
+            <th class="c" style="width:14%">חובה</th>
+            <th>תוכן</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>מזהה משימה וגרסה</td>
+            <td class="c">חובה</td>
+            <td>מזהה ייחודי ומספר גרסה. צומת דוחה הודעות מצומת הנושא גרסת חבילה אחרת</td>
+          </tr>
+          <tr>
+            <td>מפתח ציבורי של המשימה</td>
+            <td class="c">חובה</td>
+            <td>עוגן האמון שכנגדו מאומתת החתימה על החבילה</td>
+          </tr>
+          <tr>
+            <td>רשימת משתמשים ותפקידים</td>
+            <td class="c">חובה</td>
+            <td>לכל משתמש מזהה, שם, תפקיד ומפתח ציבורי. נדרש לפחות משתמש אחד בתפקיד מפקד</td>
+          </tr>
+          <tr>
+            <td>מפת גבהים של האזור</td>
+            <td class="c">חובה</td>
+            <td>רסטר הגבהים שעליו נעשים חישובי קו הראייה ומסלול הפינוי</td>
+          </tr>
+          <tr>
+            <td>נקודת חילוץ</td>
+            <td class="c">חובה</td>
+            <td>הקואורדינטה שממנה יוצא צוות הפינוי. ניתנת להזזה על ידי המפקד בזמן ריצה</td>
+          </tr>
+          <tr>
+            <td>חתימת המשימה</td>
+            <td class="c">חובה</td>
+            <td>חתימה על כל השדות שלעיל, במפתח הפרטי של המשימה</td>
+          </tr>
+          <tr>
+            <td>נקודות איום ידועות</td>
+            <td class="c">אופציונלי</td>
+            <td>רשימה שעשויה להיות ריקה. כל נקודה נושאת רמת ודאות וחותמת זמן</td>
+          </tr>
+          <tr>
+            <td>רסטר חשיפה מחושב</td>
+            <td class="c">אופציונלי</td>
+            <td>שדה הראייה לכל נקודת איום, מחושב בבונה. בהיעדרו הוא מחושב בטעינה הראשונה</td>
+          </tr>
+          <tr>
+            <td>פרמטרי תרחיש</td>
+            <td class="c">אופציונלי</td>
+            <td>טווח קשר, קצב פעימות ומסלולי תנועה מוגדרים מראש</td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מע' הפעלה ורשתות ד ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2 id="s6e">מודל האיום</h2>
+
+      <p>בטבלה מרוכזים האיומים שזיהיתי, המענה של המערכת לכל אחד מהם, והסטטוס שלו בפרויקט. האיומים המסומנים כמחוץ להיקף
+        מתוארים כאן במכוון, כדי שיהיה ברור שההחלטה שלא לטפל בהם מודעת ומנומקת.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:26%">איום</th>
+            <th style="width:40%">מענה</th>
+            <th class="c">סטטוס</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>האזנה לתעבורה</td>
+            <td>הצפנה מקצה לקצה. צומת מעביר אינו יכול לקרוא את התוכן</td>
+            <td class="c">מטופל</td>
+          </tr>
+          <tr>
+            <td>שינוי תוכן בדרך</td>
+            <td>הצפנה מאומתת. כל שינוי מזוהה וההודעה נדחית</td>
+            <td class="c">מטופל</td>
+          </tr>
+          <tr>
+            <td>התחזות לגורם ידידותי</td>
+            <td>חתימה על כל הודעה ועל כל דיווח מיקום, מאומתת מול חבילת המשימה</td>
+            <td class="c">מטופל</td>
+          </tr>
+          <tr>
+            <td><span class="lat">Replay attack</span>, שידור חוזר של הודעה שהוקלטה</td>
+            <td>מונה שולח העולה מונוטונית, בתוך האזור החתום של ההודעה. הנמען שומר לכל שולח את הערך הגבוה שראה וחלון קבלה
+              של 64 ערכים אחורה, לטיפול בהודעות שהגיעו שלא בסדר. הודעה שמונה שלה מתחת לחלון, או שכבר סומנה בו, נדחית
+            </td>
+            <td class="c">מטופל</td>
+          </tr>
+          <tr>
+            <td>חשיפת מפתח מכשיר</td>
+            <td>הגלגול מגן על העבר ועל העתיד הרחוק ולא על ההווה. תוקף שהשיג את המכשיר קורא את מצב הצופן הנוכחי, את
+              ההודעות הממתינות ואת המפתח הפרטי הקבוע, ומפענח עד שלב הגלגול הבא. מכאן הסיווג החלקי</td>
+            <td class="c">מטופל חלקית</td>
+          </tr>
+          <tr>
+            <td>מכשיר שנתפס בידי גורם עוין</td>
+            <td>המענה המקובל הוא מפתח קבוצתי המבוזר בין מספר מחזיקים</td>
+            <td class="c">מחוץ להיקף</td>
+          </tr>
+          <tr>
+            <td>הצפת הרשת בידי צומת מורשה</td>
+            <td>מצריך מנגנון מוניטין ותיחום קצב</td>
+            <td class="c">מחוץ להיקף</td>
+          </tr>
+          <tr>
+            <td>ניתוח תעבורה, מי מדבר עם מי</td>
+            <td>מצריך הסתרה של נתוני הניתוב עצמם ולא רק של התוכן</td>
+            <td class="c">מחוץ להיקף</td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== פרוטוקולי תקשורת א ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s7">תיאור פרוטוקולי תקשורת</h1>
+
+      <p>במערכת שני ערוצי תקשורת נפרדים, ולכל אחד מהם פרוטוקול משלו.</p>
+
+      <h2><span class="lat">UDP</span></h2>
+
+      <p>התקשורת בין הצמתים מתבצעת מעל <span class="lat">UDP</span>. בחרתי בו ולא ב-<span class="lat">TCP</span> משום
+        שברשת שבה הקישוריות נקטעת כל הזמן, ה-<span class="lat">handshake</span> וה-<span
+          class="lat">retransmission</span> של <span class="lat">TCP</span> עובדים נגדי. הוא ינסה לשמור על <span
+          class="lat">connection</span> לצומת שכבר יצא מהטווח, ויכשל אחרי <span class="lat">timeout</span> ארוך. <span
+          class="lat">UDP</span> שולח <span class="lat">packet</span> בודד ואינו מתחייב על הגעתו, וזה בדיוק המודל שמתאים
+        לפעימת נוכחות ולהודעה שממילא מנוהלת ב-<span class="lat">buffer</span> משלי.</p>
+
+      <p>את האמינות אני מספק בשכבה שמעל: מזהה ייחודי לכל הודעה, <span class="lat">hop count</span>, <span
+          class="lat">ACK</span>, <span class="lat">TTL</span> ו-<span class="lat">buffer</span> של הודעות ממתינות.</p>
+
+      <p>כל השידורים הם <span class="lat">unicast</span>. פעימת הנוכחות אינה נשלחת ב-<span class="lat">broadcast</span>
+        אלא ליעדים שמודל הרדיו הווירטואלי אישר באותו רגע, כלומר לצמתים שנמצאים בטווח ובקו ראייה. זו ההחלטה שגורמת לכך
+        שהרשת נשארת דלילה גם כשכל הצמתים יושבים על אותה כתובת <span class="lat">loopback</span>, ובלעדיה כל צומת היה שכן
+        של כולם.</p>
+
+      <p>במערכת שלושה סוגי מנות: פעימת נוכחות, רשומת קישוריות הנושאת את רשימת השכנים של צומת, והודעת משתמש. שלושתן
+        נושאות את אותה כותרת ונבדלות בשדה הסוג ובתוכן המטען.</p>
+
+      <h2>ערוץ מקומי בין הממשק לסוכן</h2>
+
+      <p>בין ה-<span class="lat">main process</span> של <span class="lat">Electron</span> לבין תהליך הסוכן עובר ערוץ על
+        כתובת ה-<span class="lat">loopback</span> בלבד, 127.0.0.1. הסוכן מאזין על <span class="lat">port</span> המוקצה
+        דינמית בכל הפעלה ומוסר אותו ל-<span class="lat">main process</span>. הערוץ מוגן ב-<span class="lat">access
+          token</span> הנוצר מחדש בכל הפעלה, ומועבר לסוכן בעת הפעלתו.</p>
+
+      <p>הערוץ פועל בשני כיוונים. מהממשק אל הסוכן עוברות פקודות, כגון שליחת הודעה או פתיחת דיווח פצוע. מהסוכן אל הממשק
+        עוברים עדכוני מצב בזרימה רציפה, כך שהמפה מתעדכנת ברגע שמשתנה משהו בגרף ולא בתשאול חוזר כל כמה שניות.</p>
+
+      <h2>מיזוג עדכונים בין צמתים</h2>
+
+      <p>אין במערכת ערוץ שלישי. חבילת המשימה נטענת למכשיר לפני היציאה לשטח ואינה מתעדכנת דרך הרשת, ולכן אין צורך
+        בפרוטוקול סנכרון מול גורם מרכזי. כאשר שני צמתים נפגשים ומחזיקים גרסאות שונות של אותו נתון, למשל שני דיווחי מיקום
+        של אותו לוחם, חל הכלל שהמאוחר גובר. הקדימות נקבעת לפי השעון הלוגי<a class="gl" href="#g8">*</a> ולא לפי ה-<span
+          class="lat">wall clock</span>, משום ששעוני המכשירים נסחפים זה מזה.</p>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== פרוטוקולי תקשורת ב ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h2>מבנה ההודעה</h2>
+
+      <p>זהו מבנה ההודעה שאגדיר. השדות שלפני המטען גלויים לכל צומת מעביר, משום שהוא זקוק להם כדי לנתב. המטען עצמו קריא
+        רק לנמען הסופי.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:24%">שדה</th>
+            <th class="c" style="width:18%">גודל</th>
+            <th>תפקיד</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>גרסת פרוטוקול</td>
+            <td class="c">בית אחד</td>
+            <td>מאפשר שינוי מבנה בעתיד ללא שבירת תאימות</td>
+          </tr>
+          <tr>
+            <td>סוג מנה</td>
+            <td class="c">בית אחד</td>
+            <td>פעימת נוכחות, רשומת קישוריות, או הודעת משתמש</td>
+          </tr>
+          <tr>
+            <td>מזהה הודעה</td>
+            <td class="c">16 בתים</td>
+            <td>ייחודי גלובלית. משמש לזיהוי כפילויות ולמניעת לולאות</td>
+          </tr>
+          <tr>
+            <td>מזהה שולח</td>
+            <td class="c">16 בתים</td>
+            <td>הכותב המקורי ולא המעביר האחרון</td>
+          </tr>
+          <tr>
+            <td>מזהה יעד</td>
+            <td class="c">16 בתים</td>
+            <td>הנמען הסופי</td>
+          </tr>
+          <tr>
+            <td>מונה קפיצות (<span class="lat">hop count</span>)</td>
+            <td class="c">בית אחד</td>
+            <td>גדל בכל העברה. הודעה שעברה את המקסימום נזרקת</td>
+          </tr>
+          <tr>
+            <td>שעון לוגי</td>
+            <td class="c">8 בתים</td>
+            <td>קובע קדימות בין עדכונים</td>
+          </tr>
+          <tr>
+            <td>זמן תפוגה (<span class="lat">TTL</span>)</td>
+            <td class="c">8 בתים</td>
+            <td>אחריו ההודעה נמחקת מכל <span class="lat">buffer</span> ברשת</td>
+          </tr>
+          <tr>
+            <td>דרגת דחיפות</td>
+            <td class="c">בית אחד</td>
+            <td>קובעת את סדר המסירה ואת סדר הפינוי מה-<span class="lat">buffer</span></td>
+          </tr>
+          <tr>
+            <td>מונה שולח</td>
+            <td class="c">8 בתים</td>
+            <td>עולה באחד בכל הודעה שהצומת יוצר. הנמען מחזיק לכל שולח את הערך הגבוה שראה וחלון של 64 ערכים אחורה. הודעה
+              שמונה שלה מתחת לחלון או שכבר סומנה בו נדחית, וכך נחסם שידור חוזר של הודעה שהוקלטה</td>
+          </tr>
+          <tr>
+            <td>מטען מוצפן</td>
+            <td class="c">משתנה</td>
+            <td>התוכן. קריא רק לנמען הסופי</td>
+          </tr>
+          <tr>
+            <td>חתימה</td>
+            <td class="c">64 בתים</td>
+            <td>חתימת השולח על כל השדות שלפניה</td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== פיתוחים עתידיים ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s8">פיתוחים עתידיים</h1>
+
+      <p>הנושאים הבאים נבחנו ונמצאו רלוונטיים מקצועית, אך הוצאו מהיקף הפרויקט במכוון. הם מתועדים כאן עם מסלול טכני
+        ראשוני, כדי שיהיה ברור שההחלטה נובעת משיקול היקף ולא מהיעדר היכרות עם התחום.</p>
+
+      <ul class="d2">
+        <li><span class="term">צומת מלא על מכשיר נייד</span>. סביבת ההרצה של הליבה נתמכת גם על מערכות הפעלה ניידות,
+          והליבה עצמה אינה מצריכה שינוי משום שאינה תלויה בקלט או בפלט. נדרשים מימוש תעבורה מעל ממשקי הקשר קצרי הטווח של
+          המכשיר, טיפול בהרשאות, וממשק מותאם למסך קטן. הערכה ראשונית היא כחודש עבודה נוסף, ולכן הוצא מההיקף.</li>
+
+        <li><span class="term">מיקום שיתופי דרך הרשת</span>. חישוב מיקומם של צמתים שאין להם קליטה לוויינית, על סמך
+          מרחקים מדודים משכנים ועוגנים ידועים. הפתרון מצריך שהגרף יקיים תנאי רגידות, ואחרת קיימת יותר מתצורה אחת המתאימה
+          לאותם מרחקים. זהו היקף של פרויקט עצמאי.</li>
+
+        <li><span class="term">קידוד מחיקה למטענים גדולים</span>. קודי <span class="lat">Reed-Solomon</span> או קודי
+          מזרקה מפרקים מטען לבלוקים כך שיהיה ניתן לשחזר את המקור אם אבד ברשת, ולכן הם מוסרים מטען גדול ברשת המאבדת
+          מנות
+          בלי לבקש שידור חוזר. הרכיב אינו בהיקף הנוכחי משום שכל מטעני המערכת, טקסט, דיווח מיקום ורשומת קישוריות, נכנסים
+          במנה בודדת, ולכן קידוד מחיקה אינו פותר בעיה קיימת. הוא ייכנס יחד עם היכולת שתייצר מטען גדול, למשל העברת תצלום.
+        </li>
+
+        <li><span class="term">חיזוי ניתוקים בלמידת מכונה</span>. הסימולטור שאבנה כבר מייצר סדרות של מצבי רשת, ולכן
+          התשתית לאיסוף נתוני אימון קיימת. מה שנדרש הוא בחירת מודל, תהליך אימון ותהליך הערכה נפרד.
+          אין בפרויקט הנוכחי רכיב למידת מכונה, וזוהי ההרחבה הטבעית בכיוון הזה.</li>
+
+        <li><span class="term">מפתח קבוצתי מבוזר</span>. שיטה שבה המפתח משוחזר רק בהסכמת מספר מחזיקים, כמענה לתרחיש שבו
+          מכשיר נתפס בידי גורם עוין. התרחיש מתואר במודל האיום ואינו מטופל בפרויקט.</li>
+
+        <li><span class="term">מודל התפשטות גלי רדיו מלא</span>. הכולל עקיפה מעבר למכשולים, הדהודים והפרעות הדדיות.
+          מוחלף בפרויקט הנוכחי במודל מפושט ומוצהר, ומסקנות המדידה תקפות בגבולותיו.</li>
+
+        <li><span class="term">הגנה מפני הצפה זדונית</span>. צומת מורשה המציף את הרשת בכוונה. המענה מצריך מנגנון מוניטין
+          ותיחום קצב לכל צומת. מתואר במודל האיום כאיום מוכר שאינו מטופל.</li>
+      </ul>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== טכנולוגיה הנדסה ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s9">תיאור טכנולוגיה הנדסה</h1>
+
+      <ul class="d2">
+        <li><span class="term">ליבה, סוכן וסימולטור</span>: שפת <span class="lat">C#</span> וסביבת <span
+            class="lat">.NET</span>. כל ההיגיון של המערכת נכתב בשפה הזו, ובכלל זה הליבה, הסוכן, הסימולטור ובונה חבילת
+          המשימה. בחרתי בה משום שהיא מספקת את אבני הבניין הקריפטוגרפיות שהמערכת דורשת, עבודה נוחה עם <span
+            class="lat">threads</span> ועם <span class="lat">sockets</span>, יכולת להפעיל ולנהל תהליכי בן מתוך אותה
+          סביבה, דבר שעליו נשענת הרצת עשרות צמתים על מחשב אחד, ואפשרות לבנות קובץ הרצה יחיד שרץ גם על מחשב שלא הותקן
+          עליו דבר מראש.</li>
+      </ul>
+      <div class="logos">
+        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="52" height="52" rx="9" fill="#68217a" /><text x="28" y="36" text-anchor="middle"
+            font-family="Segoe UI, Arial" font-size="20" font-weight="700" fill="#fff">C#</text>
+        </svg>
+        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="52" height="52" rx="9" fill="#512bd4" /><text x="28" y="35" text-anchor="middle"
+            font-family="Segoe UI, Arial" font-size="14" font-weight="700" fill="#fff">.NET</text>
+        </svg>
+      </div>
+
+      <ul class="d2">
+        <li><span class="term">ממשק משתמש</span>: <span class="lat">Electron</span> המריץ ממשק <span
+            class="lat">React</span> הכתוב ב-<span class="lat">TypeScript</span>. בחרתי בו משום שה-<span
+            class="lat">main process</span> שלו מאפשר להפעיל את תהליך הסוכן כ-<span class="lat">child process</span>
+          ולנהל את ה-<span class="lat">lifecycle</span> שלו. <span class="lat">TypeScript</span> מוסיף בדיקת טיפוסים
+          בזמן כתיבה, וזה חשוב במיוחד בממשק שמקבל זרם עדכונים במבנים מורכבים.</li>
+      </ul>
+      <div class="logos">
+        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="26" fill="#2b2e3a" />
+          <g fill="none" stroke="#9feaf9" stroke-width="1.8">
+            <ellipse cx="28" cy="28" rx="20" ry="7.6" />
+            <ellipse cx="28" cy="28" rx="20" ry="7.6" transform="rotate(60 28 28)" />
+            <ellipse cx="28" cy="28" rx="20" ry="7.6" transform="rotate(120 28 28)" />
+          </g>
+          <circle cx="28" cy="28" r="4" fill="#9feaf9" />
+        </svg>
+        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="#61dafb" stroke-width="2.2">
+            <ellipse cx="28" cy="28" rx="22" ry="8.4" />
+            <ellipse cx="28" cy="28" rx="22" ry="8.4" transform="rotate(60 28 28)" />
+            <ellipse cx="28" cy="28" rx="22" ry="8.4" transform="rotate(120 28 28)" />
+          </g>
+          <circle cx="28" cy="28" r="4.6" fill="#61dafb" />
+        </svg>
+        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="52" height="52" rx="4" fill="#3178c6" /><text x="28" y="37" text-anchor="middle"
+            font-family="Segoe UI, Arial" font-size="22" font-weight="700" fill="#fff">TS</text>
+        </svg>
+      </div>
+
+      <ul class="d2">
+        <li><span class="term">חומרת היעד</span>: ארבעה מחשבי <span class="lat">Raspberry Pi 5</span> תחת <span
+            class="lat">Linux</span> על <span class="lat">ARM64</span>, המריצים את המערכת בתנאי אמת. בחרתי בהם משום שהם
+          מריצים את אותה סביבת <span class="lat">.NET</span> ואת אותו ממשק בלי קוד ייעודי, משום שיש בהם ממשק אלחוטי
+          מובנה, ומשום שהמעבד החלש שלהם ביחס למחשב הפיתוח מעמיד את דרישות הזמן של המערכת במבחן אמיתי.</li>
+        <li><span class="term">מסד נתונים</span>: <span class="lat">SQLite</span> בלבד. אין במערכת שרת מסד נתונים.
+          הנימוק המלא לבחירה מופיע בסעיף מסד הנתונים.</li>
+      </ul>
+      <div class="logos">
+        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="52" height="52" rx="9" fill="#0f80cc" /><text x="28" y="34" text-anchor="middle"
+            font-family="Segoe UI, Arial" font-size="11" font-weight="700" fill="#fff">SQLite</text>
+        </svg>
+      </div>
+
+      <ul class="d2">
+        <li><span class="term">ניהול גרסאות</span>: <span class="lat">Git</span> לניהול מקומי של ההיסטוריה, ו-<span
+            class="lat">GitHub</span> לאחסון מרוחק ולגיבוי. הפרויקט מפוצל לשני עצי מקור, אחד לפתרון ה-<span
+            class="lat">.NET</span> ואחד לממשק, ושניהם מנוהלים באותו מאגר.</li>
+      </ul>
+      <div class="logos">
+        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <g transform="rotate(45 28 28)">
+            <rect x="7" y="7" width="42" height="42" rx="5" fill="#f05033" />
+          </g>
+          <g stroke="#fff" stroke-width="2.6" fill="none">
+            <line x1="18" y1="38" x2="37" y2="19" />
+            <line x1="28" y1="28" x2="37" y2="33" />
+          </g>
+          <g fill="#fff">
+            <circle cx="18" cy="38" r="3.6" />
+            <circle cx="37" cy="19" r="3.6" />
+            <circle cx="38" cy="34" r="3.6" />
+          </g>
+        </svg>
+        <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="26" fill="#24292e" /><text x="28" y="35" text-anchor="middle"
+            font-family="Segoe UI, Arial" font-size="17" font-weight="700" fill="#fff">GH</text>
+        </svg>
+      </div>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== מסד נתונים ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s10">מסד נתונים</h1>
+
+      <p>אשתמש ב-<span class="lat">SQLite</span> בכל המערכת. בחרתי בו משום שהוא קובץ יחיד שאינו דורש שרת ואינו דורש
+        התקנה נפרדת על מחשב המשתמש, ולכן הוא מתאים בדיוק למכשיר שפועל מנותק. אין במערכת מסד נתונים מרכזי, ואף צומת אינו
+        תלוי בגישה למסד של צומת אחר.</p>
+
+      <p>אותו מנוע משמש בשלושה מקומות נפרדים, ולכל אחד מהם קובץ וסכמה משלו.</p>
+
+      <p><span class="term">המסד בצומת.</span> נוצר בהתקנה ונשאר על המכשיר. זהו המסד היחיד שפעיל בשטח.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30%">טבלה</th>
+            <th>תוכן</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>הודעות ממתינות</td>
+            <td>מזהה, דרגת דחיפות, <span class="lat">TTL</span>, מספר עותקים שהועברו</td>
+          </tr>
+          <tr>
+            <td>מצב הצפנה</td>
+            <td>מצב גלגול המפתחות מול כל נמען, ומונה ההודעות לכל כיוון</td>
+          </tr>
+          <tr>
+            <td>מיקומים</td>
+            <td>הדיווח האחרון של כל צומת מוכר: קואורדינטות, מקור וחתימה</td>
+          </tr>
+          <tr>
+            <td>אירועי פצועים</td>
+            <td>מיקום, דרגת דחיפות, זמנים, והמסלול שנבחר</td>
+          </tr>
+          <tr>
+            <td>יומן מקומי</td>
+            <td>מזהי הודעות שעברו, זמנים ומספר קפיצות, ללא תוכן קריא</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p><span class="term">המסד בבונה חבילת המשימה.</span> רץ פעם אחת לפני היציאה לשטח ואינו מגיע לשדה.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30%">טבלה</th>
+            <th>תוכן</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>משתמשים</td>
+            <td>שם, מזהה אישי, <span class="lat">password hash</span>, מפתח ציבורי</td>
+          </tr>
+          <tr>
+            <td>תפקידים והרשאות</td>
+            <td>הגדרת ארבעת התפקידים, ההרשאות, והשיוך ביניהם</td>
+          </tr>
+          <tr>
+            <td>חבילות משימה</td>
+            <td>גרסה, אזור, רשימת המפתחות והחתימה על החבילה</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p><span class="term">מסד תוצאות המדידה.</span> מלווה את הסימולטור ומשמש להפקת פרק המדידות.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30%">טבלה</th>
+            <th>תוכן</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>שחזורי תרחיש</td>
+            <td>מזהה התרחיש, <span class="lat">seed</span>, אלגוריתם הניתוב, אחוז מסירה, זמן מסירה ממוצע
+              ומספר ההעברות</td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== לוחות זמנים וחתימות ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s11">לוחות זמנים</h1>
+
+      <table class="gantt">
+        <thead>
+          <tr>
+            <th></th>
+            <th>08/26</th>
+            <th>09/26</th>
+            <th>10/26</th>
+            <th>11/26</th>
+            <th>12/26</th>
+            <th>01/27</th>
+            <th>02/27</th>
+            <th>03/27</th>
+            <th>04/27</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="stage">הכנת הצעת הפרויקט</td>
+            <td class="v">V</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="stage">הגשת ההצעה</td>
+            <td class="v">V</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="stage">תכנון</td>
+            <td class="v">V</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="stage">כתיבה</td>
+            <td></td>
+            <td class="v">V</td>
+            <td class="v">V</td>
+            <td class="v">V</td>
+            <td class="v">V</td>
+            <td class="v">V</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="stage">בדיקות</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="v">V</td>
+            <td class="v">V</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="stage">הפעלה והגשה</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="v">V</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>שלב הכתיבה מחולק לחמישה חודשים, ולכל חודש תוצר מוגדר וסגור:</p>
+
+      <ul class="d2">
+        <li><b>חודש ראשון</b>, תשתית: תהליך הסוכן, הקצאת ה-<span class="lat">ports</span>, מודל הרדיו הווירטואלי, מסך
+          מנהל התרחיש והרצה של רשת ראשונה מרובת תהליכים.</li>
+        <li><b>חודש שני</b>, ניתוב ומסירה: מבנה ההודעה, שכבת האמינות מעל <span class="lat">UDP</span>, שתי גישות הניתוב
+          ומדיניות האחסון והתפוגה.</li>
+        <li><b>חודש שלישי</b>, אבטחת מידע: בונה חבילת המשימה והחתימה עליה, ופרוטוקול גלגול המפתחות הדו-צירי.</li>
+        <li><b>חודש רביעי</b>, אלגוריתמי גרפים ושטח: הפצת רשומות הקישוריות ובניית האומדן המקומי, ניתוח נקודות החיתוך
+          והגשרים, עיבוד מפת הגבהים, ומסלול הפינוי על שלושת גורמי המשקל.</li>
+        <li><b>חודש חמישי</b>, ממשק וחומרה: מסכי ארבעת התפקידים, תצוגת המפה והגרף, מסד תוצאות המדידה, והעלאת המערכת על
+          ארבעת מכשירי החומרה והרצתה מעליהם.</li>
+      </ul>
+
+      <p>חודשי הבדיקות כוללים את חיבור תרחישי הבדיקה, את שחזורם החוזר לאיסוף המדידות, ואת כתיבת פרק המדידות של ספר
+        הפרויקט. בסוף כל חודש נכתבים פרקי ספר הפרויקט המתאימים לתוצר של אותו חודש, כדי שכתיבת הספר לא תידחה לסופו של
+        התהליך.</p>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+  <!-- ==================== חתימות ==================== -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <div class="ttl">הצעת נושא לפרויקט להנדסאי<br>במגמת הנדסת תוכנה</div>
+      <div class="crest">
+        <img src="assets/logos/ort-rehovot.png" alt="מכללת אורט רחובות">
+        <img src="assets/logos/unit-108.png" alt="יחידה 108">
+        <img class="tall" src="assets/logos/education-ministry.png" alt="משרד החינוך">
+      </div>
+    </div>
+    <div class="sheet-body">
+      <h1 id="s12">מנחות פרויקט</h1>
+      <p class="sigline">שם המנחה:
+        <span class="fill">
+          גל בר און, שאול כהן
+        </span>
+      </p>
+
+      <h1 id="s13">חתימת סטודנט</h1>
+      <p class="sigline">חתימה:
+        <span class="fill">
+          <img class="signiture-img" src="assets/logos/student-signiture.png" alt="חתימת סטודנט">
+        </span>
+      </p>
+
+      <h1 id="s14">חתימת רכז המגמה</h1>
+      <p class="sigline">חתימה: <span class="fill"></span></p>
+
+    </div>
+    <div class="sheet-foot">
+      <span class="fcol fr"><span class="blank"></span></span>
+      <span class="fcol fm">TACMESH<span class="pgn"></span></span>
+      <span class="fcol fl">2026</span>
+    </div>
+  </section>
+
+
+</body>
+
+</html>

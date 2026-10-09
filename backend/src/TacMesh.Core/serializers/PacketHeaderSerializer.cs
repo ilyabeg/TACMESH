@@ -43,8 +43,8 @@ namespace TacMesh.Core.serializers
         public PacketHeader Deserialize(byte[] byteStream)
         {
             // reject byte streams shorter than the header size
-            if (byteStream.Length < PacketHeader.HeaderSize)
-                throw new ArgumentOutOfRangeException($"Unable to Deserialize due to: Provided byte stream was shorter than {PacketHeader.HeaderSize} bytes");
+            if (byteStream.Length != PacketHeader.HeaderSize)
+                throw new ArgumentOutOfRangeException($"Unable to Deserialize due to: Provided byte stream was not {PacketHeader.HeaderSize} bytes");
 
             PacketHeaderBuilder builder = new PacketHeaderBuilder();
             ByteReader reader = new ByteReader(byteStream);

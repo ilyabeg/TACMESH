@@ -3,6 +3,7 @@ using System.Net;
 using TacMesh.Core.builders;
 using TacMesh.Core.database_related;
 using TacMesh.Core.interfaces;
+using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.serializers;
 using TacMesh.Core.utils.configurations;
 
@@ -17,17 +18,17 @@ namespace TacMesh.Core.communication
         private readonly HeartbeatLogger _logger;
         private readonly PacketHeaderSerializer _serializer;
         private readonly ITransport _transporter;
-        private readonly IDestinationProvider _destinationProvider;              
+        private readonly IRadioModel _radioModel;              
 
 
         // inject dependencies through constructor
-        public HeartBeater(string sourceID, HeartbeatLogger logger, PacketHeaderSerializer serializer, ITransport transporter, IDestinationProvider destinationProvider)
+        public HeartBeater(string sourceID, HeartbeatLogger logger, PacketHeaderSerializer serializer, ITransport transporter, IRadioModel radioModel)
         {
             _srcID = sourceID;
             _logger = logger;
             _serializer = serializer;
             _transporter = transporter;
-            _destinationProvider = destinationProvider;
+            _radioModel = radioModel;
         }
 
         /// <summary>
@@ -44,16 +45,15 @@ namespace TacMesh.Core.communication
                 // heartbeat loop
                 while (true)
                 {
-                    ConcurrentDictionary<IPEndPoint, IDestination> destinations = _destinationProvider.ProvideDestinations();
+                    ConcurrentDictionary<string, IPEndPoint> destinations = _radioModel.GetNetworkDevices();
                     
-                    foreach (IDestination dest in destinations.Values)
+                    foreach (string destID in destinations.Keys)
                     {
                         // NOTE: DATA PACKET NOT IMPLEMENTED YET SO I USE ONLY
                         // THE PACKET HEADER OBJECT FOR NOW INSTEAD.
                         
-                        // pull node id and address from destination object
-                        string destID = dest.NodeId;
-                        IPEndPoint destAddress = dest.Address;
+                        // pull node address
+                        IPEndPoint destAddress = destinations[destID];
 
                         // filter out packets sent to myself to not create unnecessary packets
                         if (_srcID == destID) continue;

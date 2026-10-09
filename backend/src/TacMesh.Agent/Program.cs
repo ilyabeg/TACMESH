@@ -9,6 +9,7 @@ using TacMesh.Core.database_related;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.beacon___destination;
+using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
 using TacMesh.Core.map_related;
 using TacMesh.Core.models;
@@ -48,21 +49,22 @@ namespace TacMesh.Agent
                 ILineOfSight terrainLoS = new TerrainLineOfSight();
 
                 // TEMPORARILY inject max range as magic number for the test, WILL BE CHANGED!
-                VirtualRadioModel radioModel = new VirtualRadioModel(maximum_range: 100, radioReceiver, terrainLoS);
+                IRadioModel radioModel = new VirtualRadioModel(maximum_range: 100, radioReceiver, terrainLoS);
 
                 Socket agent_socket = GetAgentSocket();
                 ITransport simTransport = new SimTransport(agent_socket, radioModel);
 
                 // start transmitting beacon to virtual radio model
                 int assignedPort = ((IPEndPoint)agent_socket.LocalEndPoint).Port;
-                StartEmittingBeacon(nodeId, assignedPort);
+                EmitBeaconToRadioModel(nodeId, assignedPort);
 
                 HeartBeater heartBeater = GetHeartBeater(nodeId, simTransport, radioModel);
                 NeighbourTable neighbourTable = new NeighbourTable(new SystemClock());
+                Location initial_location = SystemConfigurations.NodePositions[nodeId];
 
                 // --- inject all dependencies --- 
 
-                Node node = new Node(nodeId, simTransport, neighbourTable, heartBeater);
+                Node node = new Node(nodeId, initial_location, simTransport, neighbourTable, heartBeater);
                 Thread.Sleep(Timeout.Infinite);
             }
             catch (Exception e)
@@ -71,40 +73,22 @@ namespace TacMesh.Agent
             }
         }
 
-        // TEMPORARILY START TRANSMITING THE MOCK POSITIONS FROM THE SCENARIO FILE HERE,
-        // THIS IS NOT INTENDED TO STAY HERE, I KNOW IT IS INCORRECT TO ADD THIS LOGIC 
-        // TO THE AGENT PROJECT, BUT FOR TEMPORARY TESTING REASONS I TEST THIS HERE.
-        static void StartEmittingBeacon(string nodeId, int assignedPort)
+        // TEMPORARILY EMIT ASSIGNED PORT BEACON TO RADIO MODEL HERE, THIS LOGIC WILL NOT STAY HERE FOREVER
+        static void EmitBeaconToRadioModel(string nodeId, int assignedPort)
         {
-            Task.Run(async () =>
+            try
             {
-                try
-                {
-                    // THE POSITION IS CURRENTLY STATIC. IT WILL CHANGE IN THE FUTURE AND 
-                    // WILL NOT BE SENT LIKE THIS. THE LOCATIONS WILL BE SENT VIA THE HEARTBEAT PACKET
-                    // PAYLOAD BUT BECAUSE I CURRENTLY DON'T HAVE A FULL DATAPACKET OBJECT I SEND THE
-                    // LOCATIONS TO THE RADIO MODEL AND CHECK THE RANGE AND ALL THE OTHER TESTS USING
-                    // THIS TEMPORARILY STATIC LOCATION FOR EVERY NODE.
-                    Location position = SystemConfigurations.NodePositions[nodeId];
-                    string positionReport = $"{nodeId}|{assignedPort}|{position.X}|{position.Y}";
-                    byte[] beacon = Encoding.UTF8.GetBytes(positionReport);
+                string positionReport = $"{nodeId}|{assignedPort}";
+                byte[] beacon = Encoding.UTF8.GetBytes(positionReport);
 
-                    // open emitter and inject mcast group endpoint
-                    IBeaconEmitter emitter = new SimBeaconEmitter(SystemConfigurations.McastEndPoint);
-
-                    while (true)
-                    {
-                        emitter.EmitBeacon(beacon);
-
-                        // TEMPORARILY MATCH DELAY TO HEARTBEAT DELAY
-                        await Task.Delay(SystemConfigurations.HeartbeatDelayMs);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            });
+                // open emitter and inject mcast group endpoint
+                IBeaconEmitter emitter = new SimBeaconEmitter(SystemConfigurations.McastEndPoint);
+                emitter.EmitBeacon(beacon);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[BEACON EMITTER ERROR]: '{e.Message}'");
+            }                   
         }
 
         static Socket GetAgentSocket()
@@ -118,7 +102,22 @@ namespace TacMesh.Agent
         static Socket GetRadioSocket() 
             => SocketGenerator.GenerateMcastListenerSocket(SystemConfigurations.McastGroupIp, SystemConfigurations.McastPort);
 
-        static HeartBeater GetHeartBeater(string nodeId, ITransport transport, IDestinationProvider provider) 
-            => new HeartBeater(nodeId, new HeartbeatLogger(), new PacketHeaderSerializer(), transport, provider);
+        static HeartBeater GetHeartBeater(string nodeId, ITransport transport, IRadioModel radioModel) 
+            => new HeartBeater(nodeId, new HeartbeatLogger(), new PacketHeaderSerializer(), transport, radioModel);
+
+
+
+
+        static void ListenForStdInput()
+        {
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    string input = Console.ReadLine();
+                    Console.WriteLine($"[RECEIVED FROM StdINPUT STREAM]: '{input}'");
+                }
+            });
+        }
     }
 }
