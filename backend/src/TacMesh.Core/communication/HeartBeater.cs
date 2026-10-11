@@ -17,11 +17,7 @@ namespace TacMesh.Core.communication
         private readonly HeartbeatLogger _logger;
         private readonly PacketHeaderSerializer _serializer;
         private readonly ITransport _transporter;
-        private readonly IRadioModel _radioModel;
-
-
-        // event to handle pre-heartbeat operations
-        public event EventHandler<int> PreHeartbeat;
+        private readonly IRadioModel _radioModel;              
 
 
         // inject dependencies through constructor
@@ -35,7 +31,7 @@ namespace TacMesh.Core.communication
         }
 
         /// <summary>
-        /// Transmits heartbeat messages to all destinations in the _destinations dictionary each 5 seconds
+        /// Transmits heartbeat messages to all destinations in the dictionary each 5 seconds
         /// using a background thread
         /// </summary>
         public void TransmitHeartbeat()
@@ -43,52 +39,49 @@ namespace TacMesh.Core.communication
             Task.Run(async () =>
             {
                 // wait a small delay before sending to ensure other sockets are open and actively listening
-                //await Task.Delay(_initialization_delay);
-                //int TEMP_PULSE = 1;
+                await Task.Delay(_initialization_delay);
 
                 // heartbeat loop
-                //while (true)
-                //{
+                while (true)
+                {
                     try
                     {
-                        // fire pre-heartbeat event
-                        //PreHeartbeat?.Invoke(this, TEMP_PULSE);
-                        //TEMP_PULSE++;
-
                         // get the known peers in the net
-                        Dictionary<string, IPEndPoint> approvedDestinations = _radioModel.GetPeers();
+                        Dictionary<string, IPEndPoint> destinations = _radioModel.GetPeers();
 
-                        foreach (string destID in approvedDestinations.Keys)
+                        foreach (string destID in destinations.Keys)
                         {
                             // NOTE: DATA PACKET NOT IMPLEMENTED YET SO I USE ONLY
                             // THE PACKET HEADER OBJECT FOR NOW INSTEAD.
 
                             // ignore same node
-                            //if (_srcID == destID)
-                            //    continue;
+                            if (_srcID == destID)
+                                continue;
 
                             // pull node address
-                            IPEndPoint destAddress = approvedDestinations[destID];
+                            IPEndPoint destAddress = destinations[destID];
 
                             // serialize each header for each destination
                             PacketHeader header = CreateHeader(destID);
                             byte[] headerBytes = _serializer.Serialize(header);
 
-                            // transmit header and log
-                            _transporter.Transmit(headerBytes, destAddress);
-                            _logger.FormatAndLogHeartbeat(LoggingMode.Sent, _srcID, destID);
+                            // transmit packet and log heartbeat if successfuly sent bytes
+                            if (_transporter.Transmit(headerBytes, destAddress) > 0)
+                            { 
+                                _logger.FormatAndLogHeartbeat(LoggingMode.Sent, _srcID, destID);
+                            }
 
                             // test heartbeats received and sent
                             //_logger.PrintLogs();
                         }
-                        //await Task.Delay(SystemConfigs.HeartbeatDelayMs);
+                        await Task.Delay(SystemConfigs.HeartbeatDelayMs);
                     }
                     catch (Exception e)
                     {
                         // catch exception and retry
-                        //Console.WriteLine($"[HEARTBEATER CREASHED] '{e.Message}'");
+                        Console.WriteLine($"[HEARTBEATER CREASHED] '{e.Message}'");
                     }
-                //}
+                }
             });
         }
 

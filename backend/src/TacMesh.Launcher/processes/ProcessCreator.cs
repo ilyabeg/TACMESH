@@ -27,6 +27,7 @@ namespace TacMesh.Launcher.processes
                 // init agent process with the start info
                 Process agent = InitAgent(start_info);
                 
+                // O(logN) inserts
                 agents.Add(nodeId, agent);
             }
             return agents;

@@ -1,16 +1,15 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace TacMesh.Core.utils.random
+namespace TacMesh.Core.assets.random
 {
-    // Deterministic Random - provides a deterministic random number based on the user
+    // Deterministic Random - provides a deterministic random number based on the provided ID
     public class DRandom
     {
         // fixed seed to generate the same Randoms to repeat tests
         private const int FIXED_SEED = 13021995;
-        private readonly Dictionary<string, Random> _agentsRandoms = new Dictionary<string, Random>();
-        // llock to safely access a specific random
-        private readonly object _lock = new object(); 
+        private readonly Dictionary<string, Random> _agentsRandoms = new Dictionary<string, Random>();        
+        private readonly object _lock = new object(); // lock to safely access a specific random
 
 
         /// <summary>
@@ -24,14 +23,7 @@ namespace TacMesh.Core.utils.random
             {
                 if (!_agentsRandoms.ContainsKey(id))
                     CreateNewRandom(id);
-
-                double r = _agentsRandoms[id].NextDouble();
-
-                 Console.WriteLine($"[{id}] -> random double: {r}");
-
-                return r;
-
-                //return _agentsRandoms[id].NextDouble();
+                return _agentsRandoms[id].NextDouble();
             }
         }
 
@@ -64,15 +56,7 @@ namespace TacMesh.Core.utils.random
             {
                 if (!_agentsRandoms.ContainsKey(id))
                     CreateNewRandom(id);
-
-                int r = _agentsRandoms[id].Next(maxValue);
-
-                Console.WriteLine($"[{id}] -> random (0 - {maxValue}): {r}");
-
-                return r;
-
-
-                //return _agentsRandoms[id].Next(maxValue);
+                return _agentsRandoms[id].Next(maxValue);
             }
         }
 
@@ -82,10 +66,6 @@ namespace TacMesh.Core.utils.random
             // the random depends on the seed and the specific id
             int seed = DetermineSeed(id);
             _agentsRandoms[id] = new Random(seed);
-
-
-            Console.WriteLine($"[{id}] -> seed = {seed}");
-
         }
 
         // creates the seed to generate the random instance based on the id

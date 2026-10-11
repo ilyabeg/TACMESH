@@ -15,6 +15,11 @@ namespace TacMesh.Launcher.startup
         // regular dictionary because only the main thread alters this (command executions)
         private readonly Dictionary<string, Process> _agents;
 
+        // Semaphore to limit the number of processes the AgentManager creates at a time
+        private Semaphore _semaphore;
+        private const int _initialCount = 0; // the initial number of requests for the semaphore that can be granted
+        private const int _maximumCount = 1; // the maximum number of requests for the semaphore that can be granted
+        private const string _semName = "TacMesh-Global-Sem"; // the name that the semaphore uses
 
         // constructor
         public AgentManager(Dictionary<string, Process> agents)
@@ -25,16 +30,27 @@ namespace TacMesh.Launcher.startup
         // attach data received event to each process before starting it
         public void StartAgents()
         {
-            foreach (string agentId in _agents.Keys)
+            // create a list of the sorted id's in the dict
+            // O(nlogn) + O(n) foreach loop, and O(n) extra space for the list
+            List<string> sortedIds = _agents.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key).ToList();
+
+            // create a named semaphore that can be shared accross processes
+            using (_semaphore = new Semaphore(_initialCount, _maximumCount, _semName))
             {
-                Process agent_process = _agents[agentId];
+                foreach (string agentId in sortedIds)
+                {
+                    Process agent_process = _agents[agentId];
 
-                // attach echo data received event handler and pass agentId using the lambda,
-                // this saves the agentId for every Agent's own event handler with this specific id
-                agent_process.OutputDataReceived += (s, e) => EchoOutput(agentId, s, e);
+                    // attach echo data received event handler and pass agentId using the lambda,
+                    // this saves the agentId for every Agent's own event handler with this specific id
+                    agent_process.OutputDataReceived += (s, e) => EchoOutput(agentId, s, e);
 
-                agent_process.Start();
-                agent_process.BeginOutputReadLine(); // lets see output
+                    agent_process.Start();
+                    agent_process.BeginOutputReadLine(); // lets see output
+
+                    // freeze creation here until semaphore is released
+                    _semaphore.WaitOne();
+                }
             }
         }
 

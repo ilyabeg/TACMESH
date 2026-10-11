@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
+using TacMesh.Core.assets.random;
 using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.events;
 using TacMesh.Core.graph_related;
@@ -8,7 +9,6 @@ using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
 using TacMesh.Core.utils.configurations;
-using TacMesh.Core.utils.random;
 
 namespace TacMesh.Core.models
 {
@@ -113,8 +113,12 @@ namespace TacMesh.Core.models
         /// <returns>True if a connection is valid. False otherwise.</returns>
         public async Task<bool> TestConnection(IPEndPoint source, IPEndPoint destination)
         {
-            // pull id
+            // pull id's
+            string srcId = _agent_locations[source].NodeId;
             string dstId = _agent_locations[destination].NodeId;
+
+            // combine id's to make dependend seed for the randoms
+            string combinedId = srcId + "-" + dstId;
 
             // get the locations
             Location srcLocation = _agent_locations[source].CurrentLocation;
@@ -125,11 +129,11 @@ namespace TacMesh.Core.models
 
             // the 3 radio model tests
             if (!TestRange(distance)) return false;
-            if (!TestRelativeDistance(distance, dstId)) return false;
+            if (!TestRelativeDistance(distance, combinedId)) return false;
             if (!_terrianTester.TestLineOfSight(srcLocation, dstLocation)) return false;
 
             // generate a random delay
-            await GenerateDelay(dstId);
+            await GenerateDelay(combinedId);
             return true;
         }
 
@@ -154,6 +158,9 @@ namespace TacMesh.Core.models
 
             // get a random number betweem 1-100
             double num = _dRandom.DetermineRandom(id) * 100;
+
+            // test to check the genrated random
+            //Console.WriteLine($"[DEBUG] ID: {id} | Prob: {probability_percent:F1}% | Rolled: {num:F1} | Passes: {num <= probability_percent}");
 
             // if number is in the 'probability side'
             return num <= probability_percent;

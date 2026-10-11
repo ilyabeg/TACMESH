@@ -22,17 +22,20 @@ namespace TacMesh.Core.communication
         /// </summary>
         /// <param name="data"></param>
         /// <param name="destination"></param>
-        public void Transmit(byte[] data, IPEndPoint destination)
+        /// <returns>The number of bytes sent or -1 if failed to send.</returns>
+        public int Transmit(byte[] data, IPEndPoint destination)
         {
             try
             {
-                // send the bytes to the provided end point
-                _source.SendTo(data, destination);
+                // send the bytes to the provided end point and return the number of bytes sent
+                int count = _source.SendTo(data, destination);
+                return count;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Error caught while transmitting message: '{e.Message}'");
                 CrashedEventHandler?.Invoke(this, new CrashEventArgs(e));
+                return -1;
             }
         }
     }

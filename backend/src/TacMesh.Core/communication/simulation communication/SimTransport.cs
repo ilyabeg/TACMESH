@@ -44,8 +44,10 @@ namespace TacMesh.Core.communication.simulation_communication
         /// </summary>
         /// <param name="data"></param>
         /// <param name="destination"></param>
-        public void Transmit(byte[] data, IPEndPoint destinationAddress)
+        /// <returns>The number of bytes sent or -1 if failed to send.</returns>
+        public int Transmit(byte[] data, IPEndPoint destinationAddress)
         {
+            int count = -1;
             Task.Run(async () =>
             {
                 try
@@ -53,7 +55,7 @@ namespace TacMesh.Core.communication.simulation_communication
                     // evaluate connection before sending
                     if (await _radioModel.TestConnection(_sourceAddress, destinationAddress))
                     {
-                        _transmitter.Transmit(data, destinationAddress);
+                        count = _transmitter.Transmit(data, destinationAddress);
                     }
                 }
                 catch (Exception e)
@@ -61,6 +63,9 @@ namespace TacMesh.Core.communication.simulation_communication
                     Console.WriteLine(e);
                 }
             });
+
+            // return bytes sent
+            return count;
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using TacMesh.Core.assets.random;
 using TacMesh.Core.clocks;
 using TacMesh.Core.communication;
 using TacMesh.Core.communication.radio_communication;
@@ -17,7 +18,6 @@ using TacMesh.Core.serializers;
 using TacMesh.Core.socket_related;
 using TacMesh.Core.tables.node_related;
 using TacMesh.Core.utils.configurations;
-using TacMesh.Core.utils.random;
 
 namespace TacMesh.Agent
 {
@@ -30,15 +30,15 @@ namespace TacMesh.Agent
         {
             try
             {
-                //if (args.Length != arguments_length)
-                //{
-                //    Console.WriteLine("ERROR: Agent Process arguments did not match. Terminating process...");
-                //    return;
-                //}
+                if (args.Length != arguments_length)
+                {
+                    Console.WriteLine("ERROR: Agent Process arguments did not match. Terminating process...");
+                    return;
+                }
 
-                // arguments
-                string nodeId = "Node-02";// args[0];
-                string scenarioFile = Path.GetFullPath(@"../../../scenario.json");// args[1];
+                // --- arguments ---
+                string nodeId = args[0];
+                string scenarioFile = args[1];
 
                 // load scenario into memory
                 SystemConfigs.LoadConfigurations(scenarioFile);
@@ -77,6 +77,15 @@ namespace TacMesh.Agent
                 // listen for launcher stdinput
                 LauncherControl launcherControl = new LauncherControl((VirtualRadioModel)radioModel, nodeId);
                 launcherControl.ListenForStdInput();
+
+
+                // Release the Semaphore to allow the next agent to be initialized in the launcher
+                string semName = "TacMesh-Global-Sem";
+                using (Semaphore semaphore = Semaphore.OpenExisting(semName))
+                {
+                    // un-freeze the launcher
+                    semaphore.Release();
+                }
 
                 Thread.Sleep(Timeout.Infinite);
             }

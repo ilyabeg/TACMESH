@@ -37,21 +37,11 @@ namespace TacMesh.Agent
 
             // start checking expiration in the background
             _neighbourTable = neighbourTable;
-            //_neighbourTable.StartExpirationCheck();
+            _neighbourTable.StartExpirationCheck();
 
             // start transmitting heartbeats
             _heartbeater = heartbeater;
-            //_heartbeater.TransmitHeartbeat();
-
-            // -----------------------------------------------------------
-
-
-            // TEMPORARILY TEST 
-            TemporarySynchronizor synchronizor = new(heartbeater, neighbourTable);
-            synchronizor.Start();
-
-            // -----------------------------------------------------------
-
+            _heartbeater.TransmitHeartbeat();            
 
             // TEMPORARY TEST. THIS WILL NOT STAY HERE FOREVER.
             Console.WriteLine($"PORT={AssignedPort}");          

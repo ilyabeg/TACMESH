@@ -72,23 +72,23 @@ namespace TacMesh.Core.tables.node_related
         }
 
         // background expiration checker
-        //public void StartExpirationCheck()
-        //{
-        //    Task.Run(async () =>
-        //    {
-        //        int TEMP_COUNT = 1;
-        //        while (true)
-        //        {
-        //            // TMPORARILY SHOW ON SCRREN WHICH PULSE OF CHECK IS SHOWN
-        //            Console.WriteLine($"~~~~~~~~~ [PULSE #{TEMP_COUNT}] ~~~~~~~~~");
-        //            TEMP_COUNT++;
+        public void StartExpirationCheck()
+        {
+            Task.Run(async () =>
+            {
+                int TEMP_COUNT = 1;
+                while (true)
+                {
+                    // TMPORARILY SHOW ON SCRREN WHICH PULSE OF CHECK IS SHOWN
+                    Console.WriteLine($"~~~~~~~~~ [PULSE #{TEMP_COUNT}] ~~~~~~~~~");
+                    TEMP_COUNT++;
 
-        //            CheckExpiration();
-        //            PrintTable(); // table test
-        //            await Task.Delay(SystemConfigs.HeartbeatDelayMs); // match heartbeat delay
-        //        }
-        //    });
-        //}
+                    CheckExpiration();
+                    PrintTable(); // table test
+                    await Task.Delay(SystemConfigs.HeartbeatDelayMs); // match heartbeat delay
+                }
+            });
+        }
 
 
         public void PrintTable()

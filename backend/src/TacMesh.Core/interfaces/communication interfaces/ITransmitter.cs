@@ -9,6 +9,6 @@ namespace TacMesh.Core.interfaces
         public event EventHandler<CrashEventArgs> CrashedEventHandler;
 
         // interface method
-        public void Transmit(byte[] data, IPEndPoint destination);
+        public int Transmit(byte[] data, IPEndPoint destination);
     }
 }
