@@ -9,11 +9,11 @@ namespace TacMesh.Launcher.startup
     {
         // keep record for every Node process by their id
         // concurrent because many threads may write to the dictionary when receiving 'PORT=...' on stdout
-        private ConcurrentDictionary<string, ProcessRecord> _nodeRecords = new();
+        private readonly ConcurrentDictionary<string, ProcessRecord> _nodeRecords = new();
 
         // keep track of all agent processes by the agent ID
         // regular dictionary because only the main thread alters this (command executions)
-        private Dictionary<string, Process> _agents;
+        private readonly Dictionary<string, Process> _agents;
 
 
         // constructor
@@ -64,17 +64,14 @@ namespace TacMesh.Launcher.startup
             agentProcess.StandardInput.WriteLine(input);
         }
 
-        private void AddRecord(string agentId, string pId, int port)
-        {
-            // tries to add record by agent id
-            _nodeRecords.TryAdd(agentId, new ProcessRecord(agentId, pId, port));
-        }
 
-        private void RemoveRecord(string agentId)
-        {
-            // tries to remove record by agent id
-            _nodeRecords.TryRemove(agentId, out _);
-        }
+        // tries to add record by agent id
+        private void AddRecord(string agentId, string pId, int port) => _nodeRecords.TryAdd(agentId, new ProcessRecord(agentId, pId, port));
+
+
+        // tries to remove record by agent id
+        private void RemoveRecord(string agentId) => _nodeRecords.TryRemove(agentId, out _);
+
 
         // kills a specific process of an agent by their ID
         public void KillAgent(string agentId)
@@ -141,6 +138,23 @@ namespace TacMesh.Launcher.startup
             catch (Exception e)
             {
                 Console.WriteLine($"[LAUNCHER] Failed to start agent: {e.Message}");
+            }
+        }
+
+        // writes to each agent process the new position of a specific agent
+        public void MoveAgent(string agentId, string newPosition)
+        {
+            // can't move an agent who's process is currently dead
+            if (_agents[agentId].HasExited)
+            {
+                Console.WriteLine($"[AGENT MANAGER] Couldn't move Agent '{agentId}' due to: Agent currently offline.");
+                return;
+            }
+
+            foreach (string agent in _agents.Keys)
+            {
+                string input = $"{agentId}|{newPosition}";
+                WriteToInputStream(agent, input);
             }
         }
 

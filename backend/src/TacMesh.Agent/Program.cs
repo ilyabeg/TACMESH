@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using TacMesh.Core.clocks;
 using TacMesh.Core.communication;
 using TacMesh.Core.communication.radio_communication;
@@ -11,12 +10,14 @@ using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.beacon___destination;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
+using TacMesh.Core.launcher;
 using TacMesh.Core.map_related;
 using TacMesh.Core.models;
 using TacMesh.Core.serializers;
 using TacMesh.Core.socket_related;
 using TacMesh.Core.tables.node_related;
 using TacMesh.Core.utils.configurations;
+using TacMesh.Core.utils.random;
 
 namespace TacMesh.Agent
 {
@@ -29,66 +30,60 @@ namespace TacMesh.Agent
         {
             try
             {
-                if (args.Length != arguments_length)
-                {
-                    Console.WriteLine("ERROR: Agent Process arguments did not match. Terminating process...");
-                    return;
-                }
+                //if (args.Length != arguments_length)
+                //{
+                //    Console.WriteLine("ERROR: Agent Process arguments did not match. Terminating process...");
+                //    return;
+                //}
 
                 // arguments
-                string nodeId = args[0];
-                string scenarioFile = args[1];
+                string nodeId = "Node-02";// args[0];
+                string scenarioFile = Path.GetFullPath(@"../../../scenario.json");// args[1];
 
                 // load scenario into memory
-                SystemConfigurations.LoadConfigurations(scenarioFile);                
+                SystemConfigs.LoadConfigurations(scenarioFile);
 
                 // --- create dependencies ---
 
+                // Agent socket & port
+                Socket agent_socket = GetAgentSocket();
+                int assignedPort = ((IPEndPoint)agent_socket.LocalEndPoint).Port;
+
+                // IRadioModel
                 Socket radio_socket = GetRadioSocket();
                 IReceiver radioReceiver = new SimReceiver(radio_socket);
                 ILineOfSight terrainLoS = new TerrainLineOfSight();
+                DRandom dRandom = new DRandom();
 
                 // TEMPORARILY inject max range as magic number for the test, WILL BE CHANGED!
-                IRadioModel radioModel = new VirtualRadioModel(maximum_range: 100, radioReceiver, terrainLoS);
+                IRadioModel radioModel = new VirtualRadioModel(maximum_range: 100, dRandom, radioReceiver, terrainLoS);
 
-                Socket agent_socket = GetAgentSocket();
+                // ITransport
                 ITransport simTransport = new SimTransport(agent_socket, radioModel);
 
-                // start transmitting beacon to virtual radio model
-                int assignedPort = ((IPEndPoint)agent_socket.LocalEndPoint).Port;
-                EmitBeaconToRadioModel(nodeId, assignedPort);
-
+                // Heartbeats, NeighbourTable
                 HeartBeater heartBeater = GetHeartBeater(nodeId, simTransport, radioModel);
                 NeighbourTable neighbourTable = new NeighbourTable(new SystemClock());
-                Location initial_location = SystemConfigurations.NodePositions[nodeId];
+                Location initial_location = SystemConfigs.NodePositions[nodeId];
+
+                // beacon emitter
+                IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeId, assignedPort, SystemConfigs.McastEndPoint);
+                beaconEmitter.EmitBeacon();
 
                 // --- inject all dependencies --- 
 
                 Node node = new Node(nodeId, initial_location, simTransport, neighbourTable, heartBeater);
+
+                // listen for launcher stdinput
+                LauncherControl launcherControl = new LauncherControl((VirtualRadioModel)radioModel, nodeId);
+                launcherControl.ListenForStdInput();
+
                 Thread.Sleep(Timeout.Infinite);
             }
             catch (Exception e)
             {
                 Console.WriteLine($"[AGENT ERROR] {e}");
             }
-        }
-
-        // TEMPORARILY EMIT ASSIGNED PORT BEACON TO RADIO MODEL HERE, THIS LOGIC WILL NOT STAY HERE FOREVER
-        static void EmitBeaconToRadioModel(string nodeId, int assignedPort)
-        {
-            try
-            {
-                string positionReport = $"{nodeId}|{assignedPort}";
-                byte[] beacon = Encoding.UTF8.GetBytes(positionReport);
-
-                // open emitter and inject mcast group endpoint
-                IBeaconEmitter emitter = new SimBeaconEmitter(SystemConfigurations.McastEndPoint);
-                emitter.EmitBeacon(beacon);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"[BEACON EMITTER ERROR]: '{e.Message}'");
-            }                   
         }
 
         static Socket GetAgentSocket()
@@ -100,24 +95,9 @@ namespace TacMesh.Agent
         }
 
         static Socket GetRadioSocket() 
-            => SocketGenerator.GenerateMcastListenerSocket(SystemConfigurations.McastGroupIp, SystemConfigurations.McastPort);
+            => SocketGenerator.GenerateMcastListenerSocket(SystemConfigs.McastGroupIp, SystemConfigs.McastPort);
 
         static HeartBeater GetHeartBeater(string nodeId, ITransport transport, IRadioModel radioModel) 
             => new HeartBeater(nodeId, new HeartbeatLogger(), new PacketHeaderSerializer(), transport, radioModel);
-
-
-
-
-        static void ListenForStdInput()
-        {
-            Task.Run(() =>
-            {
-                while (true)
-                {
-                    string input = Console.ReadLine();
-                    Console.WriteLine($"[RECEIVED FROM StdINPUT STREAM]: '{input}'");
-                }
-            });
-        }
     }
 }

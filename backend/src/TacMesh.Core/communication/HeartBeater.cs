@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Net;
+﻿using System.Net;
 using TacMesh.Core.builders;
 using TacMesh.Core.database_related;
 using TacMesh.Core.interfaces;
@@ -11,14 +10,18 @@ namespace TacMesh.Core.communication
 {
     public class HeartBeater
     {        
-        private const int _initialization_delay = 10;//ms
+        private const int _initialization_delay = 500;//ms
 
         // heart beater dependencies
         private readonly string _srcID;
         private readonly HeartbeatLogger _logger;
         private readonly PacketHeaderSerializer _serializer;
         private readonly ITransport _transporter;
-        private readonly IRadioModel _radioModel;              
+        private readonly IRadioModel _radioModel;
+
+
+        // event to handle pre-heartbeat operations
+        public event EventHandler<int> PreHeartbeat;
 
 
         // inject dependencies through constructor
@@ -40,37 +43,52 @@ namespace TacMesh.Core.communication
             Task.Run(async () =>
             {
                 // wait a small delay before sending to ensure other sockets are open and actively listening
-                await Task.Delay(_initialization_delay);
+                //await Task.Delay(_initialization_delay);
+                //int TEMP_PULSE = 1;
 
                 // heartbeat loop
-                while (true)
-                {
-                    ConcurrentDictionary<string, IPEndPoint> destinations = _radioModel.GetNetworkDevices();
-                    
-                    foreach (string destID in destinations.Keys)
+                //while (true)
+                //{
+                    try
                     {
-                        // NOTE: DATA PACKET NOT IMPLEMENTED YET SO I USE ONLY
-                        // THE PACKET HEADER OBJECT FOR NOW INSTEAD.
-                        
-                        // pull node address
-                        IPEndPoint destAddress = destinations[destID];
+                        // fire pre-heartbeat event
+                        //PreHeartbeat?.Invoke(this, TEMP_PULSE);
+                        //TEMP_PULSE++;
 
-                        // filter out packets sent to myself to not create unnecessary packets
-                        if (_srcID == destID) continue;
+                        // get the known peers in the net
+                        Dictionary<string, IPEndPoint> approvedDestinations = _radioModel.GetPeers();
 
-                        // serialize each header for each destination
-                        PacketHeader header = CreateHeader(destID);
-                        byte[] headerBytes = _serializer.Serialize(header);
+                        foreach (string destID in approvedDestinations.Keys)
+                        {
+                            // NOTE: DATA PACKET NOT IMPLEMENTED YET SO I USE ONLY
+                            // THE PACKET HEADER OBJECT FOR NOW INSTEAD.
 
-                        // transmit header and log
-                        _transporter.Transmit(headerBytes, destAddress);
-                        _logger.FormatAndLogHeartbeat(LoggingMode.Sent, _srcID, destID);
+                            // ignore same node
+                            //if (_srcID == destID)
+                            //    continue;
 
-                        // test heartbeats received and sent
-                        //_logger.PrintLogs();
+                            // pull node address
+                            IPEndPoint destAddress = approvedDestinations[destID];
+
+                            // serialize each header for each destination
+                            PacketHeader header = CreateHeader(destID);
+                            byte[] headerBytes = _serializer.Serialize(header);
+
+                            // transmit header and log
+                            _transporter.Transmit(headerBytes, destAddress);
+                            _logger.FormatAndLogHeartbeat(LoggingMode.Sent, _srcID, destID);
+
+                            // test heartbeats received and sent
+                            //_logger.PrintLogs();
+                        }
+                        //await Task.Delay(SystemConfigs.HeartbeatDelayMs);
                     }
-                    await Task.Delay(SystemConfigurations.HeartbeatDelayMs);
-                }
+                    catch (Exception e)
+                    {
+                        // catch exception and retry
+                        //Console.WriteLine($"[HEARTBEATER CREASHED] '{e.Message}'");
+                    }
+                //}
             });
         }
 

@@ -1,0 +1,107 @@
+﻿using System.Security.Cryptography;
+using System.Text;
+
+namespace TacMesh.Core.utils.random
+{
+    // Deterministic Random - provides a deterministic random number based on the user
+    public class DRandom
+    {
+        // fixed seed to generate the same Randoms to repeat tests
+        private const int FIXED_SEED = 13021995;
+        private readonly Dictionary<string, Random> _agentsRandoms = new Dictionary<string, Random>();
+        // llock to safely access a specific random
+        private readonly object _lock = new object(); 
+
+
+        /// <summary>
+        /// returns a new random double based on the provided ID
+        /// </summary>
+        /// <param name="id">The provided ID to base the random on.</param>
+        /// <returns></returns>
+        public double DetermineRandom(string id)
+        {
+            lock (_lock)
+            {
+                if (!_agentsRandoms.ContainsKey(id))
+                    CreateNewRandom(id);
+
+                double r = _agentsRandoms[id].NextDouble();
+
+                 Console.WriteLine($"[{id}] -> random double: {r}");
+
+                return r;
+
+                //return _agentsRandoms[id].NextDouble();
+            }
+        }
+
+        /// <summary>
+        /// returns a new random integer between the provided range based on the provided ID
+        /// </summary>
+        /// <param name="id">The provided ID to base the random on.</param>
+        /// <param name="lowerBound">The lower bound of the random range (including).</param>
+        /// <param name="higherBound">The higher bound of the random range (excluding).</param>
+        /// <returns></returns>
+        public int DetermineRandom(string id, int lowerBound, int higherBound)
+        {
+            lock (_lock)
+            {
+                if (!_agentsRandoms.ContainsKey(id))
+                    CreateNewRandom(id);
+                return _agentsRandoms[id].Next(lowerBound, higherBound);
+            }
+        }
+
+        /// <summary>
+        /// returns a new random integer between 0 and the provided max value based on the provided ID
+        /// </summary>
+        /// <param name="id">The provided ID to base the random on.</param>
+        /// <param name="maxValue">The provided maximum value of the range (excluding).</param>
+        /// <returns></returns>
+        public int DetermineRandom(string id, int maxValue)
+        {
+            lock (_lock)
+            {
+                if (!_agentsRandoms.ContainsKey(id))
+                    CreateNewRandom(id);
+
+                int r = _agentsRandoms[id].Next(maxValue);
+
+                Console.WriteLine($"[{id}] -> random (0 - {maxValue}): {r}");
+
+                return r;
+
+
+                //return _agentsRandoms[id].Next(maxValue);
+            }
+        }
+
+        // creates a new random based on the id, if it is not existing yet
+        private void CreateNewRandom(string id)
+        {
+            // the random depends on the seed and the specific id
+            int seed = DetermineSeed(id);
+            _agentsRandoms[id] = new Random(seed);
+
+
+            Console.WriteLine($"[{id}] -> seed = {seed}");
+
+        }
+
+        // creates the seed to generate the random instance based on the id
+        private int DetermineSeed(string id)
+        {
+            // NOTE: id.GetHashCode() does NOT return the same hash code between execution runs
+
+            // convert the id to bytes to hash using SHA256
+            byte[] idBytes = Encoding.UTF8.GetBytes(id);
+            byte[] hashedId = SHA256.HashData(idBytes);
+
+            // convert the hashed bytes to 32 bit integer
+            int randSeed = BitConverter.ToInt32(hashedId); 
+
+            // base the Random instance seed on the fixed seed and the string ID
+            return FIXED_SEED + randSeed;
+        }
+    }
+}

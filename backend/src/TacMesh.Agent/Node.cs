@@ -37,11 +37,21 @@ namespace TacMesh.Agent
 
             // start checking expiration in the background
             _neighbourTable = neighbourTable;
-            _neighbourTable.StartExpirationCheck();
+            //_neighbourTable.StartExpirationCheck();
 
             // start transmitting heartbeats
             _heartbeater = heartbeater;
-            _heartbeater.TransmitHeartbeat();            
+            //_heartbeater.TransmitHeartbeat();
+
+            // -----------------------------------------------------------
+
+
+            // TEMPORARILY TEST 
+            TemporarySynchronizor synchronizor = new(heartbeater, neighbourTable);
+            synchronizor.Start();
+
+            // -----------------------------------------------------------
+
 
             // TEMPORARY TEST. THIS WILL NOT STAY HERE FOREVER.
             Console.WriteLine($"PORT={AssignedPort}");          
@@ -63,7 +73,7 @@ namespace TacMesh.Agent
                 _heartbeater.LogHeartbeat(LoggingMode.Received, header.SrcID, header.DstID);
 
                 // add/update record of peer in neighbour table
-                _neighbourTable.UpdateRecord(header.SrcID, e.RemoteEndPoint, );
+                _neighbourTable.UpdateRecord(header.SrcID, e.RemoteEndPoint);
             }
         }
 

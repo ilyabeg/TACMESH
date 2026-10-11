@@ -4,16 +4,13 @@ using TacMesh.Core.graph_related;
 
 namespace TacMesh.Core.utils.configurations
 {
-    public class SystemConfigurations
+    public class SystemConfigs
     {
         // VERY IMPORTANT: TEMPORARILY MAGIC NUMBER!! WILL CHANGE IN THE FUTURE TO GRAB FROM CONFIGURATIONS FILE
         public static int HeartbeatDelayMs = 5000;
 
-
-        // TEMPORARILY SAVE STATIC SCENARIO NODE POSITIONS HERE SO IT'S EASIER TO PULL IN
-        // NODE CLASS FOR TESTING PURPOSES, THE POSITIONS AREN'T INTENDED IN STAYING
-        // STATIC OR SAVED THIS WAY. WILL BE FIXED IN THE FUTURE.
-        public static Dictionary<string, Location> NodePositions { get; private set; }
+        // TEMPORARY DICT OF LOCATIONS 
+        public static Dictionary<string, Location> NodePositions = new Dictionary<string, Location>();
 
         // TEMPORARILY USE THESE MAGIC NUMBERS FOR BINDING AND ADDING THE RADIO SOCKET TO THE
         // MCAST GROUP. WILL BE FIXED. UNTILL I ADD A CONFIGURATIONS OR SETTINGS FILE OR JUST

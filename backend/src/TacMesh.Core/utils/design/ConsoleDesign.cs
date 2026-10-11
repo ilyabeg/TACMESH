@@ -10,6 +10,7 @@
         public const int _12_padRight = -12;
         public const int _18_padRight = -18;
         public const int _38_padRight = -38;
+        public const int _47_padRight = 47;
         public const int _58_padRight = 58;
         public const int _68_padRight = 68;
         public const int _72_padRight = 72;

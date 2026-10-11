@@ -1,9 +1,6 @@
 ﻿namespace TacMesh.Core.interfaces
 {
-    /// <summary>
-    /// Non generic byte serializer interface to provide byte constants
-    /// </summary>
-    public interface IByteSerializer
+    public struct ByteCount
     {
         // constant byte sizes
         public const int _1byte = 1;
@@ -17,7 +14,7 @@
     /// of type byte[] and vice versa.
     /// </summary>
     /// <typeparam name="T">The type of object to serialize/deserialize</typeparam>
-    public interface IByteSerializer<T> : ISerializer<byte[], T>, IByteSerializer
+    public interface IByteSerializer<T> : ISerializer<byte[], T>
     {
         // does not provide any additional methods, but is a more specific interface for byte serialization        
     }

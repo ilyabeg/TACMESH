@@ -35,19 +35,24 @@ namespace TacMesh.Core.communication.simulation_communication
                     {
                         byte[] buffer = new byte[DataPacket.MaxPacketSize]; // buffer to hold the remote messages
                         EndPoint remoteEP = new IPEndPoint(IPAddress.Any, SocketGenerator.RandomPort); // remote endpoint holder
+                        int len = _source.ReceiveFrom(buffer, ref remoteEP);
 
                         // ReceiveFrom return the number of bytes received
-                        if (_source.ReceiveFrom(buffer, ref remoteEP) > 0)
+                        if (len > 0)
                         {
+                            // actual size buffer
+                            byte[] receivedBytes = new byte[len];
+                            Array.Copy(buffer, receivedBytes, len); // copy only received bytes
+
                             // push the message to the Agent
                             IPEndPoint remoteIPEP = (IPEndPoint)remoteEP;
-                            MessageReceivedEventHandler?.Invoke(this, new MessageReceivedEventArgs(buffer, remoteIPEP));
+                            MessageReceivedEventHandler?.Invoke(this, new MessageReceivedEventArgs(receivedBytes, remoteIPEP));
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error caught while receiving message: '{e.Message}'");
+                    Console.WriteLine($"Error caught while receiving message: '{e}'");
                     CrashedEventHandler?.Invoke(this, new CrashEventArgs(e));
                 }
             });           

@@ -6,6 +6,6 @@
     /// </summary>
     public interface IBeaconEmitter
     {
-        void EmitBeacon(byte[] beacon);
+        void EmitBeacon();
     }
 }

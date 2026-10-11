@@ -21,7 +21,7 @@ namespace TacMesh.Launcher.commands
         {
             while (true)
             {
-                Console.WriteLine("[COMMAND PARSER] Enter a command at any time [list / start <id> / kill <id>]:\n");
+                Console.WriteLine("[COMMAND PARSER] Enter a command at any time [list / start <id> / kill <id> / pos <id> <X,Y>]:\n");
                 string command = Console.ReadLine();
 
                 // if Ctrl+C was pressed, 'command' initiates to null, which causes an inifite loop.
@@ -83,7 +83,7 @@ namespace TacMesh.Launcher.commands
                         string id = splitted[_id_index];
                         string pos = splitted[_pos_index];
 
-                        _agentManager.WriteToInputStream(id, pos);
+                        _agentManager.MoveAgent(id, pos);
                         break;
                     }
                     default: throw new Exception();

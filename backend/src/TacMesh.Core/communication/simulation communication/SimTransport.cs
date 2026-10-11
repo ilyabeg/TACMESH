@@ -13,18 +13,24 @@ namespace TacMesh.Core.communication.simulation_communication
         private readonly SimReceiver _receiver;
         private readonly SimTransmitter _transmitter;
         private readonly Socket _srcSocket;
+        private readonly IPEndPoint _sourceAddress;
 
         // event handlers
         public event EventHandler<CrashEventArgs> CrashedEventHandler;
         public event EventHandler<MessageReceivedEventArgs> MessageReceivedEventHandler;
 
-        // injected radio model
+        // radio model to avaluate a connection
+        // per the proposal: "each node executes the radio model before passing the packet to the Socket"
         private readonly IRadioModel _radioModel;
 
         public SimTransport(Socket source, IRadioModel radioModel)
         {
             _srcSocket = source;
             _radioModel = radioModel;
+
+            // pull local enpoint from source socket
+            _sourceAddress = (IPEndPoint)_srcSocket.LocalEndPoint!;
+
             _receiver = new SimReceiver(source);
             _transmitter = new SimTransmitter(source);
 
@@ -40,17 +46,15 @@ namespace TacMesh.Core.communication.simulation_communication
         /// <param name="destination"></param>
         public void Transmit(byte[] data, IPEndPoint destinationAddress)
         {
-            Task.Run(async () => 
+            Task.Run(async () =>
             {
                 try
                 {
-                    // pull local enpoint from source socket
-                    IPEndPoint sourceAddress = (IPEndPoint)_srcSocket.LocalEndPoint!;
-
-                    // check via radio model if packet can be sent
-                    // if denied, packet gets abandoned.
-                    if (await _radioModel.TestConnection(sourceAddress, destinationAddress))
+                    // evaluate connection before sending
+                    if (await _radioModel.TestConnection(_sourceAddress, destinationAddress))
+                    {
                         _transmitter.Transmit(data, destinationAddress);
+                    }
                 }
                 catch (Exception e)
                 {

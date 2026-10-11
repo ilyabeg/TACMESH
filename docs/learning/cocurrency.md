@@ -126,27 +126,13 @@ A **Deadlock** is a state where two or more processes or threads cannot proceed 
 
 A fixed lock order prevents deadlocks by eliminating the possibility of circular waiting between threads by forcing all threads to acquire locks in the same sequence, making a circular wait impossible.
 
-In my project, threads will eventually need to interact with two or more shared resources at a time. For example: Authorize a received message by the NeighbourTable and then saving that message in the messages Buffer. If there was no order rule for aquiring the locks, a background thread could lock the Table and then ask for the Buffer, while another background processing thread might lock the Buffer and then ask for the Table. If they run in the same exact moment they could get stuck in a deadlock waiting forever.
+In my project, threads will eventually need to interact with two or more shared resources at a time. For example, access the NeighbourTable and then and then access the PacketBuffer to store the message. If there was no order rule for aquiring the locks, a background thread could lock the Table and then ask for the Buffer, while another background processing thread might lock the Buffer and then ask for the Table. If they run in the same exact moment they could get stuck in a deadlock waiting forever.
 
 The ordering rule that I enforce: Always acquire the Table lock before Aquiring the Buffer lock. This matches the natural data flow: A received message is **FIRST**, authorized by the Table, and only **THEN** added to the buffer. Plus, dealing with the heavier operations of the Table first, doesn't cause the Buffer thread to unnecessarily wait for the slower Table operations, preventing a slight bottleneck.
 
 *Code Example*:
 ```csharp
-// Theoretical code example, because Buffer is still not implemented
-public void ProcessPacket(Packet packet)
-{
-    // LOCK ORDER RULE: Always acquire access to the NeighbourTable lock before the Buffer lock to prevent Deadlocks.
-    using (table.Read())
-    {
-        // Authorize sender first...
-        if (table.IsValidNeighbour(packet.SrcID))
-        {
-            // Add to buffer after...
-            using (buffer.Write())
-            {
-                buffer.AddPacket(packet);
-            }
-        }
-    }
-}
+
+// code example will be added in the future when I deal with a deadlock situation
+
 ```

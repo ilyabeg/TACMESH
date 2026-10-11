@@ -1,21 +1,18 @@
-﻿using System.Collections.Concurrent;
-using System.Net;
-using TacMesh.Core.graph_related;
+﻿using System.Net;
 
 namespace TacMesh.Core.interfaces.communication_interfaces
 {
     public interface IRadioModel
     {
         /// <summary>
-        /// Method to check connection between two agent nodes
+        /// Method to evaluate a connection between two agent nodes
         /// </summary>
         /// <returns>True if a connection is valid. False otherwise.</returns>
-        Task<bool> TestConnection(Location source, Location destination);
+        Task<bool> TestConnection(IPEndPoint source, IPEndPoint destination);
 
         /// <summary>
-        /// Returns all the devices on the network.
+        /// returns the current knwon peers in the network.
         /// </summary>
-        /// <returns></returns>
-        ConcurrentDictionary<string, IPEndPoint> GetNetworkDevices();
+        Dictionary<string, IPEndPoint> GetPeers();
     }
 }

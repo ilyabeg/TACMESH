@@ -45,9 +45,9 @@ In TACMESH the dependencied are:
 
 - **TacMesh.Agent** - Depends on the Core. Why? Core: Because it executes logic written inside of the Core project.
 
-- **TacMesh.Launcher** - : Depends on TacMesh.Core and TacMesh.Agent. Why? Core: Because it is responsible for launching the logic behind the Core. Agent: Because it is responsible for launching instances of the Agent project.
+- **TacMesh.Launcher** - Depends on TacMesh.Core. Why? 
 
-- **TacMesh.Tests** - Depends on TacMesh.Core and TacMesh.Agent as well. Why? Because it is for unit testing code sample, it get either be Core logic or trying out Agent samples.
+- **TacMesh.Tests** - Depends on TacMesh.Corel. Why? Because it is used for unit testing code sample from the Core logic.
 
 ```mermaid
 graph TD
@@ -59,11 +59,9 @@ graph TD
    
    %% Launcher Dependencies
    Launcher[TacMesh.Launcher] --> Core
-   Launcher[TacMesh.Launcher] --> Agent
 
    %% Tests Dependencies
    Tests[TacMesh.Tests] --> Core
-   Tests[TacMesh.Tests] --> Agent
 ```
 
 ## Proposal Chapters Implementation Places
@@ -115,20 +113,20 @@ This chart shows where the Functional Requirement is executed and implemented, a
 ---+--------------------------+--------------------------+--------------------------+--------------
  4 | The system will identify | Agent (Identifies break  | NetAnalyser (class from  | Clear
    | breaking nodes and bridges points after each        | Core)                    |
-   | in the network graph in  | 'connectivity' broadcast |                          |
-   | real time and alert the  | messages and network     |                          |
-   | commander                | changes)                 |                          |
+   | in the network graph in  | 'connectivity' message   |                          |
+   | real time and alert the  | and network changes)     |                          |
+   | commander                |                          |                          |
 ---+--------------------------+--------------------------+--------------------------+--------------
- 5 | Upon receiving a report of  Agent (Executes routing | Router (class from       | Clear
-   | a casualty, the system   | algorithms upon receving | Core)                    |
+ 5 | Upon receiving a report of  Agent (Executes routing | EvacuationRouter (class  | Clear
+   | a casualty, the system   | algorithms upon receving | from Core)               |
    | will calculate three     | the report from the UI)  |                          |
    | evacuation routes        |                          |                          |
 ---+--------------------------+--------------------------+--------------------------+--------------
  6 | The system operates fully| All Projects.            | (No single definition)   | Clear
    | without any central server                          |                          |
 ---+--------------------------+--------------------------+--------------------------+--------------
- 7 | The same executable will | All Projects.            | (No single definition)   | Clear
-   | run in two modes without |                          |                          |
+ 7 | The same executable will | Agent (Can run in hardware  ITransport, IRadioModel | Clear
+   | run in two modes without | and simulation mode)     |  (Maybe more in future)  |
    | code changes             |                          |                          |
 ---+--------------------------+--------------------------+--------------------------+--------------
  8 | A scenario created by the|  --                      |  --                      | To be decided

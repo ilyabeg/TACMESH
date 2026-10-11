@@ -13,7 +13,8 @@ The down side of UDP is that it is not reliable as TCP, meaning apps need to han
 
 ## Why Choose UDP Over TCP?
 
-In my project, I use UDP for my network communication because establishing a connection (using TCP) between one user and all the others in a mobile Ad-Hoc Network where all of the connections break and reconnect constantly will be next to impossible. I use UDP for fast communication and handle the reliability myself by having the ground forces hold messages that can't yet reach their destination in a buffer, until a suitable connection was established.
+In my project, I use UDP for my network communication. Using TCP works against me because establishing a connection in a mobile Ad-Hoc Network, where all of the connections break and reconnect constantly, would fail after a long timeout between nodes that are far apart, and retransmission would not work when un-connected. 
+I use UDP because it doesn't guarantee packet arrival, and handle the reliability myself by having the ground forces hold messages that can't yet reach their destination in a buffer, until a suitable connection was established.
 
 ## what happens to a datagram sent to a port nobody listens on?
 
@@ -26,6 +27,6 @@ When a datagram is sent to a port that has no active listener, the destination's
 
 You can think of the difference between *Bindind* and *Sending* in terms of UDP communication sort of as **claiming a specific mailing address** and **dropping a letter into a mailbox**.
 
-* **Bind** - Means to assign a local port and IP address to a socket. When binding a UDP Socket, the Operating System allocates it with a random address that is made up of an IP and Port. Bind tells the OS "*Listen for incoming packets pn this specific local IP and Port number*" (This is your address so you can receive mail in the mailbox).
+* **Bind** - Means to assign a local port and IP address to a socket. Bind tells the OS "*Listen for incoming packets on this specific local IP and Port number*" (This is your address so you can receive mail in the mailbox).
 
 * **Send** - Means to transmit data packets to a destination IP and port. When *sending* you have to tell where to transmit the data to (What address is the mailbox that you wand to send your mail?).

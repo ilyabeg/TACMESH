@@ -8,8 +8,6 @@ namespace TacMesh.Core.serializers
     /// The Byte writer class is a helper class used to serialize any type of data into it's
     /// byte representation and write it into a contiguous region in memory. The writing must be IN ORDER
     /// that you want to write into the region in memory.
-    /// By following the SOLID Principle O/C, I leave this class OPEN for 
-    /// extension, and CLOSED for modification.
     /// </summary>
     public class ByteWriter
     {
@@ -20,7 +18,7 @@ namespace TacMesh.Core.serializers
         // IMPORTANT NOTE: I AM AWARE THIS VALUE APPEARS TWICE, ONCE HERE AND IN THE BYTEREADER CLASS,
         // BUT I AM LEAVING IT HERE FOR NOW, UNTILL I FIND A BETTER PLACE FOR IT, BECAUSE THE
         // CONSTANT INDEX IS STRICTLY RELATED TO THE BYTE READER AND BYTE WRITER CLASSES, AND NOT TO ANY OTHER CLASS.
-        private const int _index0 = 0;
+        private const int _memoryStartIndex = 0;
 
         // Inject the empty buffer in construction
         public ByteWriter(byte[] buffer)
@@ -34,10 +32,10 @@ namespace TacMesh.Core.serializers
         {
             // use Span to not create new memory and to write the data into the Memory object.
             // writing to the Span, writes both to the Memory object and the original array
-            _byteMemory.Span[_index0] = data;
+            _byteMemory.Span[_memoryStartIndex] = data;
 
             // slice the written data: shrinks the Memory object by 1 byte
-            _byteMemory = _byteMemory.Slice(IByteSerializer._1byte);
+            _byteMemory = _byteMemory.Slice(ByteCount._1byte);
         }
 
         public void WriteBytes(long data)
@@ -46,13 +44,13 @@ namespace TacMesh.Core.serializers
             BinaryPrimitives.WriteInt64BigEndian(_byteMemory.Span, data);
 
             // slice the written data: shrinks the Memory object by 8 bytes
-            _byteMemory = _byteMemory.Slice(IByteSerializer._8bytes);
+            _byteMemory = _byteMemory.Slice(ByteCount._8bytes);
         }
 
         public void WriteBytes(string data, int length)
         {
             // slice a chunk of 'length' bytes out of the Memory object
-            Span<byte> _byteSpan = _byteMemory.Span.Slice(_index0, length);
+            Span<byte> _byteSpan = _byteMemory.Span.Slice(_memoryStartIndex, length);
 
             // write the string into that chunk
             Encoding.UTF8.GetBytes(data, _byteSpan);
@@ -68,7 +66,7 @@ namespace TacMesh.Core.serializers
             data.TryWriteBytes(_byteMemory.Span, write_as_big_endian, out _);
 
             // slice the written data: shrinks the Memory object by 16 bytes
-            _byteMemory = _byteMemory.Slice(IByteSerializer._16bytes);
+            _byteMemory = _byteMemory.Slice(ByteCount._16bytes);
         }
     }
 }

@@ -1,14 +1,30 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
+using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.events;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
+using TacMesh.Core.utils.configurations;
+using TacMesh.Core.utils.random;
 
 namespace TacMesh.Core.models
 {
+    // keep record of node and his location
+    internal class AgentRecord
+    {
+        public string NodeId { get; private set; }
+        public Location CurrentLocation { get; set; }
+
+        public AgentRecord(string nodeId, Location currentLocation)
+        {
+            NodeId = nodeId;
+            CurrentLocation = currentLocation;
+        }
+    }
+
     /// <summary>
     /// Layer inside the Node process that determines before sending a Packet if the 
     /// communication can be established with the destination node. It simulates a radio communication layer.
@@ -25,20 +41,19 @@ namespace TacMesh.Core.models
 
 
         // virtual radio model field according to the design document
-        private readonly ConcurrentDictionary<string, IPEndPoint> _agent_locations;
-        private readonly Random _random_generator;
-        private const int _SEED = 13021995; // fixed seed to generate the same Randoms to repeat tests
+        private readonly ConcurrentDictionary<IPEndPoint, AgentRecord> _agent_locations;
+        private readonly DRandom _dRandom; // deterministic random generator
         private const int _DELAY_RANGE = 5; // the random delay range 
         private readonly int _MAX_RANGE; // not constant because will eventually change in runtime
 
 
         // inject max range in constructor
-        public VirtualRadioModel(int maximum_range, IReceiver radioReceiver, ILineOfSight terrianTester)
+        public VirtualRadioModel(int maximum_range, DRandom dRandom, IReceiver radioReceiver, ILineOfSight terrianTester)
         {
-            _agent_locations = new ConcurrentDictionary<string, IPEndPoint>();
-            _random_generator = new Random(_SEED);            
+            _agent_locations = new ConcurrentDictionary<IPEndPoint, AgentRecord>();
             _MAX_RANGE = maximum_range;
 
+            _dRandom = dRandom;
             _radioReceiver = radioReceiver;
             _radioReceiver.StartReceiving(); // start locations send to virtual space
             _radioReceiver.MessageReceivedEventHandler += (s, e) => OnMessageReceived(s, e);
@@ -46,17 +61,20 @@ namespace TacMesh.Core.models
             _terrianTester = terrianTester;
         }
 
-        // update location report based on the sender
+        // add each node's assined port using the beacon and initial position using system configs
         private void OnMessageReceived(object s, MessageReceivedEventArgs e)
         {
             try
             {
                 // try to parse the signal
                 string signal = Encoding.UTF8.GetString(e.MessageBytes);
-                if (!TryParseSignal(signal, out string senderID, out IPEndPoint endPoint)) return;
+                if (SimBeaconEmitter.TryParseBeacon(signal, out string senderID, out IPEndPoint endPoint))
+                {
+                    // add node's address and initial location from system configs
 
-                // add or update the node's address
-                _agent_locations[senderID!] = endPoint!;
+                    // FOR NOW THE LOCATION IS PULLED FROM THE SYSTEM CONFIGS DICTIONARY
+                    _agent_locations[endPoint!] = new AgentRecord(senderID, SystemConfigs.NodePositions[senderID!]);
+                }
             }
             catch (Exception ex)
             {
@@ -64,78 +82,64 @@ namespace TacMesh.Core.models
             }
         }
 
-        /// <summary>
-        /// Tries to parse the given string signal as a beacon signal containing the SenderID and Endpoint
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="senderID"></param>
-        /// <param name="endPoint"></param>
-        /// <returns>True if successfult parsed the signal or False otherwise</returns>
-        private bool TryParseSignal(string signal, out string? senderID, out IPEndPoint? endPoint)
+        // updates a specific agent's location in the record
+        public void UpdateAgentLocation(string nodeId, Location newLocation)
         {
-            try
-            {
-                // CURRENT signal structure: "ID|PORT" (MAY CHANGE IN FUTURE)
-                // for example: "Node-01|51001"
-                string[] splitted = signal.Split('|');
-
-                senderID = splitted[0];            // "ID|...."
-                int port = int.Parse(splitted[1]); // "..|PORT"
-
-                // create endpoint from the parsed port
-                endPoint = new IPEndPoint(IPAddress.Loopback, port);
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Couldn't parse virtual destination: '{e.Message}'");
-                senderID = null;
-                endPoint = null;
-                return false;
-            }
+            // update the current location in the agent positions in system configs
+            // THIS IS TEMPORARILY UNTIL I DECIDE A FITTING WAY TO GET THE RADIO MODEL
+            // TO KNOW ABOUT THE NODE LOCATIONS IN RUNTIME
+            SystemConfigs.NodePositions[nodeId] = newLocation;
         }
 
+        /// <summary>
+        /// returns the current knwon peers in the network.
+        /// </summary>
+        public Dictionary<string, IPEndPoint> GetPeers()
+        {
+            // list to hold only approved endpoints
+            Dictionary<string, IPEndPoint> peers = new Dictionary<string, IPEndPoint>();
+
+            // create a dict of the peers by their id
+            foreach (IPEndPoint nodeAddress in _agent_locations.Keys)
+                peers.TryAdd(_agent_locations[nodeAddress].NodeId, nodeAddress);
+            return peers;
+        }
 
         /// <summary>
-        /// Method to check connection between two agent nodes.
+        /// Method to evaluate a connection between two agent nodes.
         /// </summary>
-        /// <param name="source">Source location</param>
-        /// <param name="destination">Destination location</param>
+        /// <param name="source">Source address</param>
+        /// <param name="destination">Destination address</param>
         /// <returns>True if a connection is valid. False otherwise.</returns>
-        public async Task<bool> TestConnection(Location source, Location destination)
+        public async Task<bool> TestConnection(IPEndPoint source, IPEndPoint destination)
         {
+            // pull id
+            string dstId = _agent_locations[destination].NodeId;
+
+            // get the locations
+            Location srcLocation = _agent_locations[source].CurrentLocation;
+            Location dstLocation = _agent_locations[destination].CurrentLocation;
+
             // distance between the points
-            double distance = source.Distance(destination);
+            double distance = srcLocation.Distance(dstLocation);
 
             // the 3 radio model tests
             if (!TestRange(distance)) return false;
-            if (!TestRelativeDistance(distance)) return false;
-            if (!_terrianTester.TestLineOfSight(source, destination)) return false;
+            if (!TestRelativeDistance(distance, dstId)) return false;
+            if (!_terrianTester.TestLineOfSight(srcLocation, dstLocation)) return false;
 
-            // if all successful, generate delay
-            await GenerateDelay();
+            // generate a random delay
+            await GenerateDelay(dstId);
             return true;
         }
-
-        /// <summary>
-        /// Method that provides the current neighbours the node can theoretically reach
-        /// </summary>
-        /// <returns></returns>
-        public ConcurrentDictionary<string, IPEndPoint> GetNetworkDevices() => _agent_locations;
-
 
         // --- private testing methods ---
 
         // Max range test
         private bool TestRange(double distance) => distance <= _MAX_RANGE;
 
-
-        // constants for upper/lower bound for random number
-        private const int _upperBound = 101;
-        private const int _lowerBound = 1;
-
         // Relative Distance test
-        private bool TestRelativeDistance(double distance)
+        private bool TestRelativeDistance(double distance, string id)
         {
             // EXPLANATION: the relative distance of the nodes is determined by the distance RELATIVE to the
             // maximum range between the nodes. since RangeTest succeeded, distance <= _MAX_RANGE whic means
@@ -149,19 +153,18 @@ namespace TacMesh.Core.models
             double probability_percent = (1 - relative_distance) * 100;
 
             // get a random number betweem 1-100
-            // returns random between lower bound (including) and upper bound (excluding)
-            int num = _random_generator.Next(_lowerBound, _upperBound);
+            double num = _dRandom.DetermineRandom(id) * 100;
 
             // if number is in the 'probability side'
             return num <= probability_percent;
         }
 
         // rolls a random generated delay to simulate latency
-        private async Task GenerateDelay()
+        private async Task GenerateDelay(string id)
         {
             // _random.Next(RANGE) return a number between 0 and 5, adding the range again
             // makes the range be between 5 and 10 ms
-            int delay_ms = _random_generator.Next(_DELAY_RANGE+1) + _DELAY_RANGE;
+            int delay_ms = _dRandom.DetermineRandom(id, _DELAY_RANGE + 1) + _DELAY_RANGE;
             await Task.Delay(delay_ms);
         }
     }
