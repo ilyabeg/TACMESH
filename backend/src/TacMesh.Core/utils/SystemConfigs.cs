@@ -9,9 +9,6 @@ namespace TacMesh.Core.utils
         // VERY IMPORTANT: TEMPORARILY MAGIC NUMBER!! WILL CHANGE IN THE FUTURE TO GRAB FROM CONFIGURATIONS FILE
         public static int HeartbeatDelayMs = 5000;
 
-        // TEMPORARY DICT OF LOCATIONS 
-        public static Dictionary<string, Location> NodePositions = new Dictionary<string, Location>();
-
         // TEMPORARILY USE THESE MAGIC NUMBERS FOR BINDING AND ADDING THE RADIO SOCKET TO THE
         // MCAST GROUP. WILL BE FIXED. UNTILL I ADD A CONFIGURATIONS OR SETTINGS FILE OR JUST
         // DECIDE WHERE TO KEEP THESE AS CONSTANTS, I WILL USE THIS FOR TESTING THE VRadioModel
@@ -21,14 +18,14 @@ namespace TacMesh.Core.utils
 
 
         // loads provided configs to memory
-        public static void LoadConfigurations(string filePath)
-        {
-            // read the json and deserialize
-            string scenario_positions = File.ReadAllText(filePath);
+        //public static void LoadConfigurations(string filePath)
+        //{
+        //    // read the json and deserialize
+        //    string scenario_positions = File.ReadAllText(filePath);
 
-            // if positions are null throw exception
-            NodePositions = JsonSerializer.Deserialize<Dictionary<string, Location>>(scenario_positions) 
-                ?? throw new ArgumentNullException("Scenario file can't be empty.");
-        }
+        //    // if positions are null throw exception
+        //    NodePositions = JsonSerializer.Deserialize<Dictionary<string, Location>>(scenario_positions) 
+        //        ?? throw new ArgumentNullException("Scenario file can't be empty.");
+        //}
     }
 }

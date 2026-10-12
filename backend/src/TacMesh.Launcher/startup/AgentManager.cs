@@ -27,6 +27,7 @@ namespace TacMesh.Launcher.startup
             _agents = agents;
         }
 
+
         // attach data received event to each process before starting it
         public void StartAgents()
         {
@@ -52,6 +53,10 @@ namespace TacMesh.Launcher.startup
                     _semaphore.WaitOne();
                 }
             }
+
+            // make the agents emit the beacon only after starting up all of the processes
+            foreach (string agent in _agents.Keys)
+                WriteToInputStream(agent, "EMIT_INITIATION_BEACON");
         }
 
         // each EchoOutput gets spesific agentId by the agent attatching this handler with their id on creation
@@ -167,11 +172,9 @@ namespace TacMesh.Launcher.startup
                 return;
             }
 
-            foreach (string agent in _agents.Keys)
-            {
-                string input = $"{agentId}|{newPosition}";
-                WriteToInputStream(agent, input);
-            }
+            // move only the specific agent
+            string input = $"{agentId}|{newPosition}";
+            WriteToInputStream(agentId, input);
         }
 
         // prints the agent processes

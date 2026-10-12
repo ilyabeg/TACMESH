@@ -39,5 +39,7 @@ namespace TacMesh.Core.graph_related
             // d = sqrt{ (x2 - x1)^2 + (y2 - y1)^2 }
             return Math.Sqrt(xDiffSquared + yDiffSquared);
         }
+
+        public override string ToString() => $"({X:F3},{Y:F3})";
     }
 }

@@ -29,7 +29,7 @@ namespace TacMesh.Launcher
             agentManager.StartAgents();
 
             // inject agent manager
-            CommandParser commandParser = new CommandParser(agentManager);
+            CommandParser commandParser = new (agentManager);
 
             // kill processes when Ctrl+C is pressed
             Console.CancelKeyPress += (s, e) => myHandler(s,e);

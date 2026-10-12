@@ -1,4 +1,6 @@
-﻿namespace TacMesh.Core.interfaces.beacon___destination
+﻿using TacMesh.Core.graph_related;
+
+namespace TacMesh.Core.interfaces.beacon_and_destination
 {
     /// <summary>
     /// A beacon emitter is a small hardware or software device that a Node to constantly
@@ -6,6 +8,6 @@
     /// </summary>
     public interface IBeaconEmitter
     {
-        void EmitBeacon();
+        void EmitBeacon(Location location);
     }
 }

@@ -8,7 +8,6 @@ using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
-using TacMesh.Core.utils;
 
 namespace TacMesh.Core.models
 {
@@ -68,12 +67,10 @@ namespace TacMesh.Core.models
             {
                 // try to parse the signal
                 string signal = Encoding.UTF8.GetString(e.MessageBytes);
-                if (SimBeaconEmitter.TryParseBeacon(signal, out string senderID, out IPEndPoint endPoint))
+                if (SimBeaconEmitter.TryParseBeacon(signal, out string senderID, out IPEndPoint endPoint, out Location nodeLocation))
                 {
-                    // add node's address and initial location from system configs
-
-                    // FOR NOW THE LOCATION IS PULLED FROM THE SYSTEM CONFIGS DICTIONARY
-                    _agent_locations[endPoint!] = new AgentRecord(senderID, SystemConfigs.NodePositions[senderID!]);
+                    // add node's address and location
+                    _agent_locations[endPoint!] = new AgentRecord(senderID, nodeLocation);
                 }
             }
             catch (Exception ex)
@@ -83,13 +80,13 @@ namespace TacMesh.Core.models
         }
 
         // updates a specific agent's location in the record
-        public void UpdateAgentLocation(string nodeId, Location newLocation)
-        {
-            // update the current location in the agent positions in system configs
-            // THIS IS TEMPORARILY UNTIL I DECIDE A FITTING WAY TO GET THE RADIO MODEL
-            // TO KNOW ABOUT THE NODE LOCATIONS IN RUNTIME
-            SystemConfigs.NodePositions[nodeId] = newLocation;
-        }
+        //public void UpdateAgentLocation(string nodeId, Location newLocation)
+        //{
+        //    // update the current location in the agent positions in system configs
+        //    // THIS IS TEMPORARILY UNTIL I DECIDE A FITTING WAY TO GET THE RADIO MODEL
+        //    // TO KNOW ABOUT THE NODE LOCATIONS IN RUNTIME
+        //    SystemConfigs.NodePositions[nodeId] = newLocation;
+        //}
 
         /// <summary>
         /// returns the current knwon peers in the network.
