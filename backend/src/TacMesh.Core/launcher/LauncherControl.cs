@@ -27,9 +27,14 @@ namespace TacMesh.Core.launcher
                     string input = Console.ReadLine();
                     if (TryParseStdInput(input, out string nodeId, out Location newLocation))
                     {
+                        // advance the node's position to the next (TMEPORARILY STATIC)
+                        double nodeSpeed = 2;
+
+
+
                         // update the new location received from the 
                         _radioModel.UpdateAgentLocation(nodeId!, newLocation!);
-                        Console.WriteLine($"[AGENT LAUNCHER CONTROL] Moved Node <{nodeId!}> to new position: <{newLocation.X},{newLocation.Y}>.\n");
+                        //Console.WriteLine($"[AGENT LAUNCHER CONTROL] Moved Node <{nodeId!}> to new position: ({newLocation.X},{newLocation.Y}).\n");
                     }
                 }
             });

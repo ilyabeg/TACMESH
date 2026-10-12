@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using TacMesh.Core.assets.read_write_lock;
+using TacMesh.Core.assets;
 
 namespace TacMesh.Tests;
 

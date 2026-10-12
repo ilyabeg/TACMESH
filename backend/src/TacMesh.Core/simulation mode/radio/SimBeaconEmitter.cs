@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 using TacMesh.Core.interfaces.beacon___destination;
-using TacMesh.Core.socket_related;
+using TacMesh.Core.utils;
 
 namespace TacMesh.Core.communication.radio_communication
 {

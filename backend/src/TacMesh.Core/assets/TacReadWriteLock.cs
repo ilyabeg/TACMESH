@@ -1,4 +1,4 @@
-﻿namespace TacMesh.Core.assets.read_write_lock
+﻿namespace TacMesh.Core.assets
 {
     /// <summary>
     /// Custom, writer preffering, Read/Write Lock class to handle thread synchronization

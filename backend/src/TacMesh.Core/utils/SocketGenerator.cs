@@ -1,12 +1,12 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 
-namespace TacMesh.Core.socket_related
+namespace TacMesh.Core.utils
 {
     /// <summary>
     /// Socket generating class to provide fast and readeable socket generation and binding methods.    
     /// </summary>
-    public class SocketGenerator
+    public static class SocketGenerator
     {
         // constants
         public const int RandomPort = 0; // let the OS decide the port

@@ -1,14 +1,14 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
-using TacMesh.Core.assets.random;
+using TacMesh.Core.assets;
 using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.events;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
-using TacMesh.Core.utils.configurations;
+using TacMesh.Core.utils;
 
 namespace TacMesh.Core.models
 {

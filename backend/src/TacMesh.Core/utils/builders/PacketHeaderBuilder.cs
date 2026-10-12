@@ -1,6 +1,6 @@
 ﻿using TacMesh.Core.interfaces;
 
-namespace TacMesh.Core.builders
+namespace TacMesh.Core.utils.builders
 {
     /// <summary>
     /// The PacketHeaderBuilder class implements the 'Builder' Design Pattern to supplying easy, 

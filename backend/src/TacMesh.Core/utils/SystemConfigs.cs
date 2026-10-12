@@ -2,7 +2,7 @@
 using System.Text.Json;
 using TacMesh.Core.graph_related;
 
-namespace TacMesh.Core.utils.configurations
+namespace TacMesh.Core.utils
 {
     public class SystemConfigs
     {

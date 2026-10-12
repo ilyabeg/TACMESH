@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace TacMesh.Core.assets.random
+namespace TacMesh.Core.assets
 {
     // Deterministic Random - provides a deterministic random number based on the provided ID
     public class DRandom

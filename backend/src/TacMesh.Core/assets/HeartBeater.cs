@@ -1,12 +1,12 @@
 ﻿using System.Net;
-using TacMesh.Core.builders;
 using TacMesh.Core.database_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.serializers;
-using TacMesh.Core.utils.configurations;
+using TacMesh.Core.utils;
+using TacMesh.Core.utils.builders;
 
-namespace TacMesh.Core.communication
+namespace TacMesh.Core.assets
 {
     public class HeartBeater
     {        

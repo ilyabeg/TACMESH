@@ -1,6 +1,6 @@
 ﻿using TacMesh.Core.interfaces.clock_interfaces;
 
-namespace TacMesh.Core.clocks
+namespace TacMesh.Core.assets.clocks
 {
     public class SystemClock : IClock
     {

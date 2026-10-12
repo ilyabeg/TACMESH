@@ -1,8 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using TacMesh.Core.assets.random;
-using TacMesh.Core.clocks;
-using TacMesh.Core.communication;
+using TacMesh.Core.assets;
+using TacMesh.Core.assets.clocks;
 using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.communication.simulation_communication;
 using TacMesh.Core.database_related;
@@ -15,9 +14,8 @@ using TacMesh.Core.launcher;
 using TacMesh.Core.map_related;
 using TacMesh.Core.models;
 using TacMesh.Core.serializers;
-using TacMesh.Core.socket_related;
 using TacMesh.Core.tables.node_related;
-using TacMesh.Core.utils.configurations;
+using TacMesh.Core.utils;
 
 namespace TacMesh.Agent
 {
@@ -56,7 +54,7 @@ namespace TacMesh.Agent
                 DRandom dRandom = new DRandom();
 
                 // TEMPORARILY inject max range as magic number for the test, WILL BE CHANGED!
-                IRadioModel radioModel = new VirtualRadioModel(maximum_range: 100, dRandom, radioReceiver, terrainLoS);
+                IRadioModel radioModel = new VirtualRadioModel(maximum_range: 10, dRandom, radioReceiver, terrainLoS);
 
                 // ITransport
                 ITransport simTransport = new SimTransport(agent_socket, radioModel);
