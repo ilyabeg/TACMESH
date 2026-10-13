@@ -12,6 +12,7 @@ namespace TacMesh.Core.launcher
         private readonly VirtualRadioModel _radioModel;
         private readonly string _srcNode; // the Node that the Launcher is pushing the data to
         private Location _currentLocation; // holds the current node location
+        private readonly double _nodeSpeed; // holds the current node speed
         private readonly NodeAdvancer _advancer;
 
         // an emitter to TEMPORARILY emit a beacon to each radio model on the net of the updated
@@ -20,11 +21,12 @@ namespace TacMesh.Core.launcher
         // will be removed. it is currently strictly temporary for the simplified position advancing.
         private readonly IBeaconEmitter _emitter;
 
-        public LauncherControl(VirtualRadioModel radioModel, string srcNode, Location intialLocation, IBeaconEmitter emitter)
+        public LauncherControl(VirtualRadioModel radioModel, string srcNode, Location intialLocation, double speed, IBeaconEmitter emitter)
         {
             _radioModel = radioModel;
             _srcNode = srcNode;
             _currentLocation = intialLocation;
+            _nodeSpeed = speed;
             _advancer = new NodeAdvancer();
             _emitter = emitter;
 
@@ -47,6 +49,7 @@ namespace TacMesh.Core.launcher
                         {
                             // emit an initial beacon so other nodes recognize this node
                             _emitter.EmitBeacon(_currentLocation!);
+                            continue;
                         }
 
                         // test receiving
@@ -57,15 +60,15 @@ namespace TacMesh.Core.launcher
                             // ignore a message from the launcher not meant for this specific node
                             if (!_srcNode.Equals(nodeId)) continue;
 
-                            // advance the node's position to the next (TMEPORARILY STATIC)
-                            double nodeSpeed = 2;
-
                             // advance position of the node
-                            if (await _advancer.AdvancePosition(_currentLocation, newLocation, nodeSpeed))
+                            if (await _advancer.AdvancePosition(_currentLocation, newLocation, _nodeSpeed))
                             {
                                 // print out the new location
-                                _currentLocation = newLocation;                                
+                                _currentLocation = newLocation;
                                 Console.WriteLine($"[LAUNCHER CONTROL] Moved Node <{nodeId!}> to new position: ({newLocation.X},{newLocation.Y}).\n");
+
+                                // mcast the final location after end to be extra precise
+                                OnNodePositionUpdate(newLocation);
 
                                 // print a signal that the node advanced to notify launcher
                                 Console.WriteLine($"adv.\n");

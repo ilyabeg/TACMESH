@@ -67,6 +67,10 @@ namespace TacMesh.Core.models
             {
                 // try to parse the signal
                 string signal = Encoding.UTF8.GetString(e.MessageBytes);
+
+                // temp test
+                //Console.WriteLine($"[VRadio Model] {_nodeId} Received: {signal}\n");
+
                 if (SimBeaconEmitter.TryParseBeacon(signal, out string senderID, out IPEndPoint endPoint, out Location nodeLocation))
                 {
                     // add node's address and location
@@ -78,15 +82,6 @@ namespace TacMesh.Core.models
                 Console.WriteLine($"[VIRTUAL RADIO MODEL CRASH]: '{ex.Message}'");
             }
         }
-
-        // updates a specific agent's location in the record
-        //public void UpdateAgentLocation(string nodeId, Location newLocation)
-        //{
-        //    // update the current location in the agent positions in system configs
-        //    // THIS IS TEMPORARILY UNTIL I DECIDE A FITTING WAY TO GET THE RADIO MODEL
-        //    // TO KNOW ABOUT THE NODE LOCATIONS IN RUNTIME
-        //    SystemConfigs.NodePositions[nodeId] = newLocation;
-        //}
 
         /// <summary>
         /// returns the current knwon peers in the network.

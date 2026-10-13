@@ -51,7 +51,10 @@ namespace TacMesh.Launcher.commands
                 // Note: TEMPORARILY start the node position advances here by typing
                 // '.' on the keyboard until an automated and different 
                 // implementation of handling node advancements is written...
-                if (command.Equals(".")) _agentManager.InitAdvances();
+                if (command.Equals(".")) {
+                    _agentManager.InitAdvances();
+                    return;
+                }
 
 
                 switch (command)

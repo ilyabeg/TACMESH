@@ -22,8 +22,8 @@ namespace TacMesh.Agent
 {
     public class Program
     {
-        // arguments length should be exactly 2
-        const int arguments_length = 2;
+        // arguments length should be exactly 3
+        const int arguments_length = 3;
 
         static void Main(string[] args)
         {
@@ -39,6 +39,8 @@ namespace TacMesh.Agent
 
                 string nodeId = args[0];
                 Location initialLocation = JsonSerializer.Deserialize<Location>(args[1])!;
+                //Console.WriteLine($"{nodeId} initial location: {initialLocation}");
+                double initialSpeed = double.Parse(args[2]);
                 
                 // --- create dependencies ---
 
@@ -64,7 +66,7 @@ namespace TacMesh.Agent
 
                 // beacon emitter
                 IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeId, assignedPort, SystemConfigs.McastEndPoint);
-                LauncherControl launcherControl = new LauncherControl((VirtualRadioModel)radioModel, nodeId, initialLocation, beaconEmitter);
+                LauncherControl launcherControl = new LauncherControl((VirtualRadioModel)radioModel, nodeId, initialLocation, initialSpeed, beaconEmitter);
 
                 // --- inject all dependencies --- 
 

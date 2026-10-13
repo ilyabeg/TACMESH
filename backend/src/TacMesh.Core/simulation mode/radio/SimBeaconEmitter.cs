@@ -76,7 +76,7 @@ namespace TacMesh.Core.communication.radio_communication
 
                 // parse the location
                 double x = double.Parse(locationParts[0]);
-                double y = double.Parse(locationParts[0]);
+                double y = double.Parse(locationParts[1]);
                 newLocaion = new Location(x,y);
 
                 // create endpoint from the parsed port

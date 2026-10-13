@@ -12,14 +12,24 @@ namespace TacMesh.Launcher.processes
         // paths relative to folder: Final-Project-2027/project-files/TACMESH/backend/src/TacMesh.Launcher/
         private const string _agaentExe = @"..\TacMesh.Agent\bin\Debug\net10.0\TacMesh.Agent.exe";
 
-        // TEMPORARY STATIC LOCATION DICT FOR EVERY NODE
-        private static Dictionary<string, Location> _locations = new()
+        // TEMPORARY STATIC LOCATION DICT FOR EVERY NODE UNTIL THE USER INPUTS IN THE FUTURE 
+        private static readonly Dictionary<string, Location> _locations = new()
         {
             ["Node-01"] = new Location(1, 1),
             ["Node-02"] = new Location(1, 2),
             ["Node-03"] = new Location(2, 2),
             ["Node-04"] = new Location(2, 1),
             ["Node-05"] = new Location(1.5, 1.5)
+        };
+
+        // TEMPORARY STATIC SPEEDS DICT FOR EVERY NODE UNTIL THE USER INPUTS IN THE FUTURE 
+        private static readonly Dictionary<string, double> _speeds = new()
+        {
+            ["Node-01"] = 2,
+            ["Node-02"] = 1,
+            ["Node-03"] = 1.5,
+            ["Node-04"] = 1,
+            ["Node-05"] = 2
         };
 
 
@@ -30,14 +40,9 @@ namespace TacMesh.Launcher.processes
 
             for (int i = 0; i < num_of_agents; i++)
             {
-                string nodeId = $"Node-{i+1:D2}";
-                string jsonLocation = JsonSerializer.Serialize(_locations[nodeId]);
-
-                // init start info
-                ProcessStartInfo start_info = InitStartInfo(_agaentExe, nodeId, jsonLocation);
-
                 // init agent process with the start info
-                Process agent = InitAgent(start_info); 
+                string nodeId = $"Node-{i+1:D2}";
+                Process agent = CreateNewAgentInstance(nodeId);
                 agents.Add(nodeId, agent);
             }
             return agents;
@@ -49,15 +54,16 @@ namespace TacMesh.Launcher.processes
             // init start info
             // if node dies and restarted, the initial location is initiated with it again
             string jsonLocation = JsonSerializer.Serialize(_locations[nodeId]);
-            ProcessStartInfo start_info = InitStartInfo(_agaentExe, nodeId, jsonLocation);
+            double speed = _speeds[nodeId];
+            ProcessStartInfo start_info = InitStartInfo(_agaentExe, nodeId, jsonLocation, speed);
 
             // init agent process with the start info
-            return InitAgent(start_info);
+            return new Process() { StartInfo = start_info };
         }
 
-        private static ProcessStartInfo InitStartInfo(string filename, string nodeId, string location)
+        private static ProcessStartInfo InitStartInfo(string filename, string nodeId, string location, double speed)
         {
-            return new ProcessStartInfo(filename, [nodeId, location])
+            return new ProcessStartInfo(filename, [nodeId, location, speed.ToString()])
             {
                 UseShellExecute = false,
                 RedirectStandardOutput = true, // redirect output stream to the launcher process
@@ -65,7 +71,5 @@ namespace TacMesh.Launcher.processes
                 CreateNoWindow = false
             };
         }
-
-        private static Process InitAgent(ProcessStartInfo start_info) => new Process() { StartInfo = start_info };
     }
 }

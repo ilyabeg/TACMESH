@@ -10,7 +10,7 @@ namespace TacMesh.Core.assets
         public event EventHandler<Location>? NodePositionUpdate;
 
         // the minimum threshold for two locations to be considered the same
-        private const double _DISTANCE_THRESHOLD = 0.001; // 1cm
+        private const double _DISTANCE_THRESHOLD = 0.001;
 
 
         /// <summary>
@@ -27,22 +27,29 @@ namespace TacMesh.Core.assets
                 // physics parameters
                 double totalDist = startPoint.Distance(endPoint);
                 double totalTime = Kinematics.TotalTime(totalDist, nodeSpeed);
-                double time = 0;
+                double time = 0; // time in ms
+                int ticks = 0;   // ticks representing the amount of 10ms 'jumps' performed (1 tick = 10 ms)
 
                 // the initial location and previous waypoint start at
                 // the node's initial location
                 Location currentLocation = startPoint;
 
                 // while didn't reach the endpoint (or advance time is less than the total time)
-                while (currentLocation.Distance(endPoint) > _DISTANCE_THRESHOLD && time < totalTime)
+                while (currentLocation.Distance(endPoint) > _DISTANCE_THRESHOLD && time <= totalTime)
                 {
                     // calculate the position at time t
                     currentLocation = Kinematics.PosAt(time, totalTime, startPoint, endPoint);
-                    PrintPosition(currentLocation, time);
+                    //PrintPosition(currentLocation, time);
 
                     // do something with the position...
-                    // for now, this something is invoking a position update event. may be changed...
-                    NodePositionUpdate?.Invoke(this, currentLocation);
+                    // for now, this something is invoking a position update event. may be changed
+                    // (the location may be pushed to the frontend for example) ...
+
+                    // invokes the current position every quarter of a second to throttle the mcasts
+                    // quarter of a second = 25 ticks (10ms * 25 = 250ms)
+                    if (ticks % 25 == 0)
+                        NodePositionUpdate?.Invoke(this, currentLocation);
+                    ticks++;
 
                     // get next time from converting the ms to seconds
                     // in other words, jump each 10ms
