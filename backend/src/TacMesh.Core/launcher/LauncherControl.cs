@@ -35,7 +35,7 @@ namespace TacMesh.Core.launcher
         // listens for StdInput pushed via the StdInputStream from the Launcher (the scenario manager)
         public void ListenForStdInput()
         {
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 while (true)
                 {
@@ -61,11 +61,18 @@ namespace TacMesh.Core.launcher
                             double nodeSpeed = 2;
 
                             // advance position of the node
-                            _advancer.AdvancePosition(_currentLocation, newLocation!, nodeSpeed);
-                            _currentLocation = newLocation;
+                            if (await _advancer.AdvancePosition(_currentLocation, newLocation, nodeSpeed))
+                            {
+                                // print out the new location
+                                _currentLocation = newLocation;                                
+                                Console.WriteLine($"[LAUNCHER CONTROL] Moved Node <{nodeId!}> to new position: ({newLocation.X},{newLocation.Y}).\n");
 
-                            // print out the new location
-                            Console.WriteLine($"[LAUNCHER CONTROL] Moved Node <{nodeId!}> to new position: ({newLocation.X},{newLocation.Y}).\n");
+                                // print a signal that the node advanced to notify launcher
+                                Console.WriteLine($"adv.\n");
+                            }
+                            else {
+                                Console.WriteLine($"Node Advancer failed to advance the node to the new position: {newLocation}.\n");
+                            }
                         }
                     }
                     catch (Exception e) {

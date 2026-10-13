@@ -21,6 +21,10 @@ namespace TacMesh.Launcher.startup
         private const int _maximumCount = 1; // the maximum number of requests for the semaphore that can be granted
         private const string _semName = "TacMesh-Global-Sem"; // the name that the semaphore uses
 
+        // public event to invoke the waypoint manager upon a node reaching the destination waypoint
+        public event EventHandler<string> WaypointReached;
+
+
         // constructor
         public AgentManager(Dictionary<string, Process> agents)
         {
@@ -44,7 +48,7 @@ namespace TacMesh.Launcher.startup
 
                     // attach echo data received event handler and pass agentId using the lambda,
                     // this saves the agentId for every Agent's own event handler with this specific id
-                    agent_process.OutputDataReceived += (s, e) => EchoOutput(agentId, s, e);
+                    agent_process.OutputDataReceived += (s, e) => OnStdOutReceived(agentId, s, e);
 
                     agent_process.Start();
                     agent_process.BeginOutputReadLine(); // lets see output
@@ -60,7 +64,7 @@ namespace TacMesh.Launcher.startup
         }
 
         // each EchoOutput gets spesific agentId by the agent attatching this handler with their id on creation
-        private void EchoOutput(string agentId, object sender, DataReceivedEventArgs e)
+        private void OnStdOutReceived(string agentId, object sender, DataReceivedEventArgs e)
         {            
             string output = e.Data;
             if (output == null) return;
@@ -68,6 +72,13 @@ namespace TacMesh.Launcher.startup
             // print each agent's output in a FIXED format
             Printer.AddNewLine(agentId, output);
 
+            // parse output if possible
+            TryParseStdout(agentId, sender, output);
+        }
+
+        // tries to parse the stdoutput
+        private void TryParseStdout(string agentId, object sender, string output)
+        {
             // save process in record dict
             if (output.StartsWith("PORT="))
             {
@@ -75,6 +86,10 @@ namespace TacMesh.Launcher.startup
                 string processId = ((Process)sender).Id.ToString();
                 AddRecord(agentId, processId, port);
             }
+
+            // invoke the waypoint manager if advance signal received
+            if (output.Equals("adv."))
+                WaypointReached?.Invoke(this, agentId);
         }
 
         // writes input to the input stream of a specfic agent
@@ -83,6 +98,15 @@ namespace TacMesh.Launcher.startup
             // find the specific process and write a line to it's input stream
             Process agentProcess = _agents[agentId];
             agentProcess.StandardInput.WriteLine(input);
+        }
+
+        // TEMPORARY initializer method to start the waypoint advances
+        // this will be changed in the future to handle the pos advances differently
+        public void InitAdvances()
+        {
+            // send all agents their first waypoint
+            foreach (string agentId in _agents.Keys)
+                WaypointReached?.Invoke(this, agentId);
         }
 
 
@@ -137,7 +161,7 @@ namespace TacMesh.Launcher.startup
                 agent = ProcessCreator.CreateNewAgentInstance(agentId);
 
                 // attach output handler, and update agents Dictionary
-                agent.OutputDataReceived += (s,e) => EchoOutput(agentId, s, e);
+                agent.OutputDataReceived += (s,e) => OnStdOutReceived(agentId, s, e);
                 _agents[agentId] = agent;
 
                 // should automatically add record back with new process id

@@ -30,9 +30,10 @@ namespace TacMesh.Launcher
 
             // inject agent manager
             CommandParser commandParser = new (agentManager);
+            WaypointManager waypointManager = new (agentManager);
 
             // kill processes when Ctrl+C is pressed
-            Console.CancelKeyPress += (s, e) => myHandler(s,e);
+            Console.CancelKeyPress += (s, e) => myHandler(s, e);
             Console.WriteLine("[LAUNCHER] Press Ctrl+C to end.\n");
             commandParser.StartParsing();
 

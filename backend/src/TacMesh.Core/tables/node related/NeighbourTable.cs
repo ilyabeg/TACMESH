@@ -84,7 +84,7 @@ namespace TacMesh.Core.tables.node_related
                     TEMP_COUNT++;
 
                     CheckExpiration();
-                    PrintTable(); // table test
+                    //PrintTable(); // table test
                     await Task.Delay(SystemConfigs.HeartbeatDelayMs); // match heartbeat delay
                 }
             });

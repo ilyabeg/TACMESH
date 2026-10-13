@@ -47,6 +47,13 @@ namespace TacMesh.Launcher.commands
                 string[] splitted = str.Split(' ');
                 string command = splitted[_command_index].ToLower();
 
+
+                // Note: TEMPORARILY start the node position advances here by typing
+                // '.' on the keyboard until an automated and different 
+                // implementation of handling node advancements is written...
+                if (command.Equals(".")) _agentManager.InitAdvances();
+
+
                 switch (command)
                 {
                     case "list":
