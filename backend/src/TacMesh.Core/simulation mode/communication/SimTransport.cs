@@ -16,8 +16,8 @@ namespace TacMesh.Core.communication.simulation_communication
         private readonly IPEndPoint _sourceAddress;
 
         // event handlers
-        public event EventHandler<CrashEventArgs> CrashedEventHandler;
-        public event EventHandler<MessageReceivedEventArgs> MessageReceivedEventHandler;
+        public event EventHandler<CrashEventArgs> Crashed;
+        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
 
         // radio model to avaluate a connection
         // per the proposal: "each node executes the radio model before passing the packet to the Socket"
@@ -34,9 +34,9 @@ namespace TacMesh.Core.communication.simulation_communication
             _receiver = new SimReceiver(source);
             _transmitter = new SimTransmitter(source);
 
-            _receiver.CrashedEventHandler += (sender, e) => CrashedEventHandler?.Invoke(sender, e);
-            _receiver.MessageReceivedEventHandler += (sender, e) => MessageReceivedEventHandler?.Invoke(sender, e);
-            _transmitter.CrashedEventHandler += (sender, e) => CrashedEventHandler?.Invoke(sender, e);
+            _receiver.Crashed += (sender, e) => Crashed?.Invoke(sender, e);
+            _receiver.MessageReceived += (sender, e) => MessageReceived?.Invoke(sender, e);
+            _transmitter.Crashed += (sender, e) => Crashed?.Invoke(sender, e);
         }
 
         /// <summary>

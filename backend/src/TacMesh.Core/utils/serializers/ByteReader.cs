@@ -2,7 +2,7 @@
 using System.Text;
 using TacMesh.Core.interfaces;
 
-namespace TacMesh.Core.serializers
+namespace TacMesh.Core.utils.serializers
 {
     /// <summary>
     /// The Byte Reader class is a helper class used to deserialize any type of data from it's

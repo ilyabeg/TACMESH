@@ -6,7 +6,7 @@ namespace TacMesh.Core.interfaces
     public interface ITransmitter
     {
         // public crash event handler to handle listening crashes
-        public event EventHandler<CrashEventArgs> CrashedEventHandler;
+        public event EventHandler<CrashEventArgs> Crashed;
 
         // interface method
         public int Transmit(byte[] data, IPEndPoint destination);

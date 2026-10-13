@@ -1,7 +1,7 @@
 ﻿using TacMesh.Core.interfaces;
 using TacMesh.Core.utils.builders;
 
-namespace TacMesh.Core.serializers
+namespace TacMesh.Core.utils.serializers
 {
     /// <summary>
     /// PacketHeader Serializer class. Serializes a PacketHeader into a byte stream,

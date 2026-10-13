@@ -7,7 +7,7 @@ namespace TacMesh.Core.communication
 {
     public class SimTransmitter : ITransmitter
     {
-        public event EventHandler<CrashEventArgs> CrashedEventHandler;
+        public event EventHandler<CrashEventArgs> Crashed;
 
         private readonly Socket _source; // source socket
 
@@ -34,7 +34,7 @@ namespace TacMesh.Core.communication
             catch (Exception e)
             {
                 Console.WriteLine($"Error caught while transmitting message: '{e.Message}'");
-                CrashedEventHandler?.Invoke(this, new CrashEventArgs(e));
+                Crashed?.Invoke(this, new CrashEventArgs(e));
                 return -1;
             }
         }

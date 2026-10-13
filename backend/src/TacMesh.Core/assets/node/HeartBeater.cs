@@ -2,11 +2,11 @@
 using TacMesh.Core.database_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
-using TacMesh.Core.serializers;
 using TacMesh.Core.utils;
 using TacMesh.Core.utils.builders;
+using TacMesh.Core.utils.serializers;
 
-namespace TacMesh.Core.assets
+namespace TacMesh.Core.assets.node
 {
     public class HeartBeater
     {        

@@ -1,8 +1,11 @@
 ﻿using TacMesh.Core.events;
-using TacMesh.Core.serializers;
+using TacMesh.Core.utils.serializers;
 
-namespace TacMesh.Core.packet_related
+namespace TacMesh.Core.utils.packet
 {
+    /// <summary>
+    /// Utility class to simply read received bytes and return a full Data Packet from them.
+    /// </summary>
     public class PacketReader
     {
         private static readonly PacketHeaderSerializer _serializer = new PacketHeaderSerializer();

@@ -1,9 +1,6 @@
-﻿using TacMesh.Core;
-using TacMesh.Core.assets;
-using TacMesh.Core.database_related;
-using TacMesh.Core.events;
+﻿using TacMesh.Core.assets.node;
+using TacMesh.Core.hardware_mode;
 using TacMesh.Core.interfaces;
-using TacMesh.Core.packet_related;
 using TacMesh.Core.tables.node_related;
 
 namespace TacMesh.Agent
@@ -15,33 +12,49 @@ namespace TacMesh.Agent
         public int AssignedPort { get; private set; }
         public ILocation NodeLocacation { get; private set; }
 
+        // private fields
         private readonly ITransport _transporter;
+        private readonly NeighborTable _neighborTable;
         private readonly HeartBeater _heartbeater;
-        private readonly NeighbourTable _neighbourTable;
+        private readonly TopologyFilter _topologyFilter;
         private readonly PacketBuffer _packetBuffer;
+        private readonly PacketProcessor _packetProcessor;
 
 
-        // Constructors
-        public Node(string nodeID, ILocation location, ITransport transporter, NeighbourTable neighbourTable, HeartBeater heartbeater)
+        // Constructor
+        public Node(string nodeID, ILocation location, ITransport transporter, NeighborTable neighborTable, HeartBeater heartbeater, TopologyFilter topologyFilter)
         {
+            // --- Node ID & Location --- 
             // save node id and initial location
             NodeID = nodeID;
             NodeLocacation = location;
 
+            // --- Transporter --- 
             // start receiving background thread            
             _transporter = transporter;
             _transporter.StartReceiving();
             AssignedPort = _transporter.GetAssignedPort();
-            // attach packet reading event
-            _transporter.MessageReceivedEventHandler += (s, e) => OnPacketReceived(s, e);
 
+            // --- Neighbor Table --- 
             // start checking expiration in the background
-            _neighbourTable = neighbourTable;
-            _neighbourTable.StartExpirationCheck();
+            _neighborTable = neighborTable;
+            _neighborTable.StartExpirationCheck();
 
+            // --- Heart Beater --- 
             // start transmitting heartbeats
             _heartbeater = heartbeater;
-            _heartbeater.TransmitHeartbeat();            
+            _heartbeater.TransmitHeartbeat();
+
+            // --- Topology Filter --- 
+            _topologyFilter = topologyFilter;
+
+            // --- Packet Processor --- 
+            // create packet processor to process received packets
+            _packetProcessor = new PacketProcessor(topologyFilter, heartbeater, neighborTable);
+
+            // attach packet reading event handler
+            _transporter.MessageReceived += (s, e) => _packetProcessor.ProcessPacket(e);
+
 
             // TEMPORARY TEST. THIS WILL NOT STAY HERE FOREVER.
             Console.WriteLine($"PORT={AssignedPort}");          
@@ -49,30 +62,12 @@ namespace TacMesh.Agent
             // attach Ctrl+C event handler
             Console.CancelKeyPress += (s,e) => ShutdownNode();
         }
-
-        // ----------------------------------------------------
-
-
-        // TEMPORARILY TESTS! NOT INTENTED TO STAY HERE, WILL MOVE LOGIC IN THE FUTURE
-        private void OnPacketReceived(object s, MessageReceivedEventArgs e)
-        {
-            PacketHeader header = PacketReader.ReadPacket(e);
-            if (header.MsgType == PacketType.Heartbeat)
-            {
-                // log heartbeat
-                _heartbeater.LogHeartbeat(LoggingMode.Received, header.SrcID, header.DstID);
-
-                // add/update record of peer in neighbour table
-                _neighbourTable.UpdateRecord(header.SrcID, e.RemoteEndPoint);
-            }
-        }
-
-
-        // ----------------------------------------------------
+        
 
         // flag to determine if the Node is already shutting down
         private bool _shutdown_flag = false;
         private readonly object _shutdown_lock = new object();
+
         /// <summary>
         /// Shuts down the Node gracefully.
         /// </summary>

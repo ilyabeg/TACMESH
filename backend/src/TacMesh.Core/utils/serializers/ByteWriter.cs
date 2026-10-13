@@ -2,7 +2,7 @@
 using System.Text;
 using TacMesh.Core.interfaces;
 
-namespace TacMesh.Core.serializers
+namespace TacMesh.Core.utils.serializers
 {
     /// <summary>
     /// The Byte writer class is a helper class used to serialize any type of data into it's

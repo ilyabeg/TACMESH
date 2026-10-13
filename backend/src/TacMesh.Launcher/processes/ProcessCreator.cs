@@ -55,6 +55,7 @@ namespace TacMesh.Launcher.processes
             // if node dies and restarted, the initial location is initiated with it again
             string jsonLocation = JsonSerializer.Serialize(_locations[nodeId]);
             double speed = _speeds[nodeId];
+
             ProcessStartInfo start_info = InitStartInfo(_agaentExe, nodeId, jsonLocation, speed);
 
             // init agent process with the start info

@@ -3,10 +3,12 @@ using System.Net.Sockets;
 using System.Text.Json;
 using TacMesh.Core.assets;
 using TacMesh.Core.assets.clocks;
+using TacMesh.Core.assets.node;
 using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.communication.simulation_communication;
 using TacMesh.Core.database_related;
 using TacMesh.Core.graph_related;
+using TacMesh.Core.hardware_mode;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.beacon_and_destination;
 using TacMesh.Core.interfaces.communication_interfaces;
@@ -14,15 +16,15 @@ using TacMesh.Core.interfaces.raster;
 using TacMesh.Core.launcher;
 using TacMesh.Core.map_related;
 using TacMesh.Core.models;
-using TacMesh.Core.serializers;
 using TacMesh.Core.tables.node_related;
 using TacMesh.Core.utils;
+using TacMesh.Core.utils.serializers;
 
 namespace TacMesh.Agent
 {
     public class Program
     {
-        // arguments length should be exactly 3
+        // arguments count
         const int arguments_length = 3;
 
         static void Main(string[] args)
@@ -41,8 +43,9 @@ namespace TacMesh.Agent
                 Location initialLocation = JsonSerializer.Deserialize<Location>(args[1])!;
                 //Console.WriteLine($"{nodeId} initial location: {initialLocation}");
                 double initialSpeed = double.Parse(args[2]);
-                
-                // --- create dependencies ---
+
+
+                // --- create all dependencies ---
 
                 // Agent socket & port
                 Socket agent_socket = GetAgentSocket();
@@ -62,15 +65,20 @@ namespace TacMesh.Agent
 
                 // Heartbeats, NeighbourTable
                 HeartBeater heartBeater = GetHeartBeater(nodeId, simTransport, radioModel);
-                NeighbourTable neighbourTable = new NeighbourTable(new SystemClock());
+                NeighborTable neighbourTable = new NeighborTable(new SystemClock());
 
-                // beacon emitter
+                // Beacon Emitter
                 IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeId, assignedPort, SystemConfigs.McastEndPoint);
                 LauncherControl launcherControl = new LauncherControl((VirtualRadioModel)radioModel, nodeId, initialLocation, initialSpeed, beaconEmitter);
 
+                // Topology Filter
+                TopologyFilter topologyFilter = new TopologyFilter(); // <- inject permitted
+
+
                 // --- inject all dependencies --- 
 
-                Node node = new Node(nodeId, initialLocation, simTransport, neighbourTable, heartBeater);
+                Node node = new Node(nodeId, initialLocation, simTransport, neighbourTable, heartBeater, topologyFilter);
+
 
                 // listen for launcher stdinput
                 launcherControl.ListenForStdInput();

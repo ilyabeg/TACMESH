@@ -10,8 +10,8 @@ namespace TacMesh.Core.communication.simulation_communication
 {
     public class SimReceiver : IReceiver
     {
-        public event EventHandler<CrashEventArgs> CrashedEventHandler;
-        public event EventHandler<MessageReceivedEventArgs> MessageReceivedEventHandler;
+        public event EventHandler<CrashEventArgs> Crashed;
+        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
 
         private readonly Socket _source; // source socket
 
@@ -46,14 +46,14 @@ namespace TacMesh.Core.communication.simulation_communication
 
                             // push the message to the Agent
                             IPEndPoint remoteIPEP = (IPEndPoint)remoteEP;
-                            MessageReceivedEventHandler?.Invoke(this, new MessageReceivedEventArgs(receivedBytes, remoteIPEP));
+                            MessageReceived?.Invoke(this, new MessageReceivedEventArgs(receivedBytes, remoteIPEP));
                         }
                     }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine($"Error caught while receiving message: '{e}'");
-                    CrashedEventHandler?.Invoke(this, new CrashEventArgs(e));
+                    Crashed?.Invoke(this, new CrashEventArgs(e));
                 }
             });           
         }

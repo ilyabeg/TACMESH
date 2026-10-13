@@ -7,35 +7,35 @@ using TacMesh.Core.utils.design;
 
 namespace TacMesh.Core.tables.node_related
 {
-    public class NeighbourTable
+    public class NeighborTable
     {
         // holds record for each neighbour by his ID
-        public Dictionary<string, NeighbourRecord> NeighbourRecords { get; private set; }
+        public Dictionary<string, NeighborRecord> NeighborRecords { get; private set; }
         public int N { get; private set; }
         private readonly IClock _tableClock;
         private readonly int _legal_timeDiff_seconds;
 
         // read-write lock for the table
-        // LOCK ORDER RULE: Always acquire access to the NeighbourTable lock before the Buffer lock to prevent Deadlocks
+        // LOCK ORDER RULE: Always acquire access to the NeighborTable lock before the Buffer lock to prevent Deadlocks
         // Brief explanation documented in the README file.
         private readonly TacReadWriteLock _rwLock = new TacReadWriteLock();
 
 
         // inject any clock to the table
-        public NeighbourTable(IClock tableClock, int cyclesNumber = 3) // if cycles isn't provided, default = 3
+        public NeighborTable(IClock tableClock, int cyclesNumber = 3) // if cycles isn't provided, default = 3
         {
             _tableClock = tableClock;
             N = cyclesNumber;
             _legal_timeDiff_seconds = (N * SystemConfigs.HeartbeatDelayMs / 1000);
-            NeighbourRecords = new Dictionary<string, NeighbourRecord>();
+            NeighborRecords = new Dictionary<string, NeighborRecord>();
         }
 
         // adds new record if doesn't exist OR overrides an existing one
-        public void UpdateRecord(string neighbourId, IPEndPoint address)
+        public void UpdateRecord(string neighborId, IPEndPoint address)
         {
             using (_rwLock.Write())
             {
-                NeighbourRecords[neighbourId] = new NeighbourRecord(neighbourId, address, _tableClock.GetTime());
+                NeighborRecords[neighborId] = new NeighborRecord(neighborId, address, _tableClock.GetTime());
             }
         }
 
@@ -47,15 +47,15 @@ namespace TacMesh.Core.tables.node_related
                 DateTime current_time = _tableClock.GetTime();
                 List<string> expiredNeighbours = new List<string>();
 
-                // O(NeighbourRecords.Length) - iterates through all records
-                foreach (NeighbourRecord record in NeighbourRecords.Values)
+                // O(NeighborRecords.Length) - iterates through all records
+                foreach (NeighborRecord record in NeighborRecords.Values)
                 {
                     DateTime last_heartbeat = record.LastHeartbeatTime;
                     int time_diff = (int)(current_time - last_heartbeat).TotalSeconds;
 
-                    // if heartbeat wasn't received from this neighbour for over N, heartbeat time cycles
+                    // if heartbeat wasn't received from this neighbor for over N, heartbeat time cycles
                     if (time_diff >= _legal_timeDiff_seconds)
-                        expiredNeighbours.Add(record.NeighbourID);
+                        expiredNeighbours.Add(record.NeighborID);
                 }
 
                 // remove all expired neighbours
@@ -64,10 +64,10 @@ namespace TacMesh.Core.tables.node_related
             }
         }
 
-        // removes based on the neighbour id key
+        // removes based on the neighbor id key
         private void RemoveRecord(string neighbourId)
         {
-            if (!NeighbourRecords.Remove(neighbourId, out _))
+            if (!NeighborRecords.Remove(neighbourId, out _))
                 throw new Exception($"Failed to remove neighbour {neighbourId} from table.");
         }
 
@@ -102,18 +102,18 @@ namespace TacMesh.Core.tables.node_related
             str.AppendLine($"│{title.PadRight(ConsoleDesign._47_padRight)}│");
 
             str.AppendLine("├────────────┬────────────┬─────────────────────┤");
-            str.AppendLine("│ Neighbour  │ Address    │ Last Heartbeat      │");
+            str.AppendLine("│ Neighbor   │ Address    │ Last Heartbeat      │");
             str.AppendLine("├────────────┼────────────┼─────────────────────┤");
 
             using (_rwLock.Read())
             {
-                foreach (string neighbourID in NeighbourRecords.Keys)
+                foreach (string neighborID in NeighborRecords.Keys)
                 {
-                    string address = NeighbourRecords[neighbourID].Address.Port.ToString();
-                    //string location = NeighbourRecords[neighbourID].Location.ToString();
-                    string heartbeat = NeighbourRecords[neighbourID].LastHeartbeatTime.ToString();
+                    string address = NeighborRecords[neighborID].Address.Port.ToString();
+                    //string location = NeighborRecords[neighborID].Location.ToString();
+                    string heartbeat = NeighborRecords[neighborID].LastHeartbeatTime.ToString();
 
-                    string padded_string = PadRecordString(neighbourID, address, heartbeat);
+                    string padded_string = PadRecordString(neighborID, address, heartbeat);
                     str.AppendLine(padded_string);
                 }
             }

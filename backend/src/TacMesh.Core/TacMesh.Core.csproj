@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="hardware mode\communication\" />
-    <Folder Include="hardware mode\" />
     <Folder Include="tables\routing related\" />
   </ItemGroup>
 

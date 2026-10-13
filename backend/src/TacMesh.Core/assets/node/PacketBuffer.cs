@@ -1,4 +1,6 @@
-﻿namespace TacMesh.Core.packet_related
+﻿using TacMesh.Core.packet_related;
+
+namespace TacMesh.Core.assets.node
 {
     public class PacketBuffer
     {

@@ -55,7 +55,7 @@ namespace TacMesh.Core.models
             _dRandom = dRandom;
             _radioReceiver = radioReceiver;
             _radioReceiver.StartReceiving(); // start locations send to virtual space
-            _radioReceiver.MessageReceivedEventHandler += (s, e) => OnMessageReceived(s, e);
+            _radioReceiver.MessageReceived += (s, e) => OnMessageReceived(s, e);
 
             _terrianTester = terrianTester;
         }
