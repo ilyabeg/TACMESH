@@ -25,7 +25,7 @@ namespace TacMesh.Agent
     public class Program
     {
         // arguments count
-        const int arguments_length = 3;
+        const int arguments_length = 4;
 
         static void Main(string[] args)
         {
@@ -43,7 +43,7 @@ namespace TacMesh.Agent
                 Location initialLocation = JsonSerializer.Deserialize<Location>(args[1])!;
                 //Console.WriteLine($"{nodeId} initial location: {initialLocation}");
                 double initialSpeed = double.Parse(args[2]);
-
+                List<string> permittedNodes = JsonSerializer.Deserialize<List<string>>(args[3])!;
 
                 // --- create all dependencies ---
 
@@ -72,7 +72,7 @@ namespace TacMesh.Agent
                 LauncherControl launcherControl = new LauncherControl((VirtualRadioModel)radioModel, nodeId, initialLocation, initialSpeed, beaconEmitter);
 
                 // Topology Filter
-                TopologyFilter topologyFilter = new TopologyFilter(); // <- inject permitted
+                TopologyFilter topologyFilter = new TopologyFilter(permittedNodes); // <- inject permitted
 
 
                 // --- inject all dependencies --- 

@@ -50,7 +50,7 @@ namespace TacMesh.Agent
 
             // --- Packet Processor --- 
             // create packet processor to process received packets
-            _packetProcessor = new PacketProcessor(topologyFilter, heartbeater, neighborTable);
+            _packetProcessor = new PacketProcessor(_topologyFilter, _heartbeater, _neighborTable);
 
             // attach packet reading event handler
             _transporter.MessageReceived += (s, e) => _packetProcessor.ProcessPacket(e);

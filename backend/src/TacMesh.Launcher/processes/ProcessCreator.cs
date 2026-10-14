@@ -32,6 +32,12 @@ namespace TacMesh.Launcher.processes
             ["Node-05"] = 2
         };
 
+        // TEMPORARY STATIC PERMITTED NODES LIST FOR EVERY NODE UNTIL THE USER INPUTS IN THE FUTURE 
+        private static readonly List<string> _permittedNodes = new()
+        {
+            "Node-01", "Node-02", "Node-03", "Node-04", "Node-05"
+        };
+
 
         // generate N agents
         public static Dictionary<string, Process> CreateAgents(int num_of_agents)
@@ -55,16 +61,17 @@ namespace TacMesh.Launcher.processes
             // if node dies and restarted, the initial location is initiated with it again
             string jsonLocation = JsonSerializer.Serialize(_locations[nodeId]);
             double speed = _speeds[nodeId];
+            string permittedNodes = JsonSerializer.Serialize(_permittedNodes);
 
-            ProcessStartInfo start_info = InitStartInfo(_agaentExe, nodeId, jsonLocation, speed);
+            ProcessStartInfo start_info = InitStartInfo(_agaentExe, nodeId, jsonLocation, speed, permittedNodes);
 
             // init agent process with the start info
             return new Process() { StartInfo = start_info };
         }
 
-        private static ProcessStartInfo InitStartInfo(string filename, string nodeId, string location, double speed)
+        private static ProcessStartInfo InitStartInfo(string filename, string nodeId, string location, double speed, string permittedNodes)
         {
-            return new ProcessStartInfo(filename, [nodeId, location, speed.ToString()])
+            return new ProcessStartInfo(filename, [nodeId, location, speed.ToString(), permittedNodes])
             {
                 UseShellExecute = false,
                 RedirectStandardOutput = true, // redirect output stream to the launcher process

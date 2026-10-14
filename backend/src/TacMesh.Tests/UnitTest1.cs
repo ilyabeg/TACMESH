@@ -1,28 +1,169 @@
-﻿using System.Collections.Concurrent;
-using TacMesh.Core.assets;
+﻿using System.Net;
+using System.Net.Sockets;
+using TacMesh.Core;
+using TacMesh.Core.communication.simulation_communication;
+using TacMesh.Core.events;
+using TacMesh.Core.hardware_mode;
+using TacMesh.Core.interfaces;
+using TacMesh.Core.interfaces.communication_interfaces;
+using TacMesh.Core.utils;
+using TacMesh.Core.utils.packet;
+using TacMesh.Core.utils.serializers;
 
 namespace TacMesh.Tests;
 
 public class UnitTest1
 {
+    // temporary class for the test. doesn't do anything
+    internal class TempRadioModel : IRadioModel
+    {
+        public Dictionary<string, IPEndPoint> GetPeers() => new Dictionary<string, IPEndPoint>();
+
+        public Task<bool> TestConnection(IPEndPoint source, IPEndPoint destination) => Task.FromResult(true);
+    }
+
+    // TEMPORARY class to simpy test the topology filter without many dipendencies
+    internal class MockPacketProcessor
+    {
+        // indicator to check if passed or not
+        public bool PacketPassed { get; private set; } = false;
+        private readonly TopologyFilter _tf;
+
+        public MockPacketProcessor(TopologyFilter tf)
+        {
+            _tf = tf;
+        }
+
+        public bool ProcessPacket(MessageReceivedEventArgs e)
+        {
+            PacketHeader header = PacketReader.ReadPacket(e);
+
+            // drop packet if it is from an un-permitted neighbor before processing
+            if (!_tf.Filter(header.SrcID))
+            {
+                Console.WriteLine($"Dropping Packet from source \"{header.SrcID}\" due to: un-permitted neighbor");
+                return false;
+            }
+
+            // if allowed to process packet return true
+            PacketPassed = true;
+            return true;
+        }
+    }
+
+
     [Fact]
     public void Test_Topology_Filter_Permitted()
     {
-        // Arrange
+        // --- Arrange --- 
 
-        // Act
+        // build the topology filter with a permitted node
+        TopologyFilter TF = new TopologyFilter();
+        string permittedID = "PERMITTED-AGENT";
+        TF.AddPermittedNeighbor(permittedID);
 
-        // Assert
+        // agent who receives the test packet on port 51001
+        int agentPort = 51001;
+        IPEndPoint agentEndPoint = new IPEndPoint(IPAddress.Loopback, agentPort);
+        Socket agent = GetAgentSocket(agentPort);
+        ITransport agentTransport = new SimTransport(agent, new TempRadioModel());
+        agentTransport.StartReceiving(); // start listening
+
+        // NOTE: This is simply to test out the topology filter working without having the 
+        // processor take many dependencies. the logic in the topology filter is what matters
+        MockPacketProcessor processor = new MockPacketProcessor(TF);
+
+        // let the agent hear packets and process them 
+        agentTransport.MessageReceived += (s, e) => processor.ProcessPacket(e);
+
+        // agent who is permitted for the agent agent
+        Socket permitted_agent = GetAgentSocket(0);
+        ITransport permittedAgentTransport = new SimTransport(permitted_agent, new TempRadioModel());
+
+        // create the packet from the permitted node
+        byte[] headerBytes = CreatePacket(permittedID);
+
+
+        // --- Act --- 
+
+        // transmit the peritted packet to the agent
+        permittedAgentTransport.Transmit(headerBytes, agentEndPoint);
+        Thread.Sleep(50);
+
+
+        // --- Assert --- 
+
+        // verify the packet was received and permitted
+        Assert.True(processor.PacketPassed);
     }
+
+    static Socket GetAgentSocket(int port)
+    {
+        Socket s = SocketGenerator.GenerateUdpSocket();
+        SocketGenerator.BindSocket(s, IPAddress.Loopback, port);
+        return s;
+    }
+
+    static byte[] CreatePacket(string sourceId)
+    {
+        PacketHeaderSerializer serializer = new PacketHeaderSerializer();
+        PacketHeader header = new PacketHeader(
+            1,
+            PacketType.Heartbeat,
+            Guid.NewGuid(),
+            sourceId,
+            "temp",
+            1,
+            1,
+            1,
+            1,
+            1
+        );
+        return serializer.Serialize(header);
+    }
+
 
     [Fact]
     public void Test_Topology_Filter_Denied()
     {
-        // Arrange
+        // --- Arrange --- 
 
-        // Act
+        // build the topology filter without permitted nodes
+        TopologyFilter TF = new TopologyFilter();        
 
-        // Assert
+        // agent who receives the test packet on port 51002
+        int agentPort = 51002;
+        IPEndPoint agentEndPoint = new IPEndPoint(IPAddress.Loopback, agentPort);
+        Socket agent = GetAgentSocket(agentPort);
+        ITransport agentTransport = new SimTransport(agent, new TempRadioModel());
+        agentTransport.StartReceiving(); // start listening
+
+        // NOTE: This is simply to test out the topology filter working without having the 
+        // processor take many dependencies. the logic in the topology filter is what matters
+        MockPacketProcessor processor = new MockPacketProcessor(TF);
+
+        // let the agent hear packets and process them 
+        agentTransport.MessageReceived += (s, e) => processor.ProcessPacket(e);
+
+        // agent who is NOT permitted for the agent agent
+        Socket denied_agent = GetAgentSocket(0);
+        ITransport deniedAgentTransport = new SimTransport(denied_agent, new TempRadioModel());
+
+        // create the packet from the denied node
+        byte[] headerBytes = CreatePacket("DENIED-AGENT");
+
+
+        // --- Act --- 
+
+        // transmit the packet to the agent
+        deniedAgentTransport.Transmit(headerBytes, agentEndPoint);
+        Thread.Sleep(50);
+
+
+        // --- Assert --- 
+
+        // verify the packet was received and DENIED
+        Assert.False(processor.PacketPassed);
     }
 
 
