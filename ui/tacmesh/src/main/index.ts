@@ -2,8 +2,12 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import dispatchEvent from './ipc/eventDispatcher'
 
-function createWindow(): void {
+// import agent management
+import { startAgent, killAgent, getAgentState } from './AgentManager'
+
+function createWindow(): BrowserWindow {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -33,6 +37,9 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  // return the browser window to use it in initializig the agent
+  return mainWindow; 
 }
 
 // This method will be called when Electron has finished
@@ -49,10 +56,16 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  // get the electron window
+  const browserWindow = createWindow()
 
-  createWindow()
+  // execute the agent instance for this app
+  startAgent(browserWindow);
+
+  // return the agent state
+  dispatchEvent(ipcMain, 'get-agent-state', async () => {
+    return getAgentState();
+  });
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -70,5 +83,10 @@ app.on('window-all-closed', () => {
   }
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+// Emitted when all windows have been closed and the application will quit. 
+// Calling event.preventDefault() will prevent the default behavior, which 
+// is terminating the application.
+app.on('will-quit', () => {
+  // before quiting, kill the agent instance.
+  killAgent();
+})

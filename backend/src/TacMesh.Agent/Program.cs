@@ -36,6 +36,8 @@ namespace TacMesh.Agent
                     Console.WriteLine("ERROR: Agent Process arguments did not match. Terminating process...");
                     return;
                 }
+                // set the output encoding to UTF-8 encoding
+                Console.OutputEncoding = System.Text.Encoding.UTF8;
 
                 // --- arguments ---
 
@@ -85,12 +87,12 @@ namespace TacMesh.Agent
 
 
                 // Release the Semaphore to allow the next agent to be initialized in the launcher
-                string semName = "TacMesh-Global-Sem";
-                using (Semaphore semaphore = Semaphore.OpenExisting(semName))
-                {
-                    // un-freeze the launcher
-                    semaphore.Release();
-                }
+                //string semName = "TacMesh-Global-Sem";
+                //using (Semaphore semaphore = Semaphore.OpenExisting(semName))
+                //{
+                //    // un-freeze the launcher
+                //    semaphore.Release();
+                //}
 
                 Thread.Sleep(Timeout.Infinite);
             }
