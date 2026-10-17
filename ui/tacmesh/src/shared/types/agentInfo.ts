@@ -3,5 +3,6 @@
 //
 export type AgentInfo = {
     nodeId: string,
-    port: number
+    port: number,
+    processId: number,
 }

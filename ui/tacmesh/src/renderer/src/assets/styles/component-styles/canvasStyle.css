@@ -1,0 +1,7 @@
+@import '../base.css';
+
+.canvas-container {
+    background-color: var(--c-white-mute);
+    height: 100%;
+    width: 100%;
+}

@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import useServerEventHandlers from './hooks/serverEventHandler.hook';
+import './assets/styles/main.css';
 import { AgentInfo } from "../../shared/types/agentInfo";
 import invokeServer from "./ipc/invokeServer";
 import { onServerEvent } from "./ipc/onServerEvent";
+import Header from "./components/Header";
+import Sidebar from "./components/Sidebar";
+import Canvas from './components/Canvas';
 
 function App(): React.JSX.Element {
   // use server event handlers
@@ -53,7 +57,11 @@ function App(): React.JSX.Element {
 
   return (
     <>
-      <h1>Agent state: {agentRunning ? 'running.' : 'down.'}</h1>
+      <Header />
+      <div className="body-container">
+        <Sidebar />
+        <Canvas />
+      </div>
     </>
   )
 }

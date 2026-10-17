@@ -1,0 +1,85 @@
+@import '../base.css';
+
+.agent-list {
+    /* overflow-y: auto;
+    scroll-behavior: smooth; */
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin: 0 0 8px 0;
+    padding: 0;
+}
+
+/* list item container */
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    gap: 12px;
+    background-color: var(--c-sidebar-gray);
+    border: none;
+    border-radius: 6px;
+    color: var(--c-text-2);
+    margin: 0 0 5px 0;
+    padding: 0 10px;
+    cursor: pointer;
+    font-family: 'Consolas', 'Courier New', monospace;
+}
+
+.list-item:hover {
+    background-color: var(--c-list-item-hover);
+    transition: 0.1s ease;
+}
+
+.list-item:active {
+    transform: scale(0.97);
+    transition: 0.2s ease;
+}
+
+/* main agent info container (nodeId and port) */
+.agent-info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* hide overflow of the text */
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+}
+
+.agent-node-id {
+    /* font-style: italic; */
+    font-weight: 500;
+    color: var(--c-text-1);
+    font-size: 0.96rem;
+    /* adds three dots when the text is too long */
+    text-overflow: ellipsis;
+    /* does NOT go down a new line */
+    white-space: nowrap;
+    overflow: hidden;
+    width: 100%;
+}
+
+.agent-port {
+    font-size: 0.7rem;
+    font-weight: 200;
+    color: var(--c-text-3);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.agent-pid {
+    max-width: 105px;
+    font-size: 0.75rem;
+    color: var(--c-text-2);
+    background-color: var(--c-header-gray);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--c-divider-gray);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
+}

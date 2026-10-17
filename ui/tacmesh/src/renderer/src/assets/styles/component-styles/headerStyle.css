@@ -1,0 +1,28 @@
+@import '../base.css';
+
+.app-header {
+    display: flex;
+    align-items: center;
+    background-color: var(--c-header-gray);
+    border-bottom: .5px solid var(--c-divider-gray);
+    padding: 0 24px;
+    height: 40px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.header-title {
+    margin-left: auto;
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    background: linear-gradient(90deg, white, #858b95);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    user-select: none;
+    /* prevents the user from highlighting it, making it act like a real logo */
+}
+
+.header-title:hover {
+    transition: 0.3s ease;
+    transform: scale(1.06);
+}

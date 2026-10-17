@@ -1,0 +1,78 @@
+@import '../base.css';
+
+/* container for the whole sidebar */
+.sidebar-container {
+    display: flex;
+    flex-direction: column;
+    border-right: .5px solid var(--c-divider-gray);
+    margin: 0;
+    padding: 10px 5px;
+    background-color: var(--c-sidebar-gray);
+    box-sizing: border-box;
+    max-width: 300px;
+    transition: width 0.3s ease;
+}
+
+/* tell CSS to explicitly find an element with the class 'sidebar-container' AND 'expanded' */
+.sidebar-container.expanded {
+    width: 300px;
+}
+
+/* tell CSS to explicitly find an element with the class 'sidebar-container' AND 'collapsed' */
+.sidebar-container.collapsed {
+    width: 3vw;
+}
+
+/* container for the sidebar title area */
+.title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.sidebar-title {
+    color: var(--c-text-2);
+    margin-left: 5px;
+    margin-right: auto;
+    padding: 0;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: .5px;
+}
+
+.agent-count {
+    color: var(--c-text-2);
+    margin-right: 5px;
+    padding: 0;
+    font-weight: 400;
+    font-size: 0.7rem;
+    letter-spacing: .7px;
+    font-family: 'Consolas', 'Courier New', monospace;
+}
+
+.bottom-divider {
+    margin-top: auto;
+    height: 1px;
+}
+
+/* btn to shirk/expand the sidebar */
+.expand-collapse-btn {
+    border: none;
+    border-radius: 6px;
+    height: 20px;
+    width: 30px;
+    margin: 0;
+    background-color: var(--c-header-gray);
+    transition: all 0.2s ease;
+}
+
+.expand-collapse-btn:hover {
+    background-color: var(--c-list-item-hover);
+}
+
+.expand-collapse-btn:active {
+    transform: scale(0.95);
+}
