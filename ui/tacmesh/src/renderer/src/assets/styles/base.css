@@ -1,4 +1,8 @@
 :root {
+  --c-text-1: rgba(255, 255, 245, 0.86);
+  --c-text-2: rgba(235, 235, 245, 0.6);
+  --c-text-3: rgba(235, 235, 245, 0.38);
+
   --c-white: #ffffff;
   --c-white-soft: #f8f8f8;
   --c-white-mute: #f2f2f2;
@@ -13,16 +17,7 @@
   --c-list-item-hover: #4A4A4A;
   --c-divider-gray: #424242;
 
-  --c-text-1: rgba(255, 255, 245, 0.86);
-  --c-text-2: rgba(235, 235, 245, 0.6);
-  --c-text-3: rgba(235, 235, 245, 0.38);
-
-  --ev-button-alt-border: transparent;
-  --ev-button-alt-text: var(--ev-c-text-1);
-  --ev-button-alt-bg: var(--ev-c-gray-3);
-  --ev-button-alt-hover-border: transparent;
-  --ev-button-alt-hover-text: var(--ev-c-text-1);
-  --ev-button-alt-hover-bg: var(--ev-c-gray-2);
+  --c-err-red: #de4545;
 }
 
 :root {

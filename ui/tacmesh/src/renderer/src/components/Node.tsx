@@ -19,11 +19,11 @@ export default function Node({
             <svg className="svg-style" width={size} height={size} viewBox="0 0 31 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g filter="url(#filter0_d_1_4)" className='draggable'>
                     <circle cx="15.5" cy="12.5" r="12.5" fill={color} />
-                    <circle cx="15.5" cy="12.5" r="12.25" stroke="black" stroke-opacity="0.7" stroke-width="0.5" />
+                    <circle cx="15.5" cy="12.5" r="12.25" stroke="black" strokeOpacity="0.7" strokeWidth="0.5" />
                 </g>
                 <defs>
-                    <filter id="filter0_d_1_4" x="0" y="0" width="31" height="32" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                        <feFlood flood-opacity="0" result="BackgroundImageFix" />
+                    <filter id="filter0_d_1_4" x="0" y="0" width="31" height="32" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                        <feFlood floodOpacity="0" result="BackgroundImageFix" />
                         <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
                         <feOffset dy="4" />
                         <feGaussianBlur stdDeviation="1.5" />

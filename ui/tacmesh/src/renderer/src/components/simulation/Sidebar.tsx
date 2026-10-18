@@ -1,6 +1,6 @@
-import AgentList from "./AgentList";
-import '../assets/styles/component-styles/sidebarStyle.css';
-import '../assets/styles/base.css';
+import AgentList from "./scenario-manager-screen/NodeList";
+import '../../assets/styles/component-styles/sidebarStyle.css';
+import '../../assets/styles/base.css';
 import { useState } from "react";
 
 export default function Sidebar() {

@@ -1,0 +1,136 @@
+@import '../base.css';
+
+
+/* list item container */
+.list-item-container {
+    position: relative;
+    margin: 0 0 5px 0;
+}
+
+/* the list item's content wrapper */
+.item-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 40px;
+    gap: 12px;
+
+    background-color: var(--c-sidebar-gray);
+    border: none;
+    border-radius: 8px;
+
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: var(--c-text-2);
+
+    padding: 0 10px;
+    cursor: pointer;
+}
+
+/* collapesed state list item */
+.item-content.collapsed {
+    justify-content: center;
+    height: 31px;
+    width: 31px;
+    background-color: var(--c-header-gray);
+    border: 1px solid var(--c-divider-gray);
+    border-radius: 10px;
+    padding: 0;
+}
+
+.item-content:hover {
+    background-color: var(--c-list-item-hover);
+    transition: 0.1s ease;
+}
+
+.item-content:active {
+    transform: scale(0.97);
+    transition: 0.2s ease;
+}
+
+/* main node info container (nodeId and port) */
+.node-info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* hide overflow of the text */
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+}
+
+.node-id {
+    /* font-style: italic; */
+    font-weight: 500;
+    color: var(--c-text-1);
+    font-size: 0.96rem;
+    /* adds three dots when the text is too long */
+    text-overflow: ellipsis;
+    /* does NOT go down a new line */
+    white-space: nowrap;
+    overflow: hidden;
+    width: 100%;
+}
+
+.node-port {
+    font-size: 0.7rem;
+    font-weight: 200;
+    color: var(--c-text-3);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.node-pid {
+    max-width: 105px;
+    font-size: 0.75rem;
+    color: var(--c-text-2);
+    background-color: var(--c-header-gray);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--c-divider-gray);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+
+/* dropdown menu and btns design */
+.dropdown-menu {
+    position: absolute;
+    left: 5px;
+    top: calc(100% - 15px);
+    z-index: 999;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: baseline;
+    align-items: center;
+
+    border: 1px solid var(--c-divider-gray);
+    border-radius: 8px;
+    background-color: var(--c-black);
+}
+
+.dropdown-btn {
+    height: auto;
+    width: 100%;
+
+    background-color: transparent;
+    border: none;
+
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 400;
+    font-size: .7rem;
+    color: var(--c-text-2);
+
+    overflow: hidden;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.dropdown-btn:hover {
+    cursor: pointer;
+    color: var(--c-text-1);
+    background-color: var(--c-divider-gray);
+}

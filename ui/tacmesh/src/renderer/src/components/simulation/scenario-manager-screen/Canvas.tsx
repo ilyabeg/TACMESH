@@ -1,6 +1,6 @@
 import Draggable from 'react-draggable';
-import '../assets/styles/component-styles/canvasStyle.css';
-import Node from './Node';
+import '../../../assets/styles/component-styles/canvasStyle.css';
+import Node from '../../Node';
 import { useRef } from 'react';
 
 export default function Canvas() {
@@ -18,7 +18,8 @@ export default function Canvas() {
                 {/* make the node components draggable in the parent container (the canvas) */}
                 <Draggable nodeRef={nodeRef} bounds="parent">
 
-                    {/* attach the same ref to connect between the draggable tag and the node itself*/}
+                    {/* attach the same ref to connect between the draggable tag and the node itself.
+                        the react-draggable needs a reference to know who to drag */}
                     <div ref={nodeRef} style={{ position: "absolute" }}>
                         <Node nodeId='Node-01' /> {/* temporary test */}
                     </div>

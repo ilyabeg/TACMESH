@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import useServerEventHandlers from './hooks/serverEventHandler.hook';
 import './assets/styles/main.css';
-import { AgentInfo } from "../../shared/types/agentInfo";
 import invokeServer from "./ipc/invokeServer";
 import { onServerEvent } from "./ipc/onServerEvent";
 import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
-import Canvas from './components/Canvas';
+import Sidebar from "./components/simulation/Sidebar";
+import Canvas from './components/simulation/scenario-manager-screen/Canvas';
 
 function App(): React.JSX.Element {
   // use server event handlers
@@ -40,10 +39,6 @@ function App(): React.JSX.Element {
     // window event handler to display agent
     const handleDisplayAgent = (event: Event) => {
       // const e = event as CustomEvent<AgentInfo>;
-
-      // Note: For now, no agent display exists, so this event will indicate if the
-      // agent is running...
-      setAgentRunning(true);
     }
 
     // attach the custom event listeners to the window    
