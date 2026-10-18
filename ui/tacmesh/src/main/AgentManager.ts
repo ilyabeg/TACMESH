@@ -76,7 +76,8 @@ function onStdout() {
                     // build the agent information
                     const agentInfo : AgentInfo = {
                         nodeId: "tempId", // TEMPORARILY use a temp id
-                        port: _assignedPort
+                        port: _assignedPort,
+                        processId: 12345 // TEMPORARILY use a temp pid
                     }
                     // push the agent info to renderer process
                     pushToClient(_browserWindow, 'agent-received', agentInfo);

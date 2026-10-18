@@ -14,17 +14,20 @@ export default function Sidebar() {
     // click handler to expand/collapse the sidebar
     const toggleSidebar = () => setExpanded(!expanded);
 
+    // increment or decrement agent count when received
+
+
     return (
         <>
             <div className={`sidebar-container ${expanded ? 'expanded' : 'collapsed'}`}>
                 <div className="title-container">
-                    <span className="sidebar-title">Agent List</span>
-                    <span className="agent-count">Total: ({count})</span>
+                    <span className="sidebar-title">{`${expanded ? 'Agent List' : ''}`}</span>
+                    <span className="agent-count">{`${expanded ? `Total: (${count})` : `(${count})`}`}</span>
                 </div>
                 <hr />
-                <AgentList />
+                <AgentList expandedFlag={expanded} />
                 <hr className="bottom-divider" />
-                <button className="expand-collapse-btn" onClick={toggleSidebar} />
+                <button className="expand-collapse-btn" onClick={toggleSidebar}>{`${expanded ? '<' : '>'}`}</button>
             </div>
         </>
     );

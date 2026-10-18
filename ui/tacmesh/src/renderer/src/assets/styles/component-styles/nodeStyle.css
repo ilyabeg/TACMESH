@@ -1,0 +1,39 @@
+@import '../base.css';
+
+.svg-style {
+    pointer-events: none;
+    position: absolute;
+}
+
+/* represents a moveable element */
+.moveable {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.moveable:active {
+    cursor: grabbing;
+}
+
+.node-text {
+    /* make the text div take up 100% of the viewbox
+    for every different kind of size */
+    height: 100%;
+    width: 100%;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: center;
+
+    /* prevents selecting the text */
+    user-select: none;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: .325rem;
+    font-weight: 700;
+    color: var(--c-black-mute);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

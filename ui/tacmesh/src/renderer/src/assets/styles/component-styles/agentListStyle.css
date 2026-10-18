@@ -19,12 +19,24 @@
     gap: 12px;
     background-color: var(--c-sidebar-gray);
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--c-text-2);
     margin: 0 0 5px 0;
     padding: 0 10px;
     cursor: pointer;
     font-family: 'Consolas', 'Courier New', monospace;
+}
+
+/* collapesed state list item */
+.list-item.collapsed {
+    justify-content: center;
+    height: 31px;
+    width: 31px;
+    background-color: var(--c-header-gray);
+    border: 1px solid var(--c-divider-gray);
+    border-radius: 10px;
+    margin: 0 0 5px 0;
+    padding: 0;
 }
 
 .list-item:hover {
@@ -83,3 +95,5 @@
     overflow: hidden;
     flex-shrink: 0;
 }
+
+.agent-initials {}
