@@ -5,23 +5,19 @@ interface NodeProps {
     nodeId: string,
     color?: string,
     size?: number,
-    x?: number,
-    y?: number,
 }
 
 export default function Node({
     nodeId,
     color = "#D9D9D9", // default color
-    size = 100, // default size in pixels,
-    x = 0, // default x value
-    y = 0, // default x value
+    size = 75, // default size in pixels,
 }: NodeProps) {
 
     // return a circle svg (source: www.figma.com)
     return (
         <>
-            <svg className="svg-style" style={{ left: x, top: y }} width={size} height={size} viewBox="0 0 31 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <g filter="url(#filter0_d_1_4)" className='moveable'>
+            <svg className="svg-style" width={size} height={size} viewBox="0 0 31 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g filter="url(#filter0_d_1_4)" className='draggable'>
                     <circle cx="15.5" cy="12.5" r="12.5" fill={color} />
                     <circle cx="15.5" cy="12.5" r="12.25" stroke="black" stroke-opacity="0.7" stroke-width="0.5" />
                 </g>
