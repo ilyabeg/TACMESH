@@ -12,3 +12,14 @@ export interface ipcMethods {
         'response': boolean
     },
 }
+
+// define client push notifications to the server that
+// don't expect a response
+//
+export interface clientPushNotification {
+    'launcher-stdin': {
+        'params': {
+            stdInput: string
+        }
+    }
+}

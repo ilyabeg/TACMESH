@@ -9,6 +9,20 @@ let _agent: ChildProcess | null = null; // the agent process instance
 let _assignedPort: number; // the assigned port of the agent instance
 let _agentRunning: boolean = false; // tells if the agent process is running or down
 
+// get the absoulte relative path for the agent exe file.
+// __dirmame contains the absolute path of the directory 
+// containing the currently executing JavaScript/TypeScript file
+//
+const _agentExe = path.resolve(__dirname, '..', '..', '..', '..',
+    'backend', 
+    'src', 
+    'TacMesh.Agent',
+    'bin',
+    'Debug',
+    'net10.0',
+    'TacMesh.Agent.exe'
+);
+
 // starts an agent instance for this app, and returns true if  
 // succeeded or false otherwise
 //
@@ -17,24 +31,11 @@ export function startAgent(window: BrowserWindow): boolean {
     // save the browser window instance for future use
     _browserWindow = window;
 
-    // get the absoulte relative path for the agent exe file.
-    // __dirmame contains the absolute path of the directory 
-    // containing the currently executing JavaScript/TypeScript file
-    //
-    const agent_exe = path.resolve(__dirname, '..', '..', '..', '..',
-        'backend', 
-        'src', 
-        'TacMesh.Agent',
-        'bin',
-        'Debug',
-        'net10.0',
-        'TacMesh.Agent.exe'
-    );
     // check the path
-    console.log(`Path to Agent.exe: ${agent_exe}`);
+    // console.log(`Path to Agent.exe: ${_agentExe}`);
 
     // spawn the agent process as a child process    
-    _agent = spawn(agent_exe, ["Node-01", "{}", "0", "[]"]); // TEMPORARILY init agent process with default arguments
+    _agent = spawn(_agentExe, ["Node-01", "{}", "0", "[]"]); // TEMPORARILY init agent process with default arguments
 
     if (_agent) {
         // indicate if the agent is running or not
@@ -110,6 +111,7 @@ function onStderr() {
     if (_agent) { 
         _agent.stderr?.on('data', (error) => {
             console.error(`[Agent Manager] Received error from child process due to: \"${error}\"`);
+            pushToClient(_browserWindow, 'error', error);
         });
     }
 }
@@ -119,6 +121,7 @@ function onError() {
     if (_agent) {
         _agent.on('error', (error) => {
             console.error(`[Agent Manager] Failed to start child process due to: \"${error}\"`);
+            pushToClient(_browserWindow, 'error', error);
             // attempt to restart
             restartAgent();
         }); 
@@ -188,10 +191,10 @@ export function killAgent() {
 }
 
 // return the assigned port number of the agent instance
-export function getAssignedPort(): number { return _assignedPort; }
+export const getAssignedPort = (): number => _assignedPort;
 
 // returns the current state of the agent (running/down)
-export function getAgentState(): boolean { return _agentRunning; }
+export const getAgentState = (): boolean => _agentRunning;
 
 // function to update the agent state and push to the renderer process
 function updateAgentState(state: boolean) {

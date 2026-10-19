@@ -6,6 +6,7 @@ import dispatchEvent from './ipc/eventDispatcher'
 
 // import agent management
 import { startAgent, killAgent, getAgentState } from './AgentManager'
+import { launchLauncher, terminateLauncher } from './simulation/scenario manager/Launcher';
 
 function createWindow(): BrowserWindow {
   // Create the browser window.
@@ -59,8 +60,10 @@ app.whenReady().then(() => {
   // get the electron window
   const browserWindow = createWindow()
 
-  // execute the agent instance for this app
-  startAgent(browserWindow);
+  // execute the launcher instance for this app
+  //
+  const numOfAgents = 1; // <- TEMPORARY 
+  launchLauncher(browserWindow, numOfAgents);
 
   // return the agent state
   dispatchEvent(ipcMain, 'get-agent-state', async () => {
@@ -83,10 +86,26 @@ app.on('window-all-closed', () => {
   }
 })
 
+// boolean indicating if the launcher has been cleaned out before quitting the application
+let launcherClean: boolean = false;
+
 // Emitted when all windows have been closed and the application will quit. 
 // Calling event.preventDefault() will prevent the default behavior, which 
 // is terminating the application.
-app.on('will-quit', () => {
+app.on('will-quit', (event) => {
+
+  // prevent the app from quiting before launcher can
+  // clean up his child processes
+  // 
+  event.preventDefault();
+
+  if (!launcherClean) {
+
+    // flip the switch
+    launcherClean = true;  
+    terminateLauncher(() => app.quit());
+  }
+
   // before quiting, kill the agent instance.
-  killAgent();
+  // killAgent();
 })

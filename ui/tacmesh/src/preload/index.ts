@@ -1,4 +1,4 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer  } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
@@ -20,3 +20,13 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.api = api
 }
+
+// To fire a one-way IPC message from a renderer process to the main process, 
+// the ipcRenderer.send API can send a message that is then received 
+// by the ipcMain.on API
+//
+// Exposing this API in the preload script allows the renderer process to use it.
+//
+contextBridge.exposeInMainWorld('electronAPI', {
+  pushToLauncher: (mathod: string, params: any) => ipcRenderer.send(mathod, params)
+})

@@ -9,8 +9,10 @@ namespace TacMesh.Launcher.processes
     /// </summary>
     public class ProcessCreator
     {
-        // paths relative to folder: Final-Project-2027/project-files/TACMESH/backend/src/TacMesh.Launcher/
-        private const string _agaentExe = @"..\TacMesh.Agent\bin\Debug\net10.0\TacMesh.Agent.exe";
+        // get the full path of the agent exe
+        private static readonly string _baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string _agentPath = Path.GetFullPath(Path.Combine(_baseDir, @"..\..\..\..\TacMesh.Agent\bin\Debug\net10.0\TacMesh.Agent.exe"));
+
 
         // TEMPORARY STATIC LOCATION DICT FOR EVERY NODE UNTIL THE USER INPUTS IN THE FUTURE 
         private static readonly Dictionary<string, Location> _locations = new()
@@ -63,7 +65,7 @@ namespace TacMesh.Launcher.processes
             double speed = _speeds[nodeId];
             string permittedNodes = JsonSerializer.Serialize(_permittedNodes);
 
-            ProcessStartInfo start_info = InitStartInfo(_agaentExe, nodeId, jsonLocation, speed, permittedNodes);
+            ProcessStartInfo start_info = InitStartInfo(_agentPath, nodeId, jsonLocation, speed, permittedNodes);
 
             // init agent process with the start info
             return new Process() { StartInfo = start_info };

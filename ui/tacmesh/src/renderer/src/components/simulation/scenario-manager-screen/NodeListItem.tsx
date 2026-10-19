@@ -11,7 +11,6 @@ interface ItemProps {
 export default function AgentListItem({ node, expandedFlag }: ItemProps) {
 
     // flag to expand or collapse the list item options
-    //
     const [openMenu, setOpenMenu] = useState<boolean>(false);
 
     // handle the list item click -> trigger dropdown menu
@@ -22,25 +21,37 @@ export default function AgentListItem({ node, expandedFlag }: ItemProps) {
             setOpenMenu(!openMenu);
     }
 
+    const pushToLauncher = (input: string) => {
+        // push to launcher using the pushToLauncher API 
+        // from the preload script        
+        window.electronAPI.pushNotification('launcher-stdin', { stdInput: input });
+    }
+
     // dropdown menu click handlers
     //
     const onStartProcess = () => {
 
-
-        // update the openMenu flag
-        setOpenMenu(!openMenu);
+        // start command: 'start <node-id>'
+        const input: string = `start ${node.nodeId}`;
+        pushToLauncher(input);
+        setOpenMenu(!openMenu); // update the openMenu flag
     }
     const onKillProcess = () => {
 
-
-        // update the openMenu flag
-        setOpenMenu(!openMenu);
+        // kill command: 'kill <node-id>'
+        const input: string = `kill ${node.nodeId}`;
+        pushToLauncher(input);
+        setOpenMenu(!openMenu); // update the openMenu flag
     }
     const onChgLink = () => {
 
+        // to do ...
 
-        // update the openMenu flag
-        setOpenMenu(!openMenu);
+        // change link range command: 'link-r <node-id> <range>'
+        // const input: string = `link-r ${node.nodeId} ${}`;
+        // pushToLauncher(input);
+
+        setOpenMenu(!openMenu); // update the openMenu flag
     }
 
     return (
