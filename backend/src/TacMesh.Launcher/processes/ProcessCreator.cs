@@ -78,7 +78,8 @@ namespace TacMesh.Launcher.processes
                 UseShellExecute = false,
                 RedirectStandardOutput = true, // redirect output stream to the launcher process
                 RedirectStandardInput = true, // redirect input stream to the launcher process
-                CreateNoWindow = false
+                CreateNoWindow = false,
+                StandardOutputEncoding = System.Text.Encoding.UTF8
             };
         }
     }

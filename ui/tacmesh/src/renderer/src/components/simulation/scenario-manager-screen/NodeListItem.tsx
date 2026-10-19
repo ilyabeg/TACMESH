@@ -30,18 +30,26 @@ export default function AgentListItem({ node, expandedFlag }: ItemProps) {
     // dropdown menu click handlers
     //
     const onStartProcess = () => {
-
-        // start command: 'start <node-id>'
-        const input: string = `start ${node.nodeId}`;
-        pushToLauncher(input);
-        setOpenMenu(!openMenu); // update the openMenu flag
+        try {
+            // start command: 'start <node-id>'
+            const input: string = `start ${node.nodeId}`;
+            pushToLauncher(input);
+            setOpenMenu(false); // update the openMenu flag
+        }
+        catch (error) {
+            console.error(`error caught while starting process: \"${error}\"`);
+        }
     }
     const onKillProcess = () => {
-
-        // kill command: 'kill <node-id>'
-        const input: string = `kill ${node.nodeId}`;
-        pushToLauncher(input);
-        setOpenMenu(!openMenu); // update the openMenu flag
+        try {
+            // kill command: 'kill <node-id>'
+            const input: string = `kill ${node.nodeId}`;
+            pushToLauncher(input);
+            setOpenMenu(false); // update the openMenu flag
+        }
+        catch (error) {
+            console.error(`error caught while terminating process: \"${error}\"`);
+        }
     }
     const onChgLink = () => {
 
@@ -51,7 +59,7 @@ export default function AgentListItem({ node, expandedFlag }: ItemProps) {
         // const input: string = `link-r ${node.nodeId} ${}`;
         // pushToLauncher(input);
 
-        setOpenMenu(!openMenu); // update the openMenu flag
+        setOpenMenu(false); // update the openMenu flag
     }
 
     return (

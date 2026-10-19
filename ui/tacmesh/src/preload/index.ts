@@ -28,5 +28,5 @@ if (process.contextIsolated) {
 // Exposing this API in the preload script allows the renderer process to use it.
 //
 contextBridge.exposeInMainWorld('electronAPI', {
-  pushToLauncher: (mathod: string, params: any) => ipcRenderer.send(mathod, params)
+  pushNotification: (mathod: string, params: any) => ipcRenderer.send(mathod, params)
 })

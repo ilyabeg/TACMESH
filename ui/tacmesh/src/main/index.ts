@@ -6,7 +6,10 @@ import dispatchEvent from './ipc/eventDispatcher'
 
 // import agent management
 import { startAgent, killAgent, getAgentState } from './AgentManager'
-import { launchLauncher, terminateLauncher } from './simulation/scenario manager/Launcher';
+import { launchLauncher, terminateLauncher, pushToLauncher } from './simulation/scenario manager/Launcher';
+
+
+// --- window creating ---
 
 function createWindow(): BrowserWindow {
   // Create the browser window.
@@ -43,6 +46,7 @@ function createWindow(): BrowserWindow {
   return mainWindow; 
 }
 
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -61,14 +65,11 @@ app.whenReady().then(() => {
   const browserWindow = createWindow()
 
   // execute the launcher instance for this app
-  //
   const numOfAgents = 1; // <- TEMPORARY 
   launchLauncher(browserWindow, numOfAgents);
 
-  // return the agent state
-  dispatchEvent(ipcMain, 'get-agent-state', async () => {
-    return getAgentState();
-  });
+  attachEventDispatchers();
+  attachEventListeners();
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -76,6 +77,37 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
+
+
+// --- custom main process event dispatchers ---
+
+const attachEventDispatchers = (): void => {
+
+  // return the agent state
+  dispatchEvent(ipcMain, 'get-agent-state', async () => {
+    return getAgentState();
+  });
+}
+
+
+// --- custom ipc event listeners ---
+
+// Note: difference between the dispacthers and the listeners is that the 
+// dispatchers are event handlers that repspond, while the listeners
+// are event handlers which only expect an event without a response to it
+//
+const attachEventListeners = () => {
+
+  // launcher push notif handler
+  ipcMain.on('launcher-stdin', (event, args: { stdInput: string }): void => {
+
+    // push input to the launcher
+    pushToLauncher(args.stdInput + '\n');
+  });
+}
+
+
+// --- app event handlers --- 
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -86,9 +118,6 @@ app.on('window-all-closed', () => {
   }
 })
 
-// boolean indicating if the launcher has been cleaned out before quitting the application
-let launcherClean: boolean = false;
-
 // Emitted when all windows have been closed and the application will quit. 
 // Calling event.preventDefault() will prevent the default behavior, which 
 // is terminating the application.
@@ -97,15 +126,27 @@ app.on('will-quit', (event) => {
   // prevent the app from quiting before launcher can
   // clean up his child processes
   // 
-  event.preventDefault();
-
   if (!launcherClean) {
+    event.preventDefault();
 
     // flip the switch
-    launcherClean = true;  
-    terminateLauncher(() => app.quit());
-  }
+    launcherClean = true;
+    cleanApp();
+  } 
 
   // before quiting, kill the agent instance.
   // killAgent();
 })
+
+
+// --- app cleanup ---
+
+// boolean indicating if the launcher has been cleaned out before quitting the application
+let launcherClean: boolean = false;
+
+// clean up before quitting the app
+const cleanApp = (): void => { 
+
+  // currently only cleaning up launcher, but maybe more cleanpus will be added in the future
+  terminateLauncher(() => app.quit());
+}

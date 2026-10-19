@@ -16,7 +16,7 @@ namespace TacMesh.Launcher.startup
         private readonly Dictionary<string, Process> _agents;
 
         // Semaphore to limit the number of processes the AgentManager creates at a time
-        private Semaphore _semaphore;
+        private readonly Semaphore _semaphore;
         private const int _initialCount = 0; // the initial number of requests for the semaphore that can be granted
         private const int _maximumCount = 1; // the maximum number of requests for the semaphore that can be granted
         private const string _semName = "TacMesh-Global-Sem"; // the name that the semaphore uses
@@ -28,6 +28,8 @@ namespace TacMesh.Launcher.startup
         // constructor
         public AgentManager(Dictionary<string, Process> agents)
         {
+            // create a named semaphore that can be shared accross processes
+            _semaphore = new Semaphore(_initialCount, _maximumCount, _semName);
             _agents = agents;
         }
 
@@ -38,24 +40,20 @@ namespace TacMesh.Launcher.startup
             // create a list of the sorted id's in the dict
             // O(nlogn) + O(n) foreach loop, and O(n) extra space for the list
             List<string> sortedIds = _agents.OrderBy(kvp => kvp.Key).Select(kvp => kvp.Key).ToList();
-
-            // create a named semaphore that can be shared accross processes
-            using (_semaphore = new Semaphore(_initialCount, _maximumCount, _semName))
+            
+            foreach (string agentId in sortedIds)
             {
-                foreach (string agentId in sortedIds)
-                {
-                    Process agent_process = _agents[agentId];
+                Process agent_process = _agents[agentId];
 
-                    // attach echo data received event handler and pass agentId using the lambda,
-                    // this saves the agentId for every Agent's own event handler with this specific id
-                    agent_process.OutputDataReceived += (s, e) => OnStdOutReceived(agentId, s, e);
+                // attach echo data received event handler and pass agentId using the lambda,
+                // this saves the agentId for every Agent's own event handler with this specific id
+                agent_process.OutputDataReceived += (s, e) => OnStdOutReceived(agentId, s, e);
 
-                    agent_process.Start();
-                    agent_process.BeginOutputReadLine(); // lets see output
+                agent_process.Start();
+                agent_process.BeginOutputReadLine(); // lets see output
 
-                    // freeze creation here until semaphore is released
-                    _semaphore.WaitOne();
-                }
+                // freeze creation here until semaphore is released
+                _semaphore.WaitOne();
             }
 
             // make the agents emit the beacon only after starting up all of the processes
@@ -247,9 +245,14 @@ namespace TacMesh.Launcher.startup
                 }
                 finally
                 {
-                    agent.Dispose();
+                    agent.Dispose();                    
                 }
             }
+
+            _semaphore.Dispose(); // dispose the semaphore on shutdown
+
+            // Note: creating and disposing the samaphore at the class level fixes the agent termination
+            // and restart semaphore crash problem
         }
     }
 }

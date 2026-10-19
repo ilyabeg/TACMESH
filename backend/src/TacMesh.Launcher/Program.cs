@@ -14,6 +14,8 @@ namespace TacMesh.Launcher
         {
             // color output for better visibility
             Console.ForegroundColor = ConsoleColor.Green;
+            // set the output encoding to UTF-8 encoding
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
 
             // reject execution without arguments
             if (args.Length < 1)
