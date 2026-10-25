@@ -23,7 +23,7 @@ namespace TacMesh.Launcher.processes
             ["Node-04"] = new Location(2, 1),
             ["Node-05"] = new Location(1.5, 1.5)
         };
-
+        
         // TEMPORARY STATIC SPEEDS DICT FOR EVERY NODE UNTIL THE USER INPUTS IN THE FUTURE 
         private static readonly Dictionary<string, double> _speeds = new()
         {

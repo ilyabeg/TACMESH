@@ -1,15 +1,14 @@
+using System.Text.Json;
 using TacMesh.Core.assets;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces.beacon_and_destination;
 using TacMesh.Core.models;
+using TacMesh.Core.utils.ipc.types;
 
 namespace TacMesh.Core.launcher
 {
     public class LauncherControl
     {
-        // launcher control is specificaly used only during simuation mode, thus
-        // using specificaly the VIRTUAL Radio Model.
-        private readonly VirtualRadioModel _radioModel;
         private readonly string _srcNode; // the Node that the Launcher is pushing the data to
         private Location _currentLocation; // holds the current node location
         private readonly double _nodeSpeed; // holds the current node speed
@@ -21,9 +20,8 @@ namespace TacMesh.Core.launcher
         // will be removed. it is currently strictly temporary for the simplified position advancing.
         private readonly IBeaconEmitter _emitter;
 
-        public LauncherControl(VirtualRadioModel radioModel, string srcNode, Location intialLocation, double speed, IBeaconEmitter emitter)
+        public LauncherControl(string srcNode, Location intialLocation, double speed, IBeaconEmitter emitter)
         {
-            _radioModel = radioModel;
             _srcNode = srcNode;
             _currentLocation = intialLocation;
             _nodeSpeed = speed;
@@ -97,24 +95,18 @@ namespace TacMesh.Core.launcher
         {
             try
             {
-                string[] splitted = input.Split('|');
-                if (splitted.Length != 2) throw new ArgumentException("Expected position was invalid");
+                // try to parse the move command json string
+                MoveCommand movCommand = JsonSerializer.Deserialize<MoveCommand>(input);
 
-                // input supposed to simply be 'NodeID|X,Y'
-                nodeId = splitted[0];
+                // if successfull, pull the engine data
+                nodeId = movCommand.EngineId;
+                newLocation = movCommand.Location;
 
-                // split the 'X,Y' string
-                string[] position = splitted[1].Split(',');
-                double x = double.Parse(position[0]);
-                double y = double.Parse(position[1]);
-
-                // create new pos from the launcher change
-                newLocation = new Location(x,y);
                 return true;
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Couldn't parse StdInput: '{e.Message}'");
+                Console.WriteLine($"Couldn't parse StdInput: \"{e.Message}\"");
                 newLocation = null;
                 nodeId = null;
                 return false;

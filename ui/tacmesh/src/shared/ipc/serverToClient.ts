@@ -8,10 +8,19 @@ export interface pushNotification {
     'error': {
         payload: ServerError
     },
-    'engine-received': {
+    'ReturnEngines': {
+        payload: Array<EngineInfo>
+    }   
+    'EngineUp': {
         payload: EngineInfo
     },    
-    'engine-state-updated': {
-        payload: boolean
-    },    
+    'EngineDown': {
+        payload: string
+    },
+    'EngineUpdate': {
+        payload: {
+            engineId: string,
+            // location: Location
+        }
+    },
 }

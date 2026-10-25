@@ -1,5 +1,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Text.Json;
+using TacMesh.Core.graph_related;
+using TacMesh.Core.utils.ipc.types;
 using TacMesh.Launcher.info;
 using TacMesh.Launcher.processes;
 
@@ -32,6 +35,10 @@ namespace TacMesh.Launcher.startup
             _semaphore = new Semaphore(_initialCount, _maximumCount, _semName);
             _engines = engines;
         }
+
+
+        // returns the current engines processes
+        public List<ProcessRecord> GetEnginesList() => _nodeRecords.Values.ToList();
 
 
         // attach data received event to each process before starting it
@@ -127,21 +134,20 @@ namespace TacMesh.Launcher.startup
                 engine.Kill(true);
                 engine.WaitForExit();
                 RemoveRecord(engineId);
+
+                // notify the ui about the agent death
+                StdOut(IOMessageType.EngineDown, engineId);
             }
-            catch (KeyNotFoundException)
-            {
+            catch (KeyNotFoundException) {
                 Console.WriteLine($"[LAUNCHER] Failed to kill engine {engineId} due to: Engine does not exist.");
             }
-            catch (ArgumentException)
-            {
+            catch (ArgumentException) {
                 Console.WriteLine($"[LAUNCHER] Failed to kill engine {engineId} due to: Engine already terminated.");
             }
-            catch (InvalidOperationException)
-            {
+            catch (InvalidOperationException) {
                 // ignoring InvalidOperationException for the same reason as in 'Shutdown()' method...
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 Console.WriteLine($"[LAUNCHER] Failed to kill engine: {e.Message}");
             }
         }
@@ -163,29 +169,29 @@ namespace TacMesh.Launcher.startup
                 _engines[engineId] = engine;
 
                 // should automatically add record back with new process id
+                // because each engine prints his port on startup ("PORT=<number>")
                 engine.Start();
                 engine.BeginOutputReadLine();
+
+                // notify the ui that the agent is back online
+                StdOut(IOMessageType.EngineUp, _nodeRecords[engineId]);
             }
-            catch (KeyNotFoundException)
-            {
+            catch (KeyNotFoundException) {
                 Console.WriteLine($"[LAUNCHER] Failed to start engine {engineId} due to: Engine does not exist.");
             }
-            catch (ArgumentException)
-            {
+            catch (ArgumentException) {
                 Console.WriteLine($"[LAUNCHER] Failed to start engine {engineId} due to: Engine already running.");
             }
-            catch (InvalidOperationException)
-            {
+            catch (InvalidOperationException) {
                 // ignoring InvalidOperationException for the same reason as in 'Shutdown()' method...
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 Console.WriteLine($"[LAUNCHER] Failed to start engine: {e.Message}");
             }
         }
 
         // writes to each engine process the new position of a specific engine
-        public void MoveEngine(string engineId, string newPosition)
+        public void MoveEngine(string engineId, Location newPosition)
         {
             // can't move an engine who's process is currently dead
             if (_engines[engineId].HasExited)
@@ -195,8 +201,8 @@ namespace TacMesh.Launcher.startup
             }
 
             // move only the specific engine
-            string input = $"{engineId}|{newPosition}";
-            WriteToInputStream(engineId, input);
+            string jsonMovCommand = JsonSerializer.Serialize(new MoveCommand(engineId, newPosition));
+            WriteToInputStream(engineId, jsonMovCommand);
         }
 
         // prints the engine processes
@@ -212,6 +218,14 @@ namespace TacMesh.Launcher.startup
             foreach (ProcessRecord record in _nodeRecords.Values)
                 Console.WriteLine(record);
             Console.WriteLine();
+        }
+
+        // prints out a std io message in json format
+        private void StdOut(IOMessageType messageType, object data)
+        {
+            StdIOMessage outputMessage = new StdIOMessage(messageType, data);
+            string jsonMessage = JsonSerializer.Serialize(outputMessage);
+            Console.WriteLine(jsonMessage);
         }
 
         public void Shutdown()

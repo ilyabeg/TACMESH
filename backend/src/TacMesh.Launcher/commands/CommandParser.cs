@@ -1,3 +1,6 @@
+using System.Text.Json;
+using TacMesh.Core.utils.ipc.types;
+using TacMesh.Launcher.info;
 using TacMesh.Launcher.startup;
 
 namespace TacMesh.Launcher.commands
@@ -21,88 +24,93 @@ namespace TacMesh.Launcher.commands
         {
             while (true)
             {
-                Console.WriteLine("[COMMAND PARSER] Enter a command at any time [list / start <id> / kill <id> / pos <id> <X,Y>]:\n");
-                string command = Console.ReadLine();
+                //Console.WriteLine("[COMMAND PARSER] Enter a command at any time [list / start <id> / kill <id> / pos <id> <X,Y>]:\n");
+                string input = Console.ReadLine();
 
-                // if Ctrl+C was pressed, 'command' initiates to null, which causes an inifite loop.
+                // if Ctrl+C was pressed, 'input' initiates to null, which causes an inifite loop.
                 // this is the purpose of this check: to end and break out of the loop
-                if (command == null || command.Trim().ToLower().Equals("exit")) 
+                if (input == null || input.Trim().ToLower().Equals("exit")) 
                     break;
                 
-                if (string.IsNullOrWhiteSpace(command)) continue;
+                if (string.IsNullOrWhiteSpace(input)) continue;
 
-                ParseCommand(command.Trim());
+                TryParseInput(input.Trim());
             }
         }
 
-        // constant command indexes
-        private const int _command_index = 0;
-        private const int _id_index = 1;
-        private const int _pos_index = 2;
 
-        // parse command with switch case - KISS principle
-        // (no need to over-engineer with memory heavy dictionary for 4 simple commands)
-        private void ParseCommand(string str)
+        // parse input with switch case - KISS principle
+        // (no need to over-engineer with memory heavy dictionary for each command)
+        private void TryParseInput(string input)
         {
             try
             {
-                string[] splitted = str.Split(' ');
-                string command = splitted[_command_index].ToLower();
+                // test the input receiving...
+                Console.WriteLine($"[LAUNCHER RECEIVED] input: \"{input}\"");
 
 
-                // Note: TEMPORARILY start the node position advances here by typing
-                // '.' on the keyboard until an automated and different 
-                // implementation of handling node advancements is written...
-                if (command.Equals(".")) {
-                    _engineManager.InitAdvances();
-                    return;
-                }
+                // deserialize as an ipc input message
+                StdIOMessage msg = JsonSerializer.Deserialize<StdIOMessage>(input)!;
+                IOMessageType msgType = Enum.Parse<IOMessageType>(msg.Type); // parse the message type as an enum
 
 
-                switch (command)
+                // test the message type...
+                Console.WriteLine($"[LACUNHER] Received IPC Message type: {msgType} ({msg.Type})");
+
+
+                switch (msgType)
                 {
-                    case "list":
+                    // main-process request to get the running engine processes
+                    case IOMessageType.ListEngines:
                     {
-                        // 'list' command should be a single command word
-                        if (splitted.Length != 1) throw new Exception();
+                        List<ProcessRecord> enginesList = _engineManager.GetEnginesList();
+                        StdIOMessage outputMessage = new StdIOMessage(IOMessageType.ReturnEngines, enginesList);
 
-                        _engineManager.PrintEngines();
+                        // print out the json message
+                        string jsonMessage = JsonSerializer.Serialize(outputMessage);
+                        Console.WriteLine(jsonMessage);
                         break;
                     }
-                    case "kill":
+                    // treminates the specified engine process
+                    case IOMessageType.KillEngine:
                     {
-                        // 'kill' command should be a single command word and id only
-                        if (splitted.Length != 2) throw new Exception();
-
-                        string id = splitted[_id_index];
-                        _engineManager.KillEngine(id);
+                        string engineId = JsonSerializer.Deserialize<string>(msg.Payload)!;
+                        _engineManager.KillEngine(engineId);
                         break;
                     }
-                    case "start":
+                    // starts the specified engine process
+                    case IOMessageType.StartEngine:
                     {
-                        // 'start' command should be a single command word and id only 
-                        if (splitted.Length != 2) throw new Exception();
-
-                        string id = splitted[_id_index];
-                        _engineManager.StartEngine(id);
+                        string engineId = JsonSerializer.Deserialize<string>(msg.Payload)!;
+                        _engineManager.StartEngine(engineId);
                         break;
                     }
-                    case "pos":
+                    // moves the specified engine process
+                    case IOMessageType.MoveEngine:
                     {
-                        // 'pos' command should be only 3 parts
-                        if (splitted.Length > 3) throw new Exception();
-
-                        string id = splitted[_id_index];
-                        string pos = splitted[_pos_index];
-
-                        _engineManager.MoveEngine(id, pos);
+                        MoveCommand data = JsonSerializer.Deserialize<MoveCommand>(msg.Payload)!;
+                        _engineManager.MoveEngine(data.EngineId, data.Location);
                         break;
                     }
+                    // start the node position advances
+                    case IOMessageType.AdvanceEngine:
+                    {
+                        _engineManager.InitAdvances();
+                        break;                    
+                    }
+                    // change the specified engine process link range
+                    case IOMessageType.ChgLinkRange:
+                    {
+
+                        // to do ...
+
+                        break;
+                    }
+                    // unrecognized command input
                     default: throw new Exception();
                 }
             }
-            catch
-            {
+            catch {
                 Console.WriteLine("[COMMAND PARSER] Unkown command.");
             }            
         }

@@ -1,6 +1,6 @@
 import { BrowserWindow } from "electron";
 import { ChildProcess, spawn } from "node:child_process";
-import pushToClient from "../../ipc/pushToClient";
+import pushToClient from "../../../ipc/pushToClient";
 import path from "node:path";
 
 let _launcher: ChildProcess; // the launcher process

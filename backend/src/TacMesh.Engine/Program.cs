@@ -71,7 +71,7 @@ namespace TacMesh.Engine
 
                 // Beacon Emitter
                 IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeId, assignedPort, SystemConfigs.McastEndPoint);
-                LauncherControl launcherControl = new LauncherControl((VirtualRadioModel)radioModel, nodeId, initialLocation, initialSpeed, beaconEmitter);
+                LauncherControl launcherControl = new LauncherControl(nodeId, initialLocation, initialSpeed, beaconEmitter);
 
                 // Topology Filter
                 TopologyFilter topologyFilter = new TopologyFilter(permittedNodes); // <- inject permitted

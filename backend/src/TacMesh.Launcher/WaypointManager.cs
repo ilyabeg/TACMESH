@@ -62,11 +62,8 @@ namespace TacMesh.Launcher
             {
                 Location nextWaypoint = _waypoints[engineId].Dequeue();
 
-                // convert the position to a string
-                string pos = $"{nextWaypoint.X},{nextWaypoint.Y}";
-
                 // push the location to the Node
-                _engineManager.MoveEngine(engineId, pos);
+                _engineManager.MoveEngine(engineId, nextWaypoint);
             }
             else {
                 // temporary check

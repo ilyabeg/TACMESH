@@ -6,7 +6,7 @@ import dispatchEvent from './ipc/eventDispatcher'
 
 // import engine management
 import { startEngine, killEngine, getEngineState } from './EngineManager'
-import { launchLauncher, terminateLauncher, pushToLauncher } from './simulation/scenario manager/Launcher';
+import { launchLauncher, terminateLauncher, pushToLauncher } from './simulation/scenario-manager/launcher/Launcher';
 
 
 // --- window creating ---
@@ -100,9 +100,11 @@ const attachEventListeners = () => {
 
   // launcher push notif handler
   ipcMain.on('launcher-stdin', (event, args: { stdInput: string }): void => {
-
     // push input to the launcher
     pushToLauncher(args.stdInput + '\n');
+
+    // test the input
+    console.log(`Pushed \"${args.stdInput}\" to the launcher...`);
   });
 }
 
