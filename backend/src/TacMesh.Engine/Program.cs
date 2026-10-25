@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using TacMesh.Core.assets;
@@ -20,7 +20,7 @@ using TacMesh.Core.tables.node_related;
 using TacMesh.Core.utils;
 using TacMesh.Core.utils.serializers;
 
-namespace TacMesh.Agent
+namespace TacMesh.Engine
 {
     public class Program
     {
@@ -33,7 +33,7 @@ namespace TacMesh.Agent
             {
                 if (args.Length != arguments_length)
                 {
-                    Console.WriteLine("ERROR: Agent Process arguments did not match. Terminating process...");
+                    Console.WriteLine("ERROR: Engine Process arguments did not match. Terminating process...");
                     return;
                 }
                 // set the output encoding to UTF-8 encoding
@@ -49,9 +49,9 @@ namespace TacMesh.Agent
 
                 // --- create all dependencies ---
 
-                // Agent socket & port
-                Socket agent_socket = GetAgentSocket();
-                int assignedPort = ((IPEndPoint)agent_socket.LocalEndPoint).Port;
+                // Engine socket & port
+                Socket engine_socket = GetEngineSocket();
+                int assignedPort = ((IPEndPoint)engine_socket.LocalEndPoint).Port;
 
                 // IRadioModel
                 Socket radio_socket = GetRadioSocket();
@@ -63,7 +63,7 @@ namespace TacMesh.Agent
                 IRadioModel radioModel = new VirtualRadioModel(maximum_range: 10, dRandom, radioReceiver, terrainLoS);
 
                 // ITransport
-                ITransport simTransport = new SimTransport(agent_socket, radioModel);
+                ITransport simTransport = new SimTransport(engine_socket, radioModel);
 
                 // Heartbeats, NeighbourTable
                 HeartBeater heartBeater = GetHeartBeater(nodeId, simTransport, radioModel);
@@ -86,7 +86,7 @@ namespace TacMesh.Agent
                 launcherControl.ListenForStdInput();
 
 
-                // Release the Semaphore to allow the next agent to be initialized in the launcher
+                // Release the Semaphore to allow the next engine to be initialized in the launcher
                 string semName = "TacMesh-Global-Sem";
                 using (Semaphore semaphore = Semaphore.OpenExisting(semName))
                 {
@@ -98,11 +98,11 @@ namespace TacMesh.Agent
             }
             catch (Exception e)
             {
-                Console.WriteLine($"[AGENT ERROR] {e}");
+                Console.WriteLine($"[ENGINE ERROR] {e}");
             }
         }
 
-        static Socket GetAgentSocket()
+        static Socket GetEngineSocket()
         {
             // create and bind socket to a random free port assigned by the OS and the localhoast ip
             Socket s = SocketGenerator.GenerateUdpSocket();

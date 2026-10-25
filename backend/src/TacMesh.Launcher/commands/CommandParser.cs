@@ -1,4 +1,4 @@
-﻿using TacMesh.Launcher.startup;
+using TacMesh.Launcher.startup;
 
 namespace TacMesh.Launcher.commands
 {
@@ -7,13 +7,13 @@ namespace TacMesh.Launcher.commands
     /// </summary>
     public class CommandParser
     {
-        // agent manager to execute command on
-        private readonly AgentManager _agentManager;
+        // engine manager to execute command on
+        private readonly EngineManager _engineManager;
 
         // constructor
-        public CommandParser(AgentManager agentManager)
+        public CommandParser(EngineManager engineManager)
         {
-            _agentManager = agentManager;
+            _engineManager = engineManager;
         }
 
         // start parsing loop
@@ -54,7 +54,7 @@ namespace TacMesh.Launcher.commands
                 // '.' on the keyboard until an automated and different 
                 // implementation of handling node advancements is written...
                 if (command.Equals(".")) {
-                    _agentManager.InitAdvances();
+                    _engineManager.InitAdvances();
                     return;
                 }
 
@@ -66,7 +66,7 @@ namespace TacMesh.Launcher.commands
                         // 'list' command should be a single command word
                         if (splitted.Length != 1) throw new Exception();
 
-                        _agentManager.PrintAgents();
+                        _engineManager.PrintEngines();
                         break;
                     }
                     case "kill":
@@ -75,7 +75,7 @@ namespace TacMesh.Launcher.commands
                         if (splitted.Length != 2) throw new Exception();
 
                         string id = splitted[_id_index];
-                        _agentManager.KillAgent(id);
+                        _engineManager.KillEngine(id);
                         break;
                     }
                     case "start":
@@ -84,7 +84,7 @@ namespace TacMesh.Launcher.commands
                         if (splitted.Length != 2) throw new Exception();
 
                         string id = splitted[_id_index];
-                        _agentManager.StartAgent(id);
+                        _engineManager.StartEngine(id);
                         break;
                     }
                     case "pos":
@@ -95,7 +95,7 @@ namespace TacMesh.Launcher.commands
                         string id = splitted[_id_index];
                         string pos = splitted[_pos_index];
 
-                        _agentManager.MoveAgent(id, pos);
+                        _engineManager.MoveEngine(id, pos);
                         break;
                     }
                     default: throw new Exception();

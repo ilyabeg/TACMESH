@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { AgentInfo } from "../../../../../shared/types/agentInfo";
+import { EngineInfo } from "../../../../../shared/types/engineInfo";
 import NodeListItem from './NodeListItem';
-import '../../../assets/styles/component-styles/agentListStyle.css';
+import '../../../assets/styles/component-styles/engineListStyle.css';
+import invokeServer from "@renderer/ipc/invokeServer";
 
 
 // define the node list component props for the type 
@@ -12,35 +13,41 @@ interface NodeListProps {
 export default function NodeList({ expandedFlag }: NodeListProps) {
 
     // keep node list state in memory
-    const [nodeList, updateNodeList] = useState<Array<AgentInfo>>([
-        { nodeId: "Node-01", port: 51001, processId: 10101010 },
-        { nodeId: "John Doe III", port: 51002, processId: 10101001010110 }
+    const [nodeList, updateNodeList] = useState<Array<EngineInfo>>([
+        { nodeId: "Node-01", processId: "101010", port: 51001 }
     ]);
 
     useEffect(() => {
-        // attach an node-received event listener
-        const onNodeReceived = (event: Event) => {
+
+        // attach an event listener for node updates
+        const onNodeUpdate = (event: Event) => {
 
             // cast the received window event and pull the detail
-            const e = event as CustomEvent<AgentInfo>;
+            const e = event as CustomEvent<EngineInfo>;
             const receivedNode = e.detail;
 
             // update the node list
             updateNodeList(prevNodes => [...prevNodes, receivedNode]);
         }
 
+        // ask for the nodes from the main process
+        // const getNodes = async () => await invokeServer('get-node-processes',);
+
+        // execute the client to server event
+        // getNodes();
+
         // attach the listener
-        window.addEventListener('display-agent', onNodeReceived);
+        window.addEventListener('display-engine', onNodeUpdate);
 
         // cleanup
         return () => {
-            window.removeEventListener('display-agent', onNodeReceived);
+            window.removeEventListener('display-engine', onNodeUpdate);
         };
     }, []);
 
     return (
         <>
-            <ol className="agent-list">
+            <ol className="engine-list">
                 {nodeList.map((node) => (
                     <NodeListItem key={node.nodeId} node={node} expandedFlag={expandedFlag} />
                 ))}

@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="TacMesh.Agent/TacMesh.Agent.csproj" />
+  <Project Path="TacMesh.Engine/TacMesh.Engine.csproj" />
   <Project Path="TacMesh.Core/TacMesh.Core.csproj" />
   <Project Path="TacMesh.Launcher/TacMesh.Launcher.csproj" />
   <Project Path="TacMesh.Tests/TacMesh.Tests.csproj" />

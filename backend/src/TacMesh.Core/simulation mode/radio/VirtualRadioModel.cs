@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
 using TacMesh.Core.assets;
@@ -12,12 +12,12 @@ using TacMesh.Core.interfaces.raster;
 namespace TacMesh.Core.models
 {
     // keep record of node and his location
-    internal class AgentRecord
+    internal class EngineRecord
     {
         public string NodeId { get; private set; }
         public Location CurrentLocation { get; set; }
 
-        public AgentRecord(string nodeId, Location currentLocation)
+        public EngineRecord(string nodeId, Location currentLocation)
         {
             NodeId = nodeId;
             CurrentLocation = currentLocation;
@@ -40,7 +40,7 @@ namespace TacMesh.Core.models
 
 
         // virtual radio model field according to the design document
-        private readonly ConcurrentDictionary<IPEndPoint, AgentRecord> _agent_locations;
+        private readonly ConcurrentDictionary<IPEndPoint, EngineRecord> _engine_locations;
         private readonly DRandom _dRandom; // deterministic random generator
         private const int _DELAY_RANGE = 5; // the random delay range 
         private readonly int _MAX_RANGE; // not constant because will eventually change in runtime
@@ -49,7 +49,7 @@ namespace TacMesh.Core.models
         // inject max range in constructor
         public VirtualRadioModel(int maximum_range, DRandom dRandom, IReceiver radioReceiver, ILineOfSight terrianTester)
         {
-            _agent_locations = new ConcurrentDictionary<IPEndPoint, AgentRecord>();
+            _engine_locations = new ConcurrentDictionary<IPEndPoint, EngineRecord>();
             _MAX_RANGE = maximum_range;
 
             _dRandom = dRandom;
@@ -74,7 +74,7 @@ namespace TacMesh.Core.models
                 if (SimBeaconEmitter.TryParseBeacon(signal, out string senderID, out IPEndPoint endPoint, out Location nodeLocation))
                 {
                     // add node's address and location
-                    _agent_locations[endPoint!] = new AgentRecord(senderID, nodeLocation);
+                    _engine_locations[endPoint!] = new EngineRecord(senderID, nodeLocation);
                 }
             }
             catch (Exception ex)
@@ -92,13 +92,13 @@ namespace TacMesh.Core.models
             Dictionary<string, IPEndPoint> peers = new Dictionary<string, IPEndPoint>();
 
             // create a dict of the peers by their id
-            foreach (IPEndPoint nodeAddress in _agent_locations.Keys)
-                peers.TryAdd(_agent_locations[nodeAddress].NodeId, nodeAddress);
+            foreach (IPEndPoint nodeAddress in _engine_locations.Keys)
+                peers.TryAdd(_engine_locations[nodeAddress].NodeId, nodeAddress);
             return peers;
         }
 
         /// <summary>
-        /// Method to evaluate a connection between two agent nodes.
+        /// Method to evaluate a connection between two engine nodes.
         /// </summary>
         /// <param name="source">Source address</param>
         /// <param name="destination">Destination address</param>
@@ -106,15 +106,15 @@ namespace TacMesh.Core.models
         public async Task<bool> TestConnection(IPEndPoint source, IPEndPoint destination)
         {
             // pull id's
-            string srcId = _agent_locations[source].NodeId;
-            string dstId = _agent_locations[destination].NodeId;
+            string srcId = _engine_locations[source].NodeId;
+            string dstId = _engine_locations[destination].NodeId;
 
             // combine id's to make dependend seed for the randoms
             string combinedId = srcId + "-" + dstId;
 
             // get the locations
-            Location srcLocation = _agent_locations[source].CurrentLocation;
-            Location dstLocation = _agent_locations[destination].CurrentLocation;
+            Location srcLocation = _engine_locations[source].CurrentLocation;
+            Location dstLocation = _engine_locations[destination].CurrentLocation;
 
             // distance between the points
             double distance = srcLocation.Distance(dstLocation);

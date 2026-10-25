@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using TacMesh.Launcher.commands;
 using TacMesh.Launcher.processes;
 using TacMesh.Launcher.startup;
@@ -20,19 +20,19 @@ namespace TacMesh.Launcher
             // reject execution without arguments
             if (args.Length < 1)
                 throw new ArgumentException("[LAUNCHER] Error: Expected to get Number of Nodes as an Argument.");
-            Console.WriteLine("[LAUNCHER] Launching Agent Processes...");
+            Console.WriteLine("[LAUNCHER] Launching Engine Processes...");
 
             // parse N from args
-            int numOfAgents = int.Parse(args[0]);
+            int numOfEngines = int.Parse(args[0]);
 
-            // inject agents created
-            Dictionary<string, Process> agents = ProcessCreator.CreateAgents(numOfAgents);
-            AgentManager agentManager = new AgentManager(agents);
-            agentManager.StartAgents();
+            // inject engines created
+            Dictionary<string, Process> engines = ProcessCreator.CreateEngines(numOfEngines);
+            EngineManager engineManager = new EngineManager(engines);
+            engineManager.StartEngines();
 
-            // inject agent manager
-            CommandParser commandParser = new (agentManager);
-            WaypointManager waypointManager = new (agentManager);
+            // inject engine manager
+            CommandParser commandParser = new (engineManager);
+            WaypointManager waypointManager = new (engineManager);
 
             // kill processes when Ctrl+C is pressed
             Console.CancelKeyPress += (s, e) => myHandler(s, e);
@@ -40,7 +40,7 @@ namespace TacMesh.Launcher
             commandParser.StartParsing();
 
             // shutdown on Ctrl+C because it breaks the main thread out of the command parse loop
-            agentManager.Shutdown();
+            engineManager.Shutdown();
         }
 
         // don't kill main process if Ctrl+C was pressed just yet

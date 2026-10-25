@@ -1,9 +1,9 @@
-﻿using TacMesh.Core.assets.node;
+using TacMesh.Core.assets.node;
 using TacMesh.Core.hardware_mode;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.tables.node_related;
 
-namespace TacMesh.Agent
+namespace TacMesh.Engine
 {
     public class Node
     {

@@ -95,15 +95,6 @@ How to run the project:
 
 ```
 
-## Architectural Decisions
-
-Lock Order Rule: Always acquire NeighbourTable lock before Buffer lock to prevent Deadlocks. Reasons:
-
-- **Data Flow**: When data packets arrive at an Agent, it first needs to authorize the packet and check if the sender is present in his NeighbourTable before processing the packet. Only after authorization, can it proceed. The natural data flow is one of the reasons I chose to acquire the table lock before proceeding and updating the buffer.
-
-- **Preventing Bottlenecks**: Naturally, it is preferred to handle slower and 'heavier' resources before handling smaller and faster ones.
-By aquiring the table lock first, I ensure that the Buffer is not 'hanging' while a thread waits for access to the table.
-
 ## Contact Me
 
 My mail - [ilyabegichev@gmail.com](https://gmail.com)

@@ -2,44 +2,44 @@ import { ChildProcess, spawn } from 'node:child_process';
 import pushToClient from './ipc/pushToClient';
 import path from 'node:path';
 import { BrowserWindow } from 'electron';
-import { AgentInfo } from '../shared/types/agentInfo';
+import { EngineInfo } from '../shared/types/engineInfo';
 
 let _browserWindow: BrowserWindow; // the electron window instance
-let _agent: ChildProcess | null = null; // the agent process instance
-let _assignedPort: number; // the assigned port of the agent instance
-let _agentRunning: boolean = false; // tells if the agent process is running or down
+let _engine: ChildProcess | null = null; // the engine process instance
+let _assignedPort: number; // the assigned port of the engine instance
+let _engineRunning: boolean = false; // tells if the engine process is running or down
 
-// get the absoulte relative path for the agent exe file.
+// get the absoulte relative path for the engine exe file.
 // __dirmame contains the absolute path of the directory 
 // containing the currently executing JavaScript/TypeScript file
 //
-const _agentExe = path.resolve(__dirname, '..', '..', '..', '..',
+const _engineExe = path.resolve(__dirname, '..', '..', '..', '..',
     'backend', 
     'src', 
-    'TacMesh.Agent',
+    'TacMesh.Engine',
     'bin',
     'Debug',
     'net10.0',
-    'TacMesh.Agent.exe'
+    'TacMesh.Engine.exe'
 );
 
-// starts an agent instance for this app, and returns true if  
+// starts an engine instance for this app, and returns true if  
 // succeeded or false otherwise
 //
-export function startAgent(window: BrowserWindow): boolean {
+export function startEngine(window: BrowserWindow): boolean {
 
     // save the browser window instance for future use
     _browserWindow = window;
 
     // check the path
-    // console.log(`Path to Agent.exe: ${_agentExe}`);
+    // console.log(`Path to Engine.exe: ${_engineExe}`);
 
-    // spawn the agent process as a child process    
-    _agent = spawn(_agentExe, ["Node-01", "{}", "0", "[]"]); // TEMPORARILY init agent process with default arguments
+    // spawn the engine process as a child process    
+    _engine = spawn(_engineExe, ["Node-01", "{}", "0", "[]"]); // TEMPORARILY init engine process with default arguments
 
-    if (_agent) {
-        // indicate if the agent is running or not
-        updateAgentState(true);
+    if (_engine) {
+        // indicate if the engine is running or not
+        updateEngineState(true);
 
         // attach event handlers
         attachHandlers();
@@ -50,7 +50,7 @@ export function startAgent(window: BrowserWindow): boolean {
     }
 }
 
-// attaches the agent child process event handlers
+// attaches the engine child process event handlers
 function attachHandlers() {
     onStdout();
     onStderr();
@@ -61,8 +61,8 @@ function attachHandlers() {
 
 // standard output received from the child process' output stream
 function onStdout() {
-    if (_agent) {
-        _agent.stdout?.on('data', (output) => {
+    if (_engine) {
+        _engine.stdout?.on('data', (output) => {
             
             const strOutput: string = output.toString();
             console.log(`[Main Process] Received std output: \n${strOutput}`);
@@ -72,16 +72,16 @@ function onStdout() {
                 _assignedPort = tryParsePort(strOutput);
 
                 if (_assignedPort != -1) {
-                    console.log(`[Main Process] Agent initiated on PORT: ${_assignedPort}`);
+                    console.log(`[Main Process] Engine initiated on PORT: ${_assignedPort}`);
 
-                    // build the agent information
-                    const agentInfo : AgentInfo = {
+                    // build the engine information
+                    const engineInfo : EngineInfo = {
                         nodeId: "tempId", // TEMPORARILY use a temp id
                         port: _assignedPort,
-                        processId: 12345 // TEMPORARILY use a temp pid
+                        processId: "12345" // TEMPORARILY use a temp pid
                     }
-                    // push the agent info to renderer process
-                    pushToClient(_browserWindow, 'agent-received', agentInfo);
+                    // push the engine info to renderer process
+                    pushToClient(_browserWindow, 'engine-received', engineInfo);
                 }
             }            
         });  
@@ -108,9 +108,9 @@ function tryParsePort(output: string) : number {
 
 // error received from the CHILD PROCESS
 function onStderr() {
-    if (_agent) { 
-        _agent.stderr?.on('data', (error) => {
-            console.error(`[Agent Manager] Received error from child process due to: \"${error}\"`);
+    if (_engine) { 
+        _engine.stderr?.on('data', (error) => {
+            console.error(`[Engine Manager] Received error from child process due to: \"${error}\"`);
             pushToClient(_browserWindow, 'error', error);
         });
     }
@@ -118,12 +118,12 @@ function onStderr() {
 
 // error received from the OS
 function onError() {
-    if (_agent) {
-        _agent.on('error', (error) => {
-            console.error(`[Agent Manager] Failed to start child process due to: \"${error}\"`);
+    if (_engine) {
+        _engine.on('error', (error) => {
+            console.error(`[Engine Manager] Failed to start child process due to: \"${error}\"`);
             pushToClient(_browserWindow, 'error', error);
             // attempt to restart
-            restartAgent();
+            restartEngine();
         }); 
     }
 }
@@ -132,8 +132,8 @@ function onError() {
 // stream pipes might still be open
 //
 function onExit() {
-    if (_agent) {
-        _agent.on('exit', (exit) => {
+    if (_engine) {
+        _engine.on('exit', (exit) => {
 
             // When clicking the X button the exit code is evaluated to null and
             // the browser window object is destroyed, meaning sending a push notification 
@@ -141,9 +141,9 @@ function onExit() {
             // prevents the error from popping up.
             //
             if (exit !== null) {
-                console.log(`[Agent Manager] Child process exited \"${exit}\"`);    
-                // update the agent's state
-                updateAgentState(false);
+                console.log(`[Engine Manager] Child process exited \"${exit}\"`);    
+                // update the engine's state
+                updateEngineState(false);
             }
         });
     }
@@ -153,8 +153,8 @@ function onExit() {
 // stream pipes have been closed
 //
 function onClose() {
-    if (_agent) {
-        _agent.on('close', (code) => {
+    if (_engine) {
+        _engine.on('close', (code) => {
 
             // When clicking the X button the exit code is evaluated to null and
             // the browser window object is destroyed, meaning sending a push notification 
@@ -162,46 +162,46 @@ function onClose() {
             // prevents the error from popping up.
             //
             if (code !== null) {
-                console.log(`[Agent Manager] Child process closed with code ${code}`);
-                // update the agent's state
-                updateAgentState(false);
-                // attemp to restart agent after all io stream pipes were closed
-                restartAgent();
+                console.log(`[Engine Manager] Child process closed with code ${code}`);
+                // update the engine's state
+                updateEngineState(false);
+                // attemp to restart engine after all io stream pipes were closed
+                restartEngine();
             }
         });
     }
 }
 
-// closing the agent
-export function killAgent() {
+// closing the engine
+export function killEngine() {
 
     // The subprocess.exitCode property indicates the exit code
     // of the child process. If the child process is still running,
     // the field will be null
     //
-    if (_agent?.exitCode === null) {
+    if (_engine?.exitCode === null) {
 
         // calling ChildProcess.kill() without params sends the process
         // SIGTERM (terminate signal) via the OS, and returns true if successful
         //
-        if (!_agent.kill()) {
-            console.log(`Couldn't terminate agent process...`);
+        if (!_engine.kill()) {
+            console.log(`Couldn't terminate engine process...`);
         }
     }
 }
 
-// return the assigned port number of the agent instance
+// return the assigned port number of the engine instance
 export const getAssignedPort = (): number => _assignedPort;
 
-// returns the current state of the agent (running/down)
-export const getAgentState = (): boolean => _agentRunning;
+// returns the current state of the engine (running/down)
+export const getEngineState = (): boolean => _engineRunning;
 
-// function to update the agent state and push to the renderer process
-function updateAgentState(state: boolean) {
-    _agentRunning = state;
+// function to update the engine state and push to the renderer process
+function updateEngineState(state: boolean) {
+    _engineRunning = state;
     // noify the client if the browser window is open
     if (_browserWindow)
-        pushToClient(_browserWindow, 'agent-state-updated', _agentRunning);
+        pushToClient(_browserWindow, 'engine-state-updated', _engineRunning);
 }
 
 // callback to return a promise of a delay
@@ -209,9 +209,9 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const _restartDelay = 2000;//ms
 const _maxAttempts = 5;
 
-// attempts to restart the agent
-export async function restartAgent(): Promise<boolean> {
-    if (!_agentRunning) {
+// attempts to restart the engine
+export async function restartEngine(): Promise<boolean> {
+    if (!_engineRunning) {
 
         let attempts: number = 0;
         let success: boolean = false;        
@@ -220,17 +220,17 @@ export async function restartAgent(): Promise<boolean> {
             // await delay before trying to restart again too fast
             await sleep(_restartDelay);
 
-            // attemp to start the agent
-            success = startAgent(_browserWindow);
+            // attemp to start the engine
+            success = startEngine(_browserWindow);
             if (!success) 
                 attempts++;
         }
         // if succeeded update the renderer
         if (success) {
-            updateAgentState(true);
+            updateEngineState(true);
             return success;
         }        
     }
-    console.error('[Main Process] Failed to restart the Agent process ...');
+    console.error('[Main Process] Failed to restart the Engine process ...');
     return false;
 }

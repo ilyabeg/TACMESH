@@ -3,13 +3,17 @@
 // to the main process
 //
 export interface ipcMethods {
-    'get-agent-port': {
+    'get-engine-port': {
         'request': void,
         'response': number
     },
-    'get-agent-state': {
+    'get-engine-state': {
         'request': void,
         'response': boolean
+    },
+    'get-node-processes': {
+        'request': void,
+        'response': string
     },
 }
 

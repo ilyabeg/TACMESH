@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react';
 import type { IpcRendererEvent } from 'electron';
 import { onServerEvent, removeAllListenersToServerEvent } from '../ipc/onServerEvent';
 import dispatchWindowEvent from '../window events/windowEventDispatcher';
-import { AgentInfo } from '../../../shared/types/agentInfo';
+import { EngineInfo } from '../../../shared/types/engineInfo';
 import { ServerError } from '../../../shared/types/serverError';
 
 // custom hook to re-use server event handlers anywhere
@@ -15,12 +15,12 @@ export default function useServerEventHandlers() {
       console.error(`Error from server: ${err.message}`);
     }, []);
 
-  // callback handler to display agent in the UI
-  const onAgentInfoReceived = useCallback(
-    (_event: IpcRendererEvent, agentInfo: AgentInfo) => {
+  // callback handler to display engine in the UI
+  const onEngineInfoReceived = useCallback(
+    (_event: IpcRendererEvent, engineInfo: EngineInfo) => {
 
-      // render the agent in the ui
-      dispatchWindowEvent('display-agent', agentInfo);
+      // render the engine in the ui
+      dispatchWindowEvent('display-engine', engineInfo);
     }, []);
 
   // clean up on re-render
@@ -29,8 +29,8 @@ export default function useServerEventHandlers() {
     // attach event handler for server error event from main process
     onServerEvent('error', onServerError, false); // once-flag: false
 
-    // attach event handler for agent received event from main process
-    onServerEvent('agent-received', onAgentInfoReceived, false); // once-flag: false
+    // attach event handler for engine received event from main process
+    onServerEvent('engine-received', onEngineInfoReceived, false); // once-flag: false
 
     // a 'promise' that these functions will be disposed when the 
     // component unmounts/re-renders
@@ -41,7 +41,7 @@ export default function useServerEventHandlers() {
       // I figure out how to implement an off server event
       //
       removeAllListenersToServerEvent('error');
-      removeAllListenersToServerEvent('agent-received');
+      removeAllListenersToServerEvent('engine-received');
     };
-  }, [onServerError, onAgentInfoReceived]);
+  }, [onServerError, onEngineInfoReceived]);
 }

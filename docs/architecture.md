@@ -9,9 +9,9 @@ Project Architecture to mark for every chapter of the proposal, which project an
 src
  |-- TacMesh.slnx
  |
- |-- TacMesh.Agent [console. The node process]
+ |-- TacMesh.Engine [console. The node process]
  |    |
- |    |-- TacMesh.Agent.csproj
+ |    |-- TacMesh.Engine.csproj
  |    |-- ...
  |
  |-- TacMesh.Core [class library. All the logic lives here]
@@ -43,7 +43,7 @@ In TACMESH the dependencied are:
 
 - **TacMesh.Core** - Indepenent. Why? Because the Core contains all of the backend logic without executing it, it is simply a class library.
 
-- **TacMesh.Agent** - Depends on the Core. Why? Core: Because it executes logic written inside of the Core project.
+- **TacMesh.Engine** - Depends on the Core. Why? Core: Because it executes logic written inside of the Core project.
 
 - **TacMesh.Launcher** - Depends on TacMesh.Core. Why? 
 
@@ -54,8 +54,8 @@ graph TD
    %% Core Project (Independent)
    Core[TacMesh.Core]
 
-   %% Agent Dependencies
-   Agent[TacMesh.Agent] --> Core
+   %% Engine Dependencies
+   Engine[TacMesh.Engine] --> Core
    
    %% Launcher Dependencies
    Launcher[TacMesh.Launcher] --> Core
@@ -69,7 +69,7 @@ graph TD
 *Proposal Chapters -> Project -> Class (Status)*:
 
 * Execution Architecture -> TacMesh.Core -> ITransport, IRadioModel - Interfaces for different types of executions (Clear)
-                         -> TacMesh.Launcher -> AgentManager - kills and starts Agent instances (Clear)
+                         -> TacMesh.Launcher -> EngineManager - kills and starts Engine instances (Clear)
 
 * Node Processes -> TacMesh.Core -> ITransport, HeartBeater, TacReadWriteLock  (Clear)
 
@@ -92,12 +92,12 @@ This chart shows where the Functional Requirement is executed and implemented, a
 ```text
    |  Functional Requirement  | Where executed           |  Implementaion           | Status
 ---+--------------------------+--------------------------+--------------------------+--------------
- 1 | transmit messages between| Agent (Each user sends   |  --                      | To be decided
+ 1 | transmit messages between| Engine (Each user sends   |  --                      | To be decided
    | nodes via multiple hops, | messages and even messages                          |
    | without a central node or| not intended for him)    |                          |
    | external infrastructure  |                          |                          |
 ---+--------------------------+--------------------------+--------------------------+--------------
- 2 | A message with no route  | Agent (Stores pending    | PacketBuffer (class from | Clear
+ 2 | A message with no route  | Engine (Stores pending    | PacketBuffer (class from | Clear
    | will be stored in the    | messages in a buffer until  Core)                   |
    | node's memory until it   | a fitting connection is  |                          |
    | expires, and will be     | astablished or TTL ends) |                          |
@@ -105,19 +105,19 @@ This chart shows where the Functional Requirement is executed and implemented, a
    | connection with a suitable                          |                          |
    | node is established      |                          |                          |
 ---+--------------------------+--------------------------+--------------------------+--------------
- 3 | Every message will be    | Agent (Encrypts messages | Crypto (class from Core) | Clear
+ 3 | Every message will be    | Engine (Encrypts messages | Crypto (class from Core) | Clear
    | encrypted and digitally  | before ever sending)     |                          |
    | signed. An forwarding node                          |                          |
    | will not be able to read |                          |                          |
    | the content              |                          |                          |
 ---+--------------------------+--------------------------+--------------------------+--------------
- 4 | The system will identify | Agent (Identifies break  | NetAnalyser (class from  | Clear
+ 4 | The system will identify | Engine (Identifies break  | NetAnalyser (class from  | Clear
    | breaking nodes and bridges points after each        | Core)                    |
    | in the network graph in  | 'connectivity' message   |                          |
    | real time and alert the  | and network changes)     |                          |
    | commander                |                          |                          |
 ---+--------------------------+--------------------------+--------------------------+--------------
- 5 | Upon receiving a report of  Agent (Executes routing | EvacuationRouter (class  | Clear
+ 5 | Upon receiving a report of  Engine (Executes routing | EvacuationRouter (class  | Clear
    | a casualty, the system   | algorithms upon receving | from Core)               |
    | will calculate three     | the report from the UI)  |                          |
    | evacuation routes        |                          |                          |
@@ -125,7 +125,7 @@ This chart shows where the Functional Requirement is executed and implemented, a
  6 | The system operates fully| All Projects.            | (No single definition)   | Clear
    | without any central server                          |                          |
 ---+--------------------------+--------------------------+--------------------------+--------------
- 7 | The same executable will | Agent (Can run in hardware  ITransport, IRadioModel | Clear
+ 7 | The same executable will | Engine (Can run in hardware  ITransport, IRadioModel | Clear
    | run in two modes without | and simulation mode)     |  (Maybe more in future)  |
    | code changes             |                          |                          |
 ---+--------------------------+--------------------------+--------------------------+--------------
@@ -135,7 +135,7 @@ This chart shows where the Functional Requirement is executed and implemented, a
    | reproduces the same      |                          |                          |
    | scenario                 |                          |                          |
 ---+--------------------------+--------------------------+--------------------------+--------------
- 9 | Each node constructs a   | Agent (Builds Graph)     | GraphCalculator (class   | Clear
+ 9 | Each node constructs a   | Engine (Builds Graph)     | GraphCalculator (class   | Clear
    | local estimate of the    |                          | from Core)               |
    | entire network graph based                          |                          |
    | on connectivity records  |                          |                          |

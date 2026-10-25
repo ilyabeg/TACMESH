@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using TacMesh.Core.custom_events;
 using TacMesh.Core.events;
@@ -44,7 +44,7 @@ namespace TacMesh.Core.communication.simulation_communication
                             byte[] receivedBytes = new byte[len];
                             Array.Copy(buffer, receivedBytes, len); // copy only received bytes
 
-                            // push the message to the Agent
+                            // push the message to the Engine
                             IPEndPoint remoteIPEP = (IPEndPoint)remoteEP;
                             MessageReceived?.Invoke(this, new MessageReceivedEventArgs(receivedBytes, remoteIPEP));
                         }

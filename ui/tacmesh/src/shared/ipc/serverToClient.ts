@@ -1,4 +1,4 @@
-import { AgentInfo } from '../types/agentInfo'
+import { EngineInfo } from '../types/engineInfo'
 import { ServerError } from '../types/serverError'
 
 // define push notification 'events' from the main process 
@@ -8,10 +8,10 @@ export interface pushNotification {
     'error': {
         payload: ServerError
     },
-    'agent-received': {
-        payload: AgentInfo
+    'engine-received': {
+        payload: EngineInfo
     },    
-    'agent-state-updated': {
+    'engine-state-updated': {
         payload: boolean
     },    
 }

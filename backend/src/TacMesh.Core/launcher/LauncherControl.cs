@@ -1,4 +1,4 @@
-﻿using TacMesh.Core.assets;
+using TacMesh.Core.assets;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces.beacon_and_destination;
 using TacMesh.Core.models;
@@ -86,7 +86,7 @@ namespace TacMesh.Core.launcher
         }
 
 
-        // TEMOPRARILY update the position via mcasting to all of the agent processes
+        // TEMOPRARILY update the position via mcasting to all of the engine processes
         // using the beacon emitter. this will be removed as soon as a full data packet
         // with node position reports in the heartbeats is implemented.
         private void OnNodePositionUpdate(Location newLocation) => _emitter.EmitBeacon(newLocation);

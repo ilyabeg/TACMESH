@@ -1,17 +1,17 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text.Json;
 using TacMesh.Core.graph_related;
 
 namespace TacMesh.Launcher.processes
 {
     /// <summary>
-    /// Agent creator class
+    /// Engine creator class
     /// </summary>
     public class ProcessCreator
     {
-        // get the full path of the agent exe
+        // get the full path of the engine exe
         private static readonly string _baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string _agentPath = Path.GetFullPath(Path.Combine(_baseDir, @"..\..\..\..\TacMesh.Agent\bin\Debug\net10.0\TacMesh.Agent.exe"));
+        private static readonly string _enginePath = Path.GetFullPath(Path.Combine(_baseDir, @"..\..\..\..\TacMesh.Engine\bin\Debug\net10.0\TacMesh.Engine.exe"));
 
 
         // TEMPORARY STATIC LOCATION DICT FOR EVERY NODE UNTIL THE USER INPUTS IN THE FUTURE 
@@ -41,23 +41,23 @@ namespace TacMesh.Launcher.processes
         };
 
 
-        // generate N agents
-        public static Dictionary<string, Process> CreateAgents(int num_of_agents)
+        // generate N engines
+        public static Dictionary<string, Process> CreateEngines(int num_of_engines)
         {
-            Dictionary<string, Process> agents = new();
+            Dictionary<string, Process> engines = new();
 
-            for (int i = 0; i < num_of_agents; i++)
+            for (int i = 0; i < num_of_engines; i++)
             {
-                // init agent process with the start info
+                // init engine process with the start info
                 string nodeId = $"Node-{i+1:D2}";
-                Process agent = CreateNewAgentInstance(nodeId);
-                agents.Add(nodeId, agent);
+                Process engine = CreateNewEngineInstance(nodeId);
+                engines.Add(nodeId, engine);
             }
-            return agents;
+            return engines;
         }
 
         // single Process generator
-        public static Process CreateNewAgentInstance(string nodeId)
+        public static Process CreateNewEngineInstance(string nodeId)
         {
             // init start info
             // if node dies and restarted, the initial location is initiated with it again
@@ -65,9 +65,9 @@ namespace TacMesh.Launcher.processes
             double speed = _speeds[nodeId];
             string permittedNodes = JsonSerializer.Serialize(_permittedNodes);
 
-            ProcessStartInfo start_info = InitStartInfo(_agentPath, nodeId, jsonLocation, speed, permittedNodes);
+            ProcessStartInfo start_info = InitStartInfo(_enginePath, nodeId, jsonLocation, speed, permittedNodes);
 
-            // init agent process with the start info
+            // init engine process with the start info
             return new Process() { StartInfo = start_info };
         }
 

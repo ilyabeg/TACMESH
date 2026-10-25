@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using TacMesh.Core.graph_related;
@@ -22,7 +22,7 @@ namespace TacMesh.Core.communication.radio_communication
         private readonly int _sourcePort;
 
 
-        // inject agent info and endpoint to emit to
+        // inject engine info and endpoint to emit to
         public SimBeaconEmitter(string sourceID, int sourcePort, IPEndPoint virtualEndpoint)
         {
             // any free ip and port
@@ -40,7 +40,7 @@ namespace TacMesh.Core.communication.radio_communication
         {
             try
             {
-                // constant agent beacon
+                // constant engine beacon
                 string beacon = $"{_sourceID}|{_sourcePort}|{location.X},{location.Y}";
                 byte[] beaconBytes = Encoding.UTF8.GetBytes(beacon);
 

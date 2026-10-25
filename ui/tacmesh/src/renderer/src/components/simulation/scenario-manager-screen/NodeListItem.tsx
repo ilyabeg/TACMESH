@@ -1,14 +1,14 @@
-import { AgentInfo } from "../../../../../shared/types/agentInfo";
+import { EngineInfo } from "../../../../../shared/types/engineInfo";
 import '../../../assets/styles/component-styles/nodeListItemStyle.css';
 import { useState } from "react";
 
 // define the list item props
 interface ItemProps {
-    node: AgentInfo
+    node: EngineInfo
     expandedFlag: boolean
 }
 
-export default function AgentListItem({ node, expandedFlag }: ItemProps) {
+export default function EngineListItem({ node, expandedFlag }: ItemProps) {
 
     // flag to expand or collapse the list item options
     const [openMenu, setOpenMenu] = useState<boolean>(false);

@@ -21,19 +21,19 @@ const _launcherExe = path.resolve(__dirname, '..', '..', '..', '..',
 );
 
 // launches the launcher process
-export function launchLauncher(window: BrowserWindow, numOfAgents: number) {
+export function launchLauncher(window: BrowserWindow, numOfEngines: number) {
     // save the browser window instance for future use
     _browserWindow = window;
 
     // check the path
     console.log(`Path to Launcher.exe: ${_launcherExe}`);
 
-    // spawn the agent process as a child process    
-    _launcher = spawn(_launcherExe, [numOfAgents.toString()]);
+    // spawn the launcher process as a child process    
+    _launcher = spawn(_launcherExe, [numOfEngines.toString()]);
     attachHandlers();
 }
 
-// terminate the launcher to kill all the agent processes
+// terminate the launcher to kill all the engine processes
 export function terminateLauncher(quitCallback: () => void) {
 
     // The subprocess.exitCode property indicates the exit code
@@ -44,7 +44,7 @@ export function terminateLauncher(quitCallback: () => void) {
 
         // calling ChildProcess.kill() without params sends the process
         // SIGTERM which does not let the launcher process terminate all 
-        // of his agent child processes before quitting.
+        // of his engine child processes before quitting.
         //
         // instead, an 'exit' flag is sent to trigger the cleanup instead 
         // of executing a OS depended "process kill" command

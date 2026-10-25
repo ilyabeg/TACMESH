@@ -1,4 +1,4 @@
-﻿using TacMesh.Core.graph_related;
+using TacMesh.Core.graph_related;
 using TacMesh.Launcher.startup;
 
 namespace TacMesh.Launcher
@@ -43,34 +43,34 @@ namespace TacMesh.Launcher
             ])
         };
 
-        // agent manager to handle the sending of the waypoint to the nodes
-        private readonly AgentManager _agentManager;
+        // engine manager to handle the sending of the waypoint to the nodes
+        private readonly EngineManager _engineManager;
 
-        public WaypointManager(AgentManager agentManager)
+        public WaypointManager(EngineManager engineManager)
         {
-            // attach waypoint reached event handler to the agent manager
-            _agentManager = agentManager;
-            _agentManager.WaypointReached += (s, nodeId) => SendAgentNextPos(nodeId);
+            // attach waypoint reached event handler to the engine manager
+            _engineManager = engineManager;
+            _engineManager.WaypointReached += (s, nodeId) => SendEngineNextPos(nodeId);
         }
 
 
-        // send the agent his next waypooint
-        public void SendAgentNextPos(string agentId)
+        // send the engine his next waypooint
+        public void SendEngineNextPos(string engineId)
         {
-            // pull next waypoint from the agent's waypoints queue
-            if (_waypoints[agentId].Count > 0)
+            // pull next waypoint from the engine's waypoints queue
+            if (_waypoints[engineId].Count > 0)
             {
-                Location nextWaypoint = _waypoints[agentId].Dequeue();
+                Location nextWaypoint = _waypoints[engineId].Dequeue();
 
                 // convert the position to a string
                 string pos = $"{nextWaypoint.X},{nextWaypoint.Y}";
 
                 // push the location to the Node
-                _agentManager.MoveAgent(agentId, pos);
+                _engineManager.MoveEngine(engineId, pos);
             }
             else {
                 // temporary check
-                Console.WriteLine($"[Waypoint Manager] Node '{agentId}' reached his destination.");
+                Console.WriteLine($"[Waypoint Manager] Node '{engineId}' reached his destination.");
             }
         }
 
@@ -80,9 +80,9 @@ namespace TacMesh.Launcher
         {
             // Note: this is currently a prototype method in case I were to add 
             // new logic or different handling to a 'Position Reached' event.
-            // For now, I simply use the SendAgentNextPos(string agentId) method instead.
+            // For now, I simply use the SendEngineNextPos(string engineId) method instead.
 
-            SendAgentNextPos(nodeId);
+            SendEngineNextPos(nodeId);
         }
         */
     }

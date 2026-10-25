@@ -11,42 +11,42 @@ function App(): React.JSX.Element {
   // use server event handlers
   useServerEventHandlers();
 
-  // remember agent state (running/down)
-  const [agentRunning, setAgentRunning] = useState<boolean>(false);
+  // remember engine state (running/down)
+  const [engineRunning, setEngineRunning] = useState<boolean>(false);
 
-  // on agent info recevied
+  // on engine info recevied
   useEffect(() => {
 
-    // ASK for the agent state when the renderer process starts up...
-    const getAgentState = async () => {
+    // ASK for the engine state when the renderer process starts up...
+    const getEngineState = async () => {
       try {
-        const agentState = await invokeServer('get-agent-state', undefined);
-        setAgentRunning(agentState);
+        const engineState = await invokeServer('get-engine-state', undefined);
+        setEngineRunning(engineState);
       }
       catch (error) {
-        console.error(`Could not get the agent state due to: ${error}`);
+        console.error(`Could not get the engine state due to: ${error}`);
       }
     }
 
-    // ask for the agent's state when the renderer starts up
-    getAgentState();
+    // ask for the engine's state when the renderer starts up
+    getEngineState();
 
-    // agent state update
-    onServerEvent('agent-state-updated', (_event, newState: boolean) => {
-      setAgentRunning(newState);
+    // engine state update
+    onServerEvent('engine-state-updated', (_event, newState: boolean) => {
+      setEngineRunning(newState);
     }, false);
 
-    // window event handler to display agent
-    const handleDisplayAgent = (event: Event) => {
-      // const e = event as CustomEvent<AgentInfo>;
+    // window event handler to display engine
+    const handleDisplayEngine = (event: Event) => {
+      // const e = event as CustomEvent<EngineInfo>;
     }
 
     // attach the custom event listeners to the window    
-    window.addEventListener('display-agent', handleDisplayAgent);
+    window.addEventListener('display-engine', handleDisplayEngine);
 
     // remove listeners on component re-mount
     return () => {
-      window.removeEventListener('display-agent', handleDisplayAgent);
+      window.removeEventListener('display-engine', handleDisplayEngine);
     };
   }, []);
 

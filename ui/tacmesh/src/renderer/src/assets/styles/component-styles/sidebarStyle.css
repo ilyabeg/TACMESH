@@ -9,7 +9,6 @@
     padding: 10px 5px;
     background-color: var(--c-sidebar-gray);
     box-sizing: border-box;
-    max-width: 300px;
     transition: width 0.25s ease;
 }
 
@@ -31,6 +30,7 @@
     flex-shrink: 0;
     overflow: hidden;
     white-space: nowrap;
+    min-width: 290px;
 }
 
 .sidebar-title {
@@ -43,7 +43,7 @@
     letter-spacing: .5px;
 }
 
-.agent-count {
+.engine-count {
     color: var(--c-text-2);
     margin-right: 5px;
     padding: 0;

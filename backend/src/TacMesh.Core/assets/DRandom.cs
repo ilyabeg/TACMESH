@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace TacMesh.Core.assets
@@ -8,7 +8,7 @@ namespace TacMesh.Core.assets
     {
         // fixed seed to generate the same Randoms to repeat tests
         private const int FIXED_SEED = 13021995;
-        private readonly Dictionary<string, Random> _agentsRandoms = new Dictionary<string, Random>();        
+        private readonly Dictionary<string, Random> _enginesRandoms = new Dictionary<string, Random>();        
         private readonly object _lock = new object(); // lock to safely access a specific random
 
 
@@ -21,9 +21,9 @@ namespace TacMesh.Core.assets
         {
             lock (_lock)
             {
-                if (!_agentsRandoms.ContainsKey(id))
+                if (!_enginesRandoms.ContainsKey(id))
                     CreateNewRandom(id);
-                return _agentsRandoms[id].NextDouble();
+                return _enginesRandoms[id].NextDouble();
             }
         }
 
@@ -38,9 +38,9 @@ namespace TacMesh.Core.assets
         {
             lock (_lock)
             {
-                if (!_agentsRandoms.ContainsKey(id))
+                if (!_enginesRandoms.ContainsKey(id))
                     CreateNewRandom(id);
-                return _agentsRandoms[id].Next(lowerBound, higherBound);
+                return _enginesRandoms[id].Next(lowerBound, higherBound);
             }
         }
 
@@ -54,9 +54,9 @@ namespace TacMesh.Core.assets
         {
             lock (_lock)
             {
-                if (!_agentsRandoms.ContainsKey(id))
+                if (!_enginesRandoms.ContainsKey(id))
                     CreateNewRandom(id);
-                return _agentsRandoms[id].Next(maxValue);
+                return _enginesRandoms[id].Next(maxValue);
             }
         }
 
@@ -65,7 +65,7 @@ namespace TacMesh.Core.assets
         {
             // the random depends on the seed and the specific id
             int seed = DetermineSeed(id);
-            _agentsRandoms[id] = new Random(seed);
+            _enginesRandoms[id] = new Random(seed);
         }
 
         // creates the seed to generate the random instance based on the id

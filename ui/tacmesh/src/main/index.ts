@@ -4,8 +4,8 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import dispatchEvent from './ipc/eventDispatcher'
 
-// import agent management
-import { startAgent, killAgent, getAgentState } from './AgentManager'
+// import engine management
+import { startEngine, killEngine, getEngineState } from './EngineManager'
 import { launchLauncher, terminateLauncher, pushToLauncher } from './simulation/scenario manager/Launcher';
 
 
@@ -42,7 +42,7 @@ function createWindow(): BrowserWindow {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
-  // return the browser window to use it in initializig the agent
+  // return the browser window to use it in initializig the engine
   return mainWindow; 
 }
 
@@ -65,8 +65,8 @@ app.whenReady().then(() => {
   const browserWindow = createWindow()
 
   // execute the launcher instance for this app
-  const numOfAgents = 1; // <- TEMPORARY 
-  launchLauncher(browserWindow, numOfAgents);
+  const numOfEngines = 1; // <- TEMPORARY 
+  launchLauncher(browserWindow, numOfEngines);
 
   attachEventDispatchers();
   attachEventListeners();
@@ -83,9 +83,9 @@ app.whenReady().then(() => {
 
 const attachEventDispatchers = (): void => {
 
-  // return the agent state
-  dispatchEvent(ipcMain, 'get-agent-state', async () => {
-    return getAgentState();
+  // return the engine state
+  dispatchEvent(ipcMain, 'get-engine-state', async () => {
+    return getEngineState();
   });
 }
 
@@ -134,8 +134,8 @@ app.on('will-quit', (event) => {
     cleanApp();
   } 
 
-  // before quiting, kill the agent instance.
-  // killAgent();
+  // before quiting, kill the engine instance.
+  // killEngine();
 })
 
 

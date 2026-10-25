@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using TacMesh.Core;
 using TacMesh.Core.communication.simulation_communication;
@@ -59,26 +59,26 @@ public class UnitTest1
 
         // build the topology filter with a permitted node
         TopologyFilter TF = new TopologyFilter();
-        string permittedID = "PERMITTED-AGENT";
+        string permittedID = "PERMITTED-ENGINE";
         TF.AddPermittedNeighbor(permittedID);
 
-        // agent who receives the test packet on port 51001
-        int agentPort = 51001;
-        IPEndPoint agentEndPoint = new IPEndPoint(IPAddress.Loopback, agentPort);
-        Socket agent = GetAgentSocket(agentPort);
-        ITransport agentTransport = new SimTransport(agent, new TempRadioModel());
-        agentTransport.StartReceiving(); // start listening
+        // engine who receives the test packet on port 51001
+        int enginePort = 51001;
+        IPEndPoint engineEndPoint = new IPEndPoint(IPAddress.Loopback, enginePort);
+        Socket engine = GetEngineSocket(enginePort);
+        ITransport engineTransport = new SimTransport(engine, new TempRadioModel());
+        engineTransport.StartReceiving(); // start listening
 
         // NOTE: This is simply to test out the topology filter working without having the 
         // processor take many dependencies. the logic in the topology filter is what matters
         MockPacketProcessor processor = new MockPacketProcessor(TF);
 
-        // let the agent hear packets and process them 
-        agentTransport.MessageReceived += (s, e) => processor.ProcessPacket(e);
+        // let the engine hear packets and process them 
+        engineTransport.MessageReceived += (s, e) => processor.ProcessPacket(e);
 
-        // agent who is permitted for the agent agent
-        Socket permitted_agent = GetAgentSocket(0);
-        ITransport permittedAgentTransport = new SimTransport(permitted_agent, new TempRadioModel());
+        // engine who is permitted for the engine node
+        Socket permitted_engine = GetEngineSocket(0);
+        ITransport permittedEngineTransport = new SimTransport(permitted_engine, new TempRadioModel());
 
         // create the packet from the permitted node
         byte[] headerBytes = CreatePacket(permittedID);
@@ -86,8 +86,8 @@ public class UnitTest1
 
         // --- Act --- 
 
-        // transmit the peritted packet to the agent
-        permittedAgentTransport.Transmit(headerBytes, agentEndPoint);
+        // transmit the peritted packet to the engine
+        permittedEngineTransport.Transmit(headerBytes, engineEndPoint);
         Thread.Sleep(50);
 
 
@@ -97,7 +97,7 @@ public class UnitTest1
         Assert.True(processor.PacketPassed);
     }
 
-    static Socket GetAgentSocket(int port)
+    static Socket GetEngineSocket(int port)
     {
         Socket s = SocketGenerator.GenerateUdpSocket();
         SocketGenerator.BindSocket(s, IPAddress.Loopback, port);
@@ -131,32 +131,32 @@ public class UnitTest1
         // build the topology filter without permitted nodes
         TopologyFilter TF = new TopologyFilter();        
 
-        // agent who receives the test packet on port 51002
-        int agentPort = 51002;
-        IPEndPoint agentEndPoint = new IPEndPoint(IPAddress.Loopback, agentPort);
-        Socket agent = GetAgentSocket(agentPort);
-        ITransport agentTransport = new SimTransport(agent, new TempRadioModel());
-        agentTransport.StartReceiving(); // start listening
+        // engine who receives the test packet on port 51002
+        int enginePort = 51002;
+        IPEndPoint engineEndPoint = new IPEndPoint(IPAddress.Loopback, enginePort);
+        Socket engine = GetEngineSocket(enginePort);
+        ITransport engineTransport = new SimTransport(engine, new TempRadioModel());
+        engineTransport.StartReceiving(); // start listening
 
         // NOTE: This is simply to test out the topology filter working without having the 
         // processor take many dependencies. the logic in the topology filter is what matters
         MockPacketProcessor processor = new MockPacketProcessor(TF);
 
-        // let the agent hear packets and process them 
-        agentTransport.MessageReceived += (s, e) => processor.ProcessPacket(e);
+        // let the engine hear packets and process them 
+        engineTransport.MessageReceived += (s, e) => processor.ProcessPacket(e);
 
-        // agent who is NOT permitted for the agent agent
-        Socket denied_agent = GetAgentSocket(0);
-        ITransport deniedAgentTransport = new SimTransport(denied_agent, new TempRadioModel());
+        // engine who is NOT permitted for the engine node
+        Socket denied_engine = GetEngineSocket(0);
+        ITransport deniedEngineTransport = new SimTransport(denied_engine, new TempRadioModel());
 
         // create the packet from the denied node
-        byte[] headerBytes = CreatePacket("DENIED-AGENT");
+        byte[] headerBytes = CreatePacket("DENIED-ENGINE");
 
 
         // --- Act --- 
 
-        // transmit the packet to the agent
-        deniedAgentTransport.Transmit(headerBytes, agentEndPoint);
+        // transmit the packet to the engine
+        deniedEngineTransport.Transmit(headerBytes, engineEndPoint);
         Thread.Sleep(50);
 
 
