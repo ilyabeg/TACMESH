@@ -1,17 +1,38 @@
 import { EngineInfo } from "../../../../../shared/types/engineInfo";
+import { StdIOMessage } from "../../../../../shared/types/stdIOMessage";
 import '../../../assets/styles/component-styles/nodeListItemStyle.css';
 import { useState } from "react";
 
 // define the list item props
 interface ItemProps {
-    node: EngineInfo
+    engine: EngineInfo
     expandedFlag: boolean
 }
 
-export default function EngineListItem({ node, expandedFlag }: ItemProps) {
+export default function EngineListItem({ engine, expandedFlag }: ItemProps) {
 
     // flag to expand or collapse the list item options
     const [openMenu, setOpenMenu] = useState<boolean>(false);
+
+
+    // --- constant ipc commands to the launcher that reffer to this node ---
+
+    // start engine command
+    const startEngineMsg: StdIOMessage = {
+        Type: 'StartEngine',
+        Payload: engine.NodeId
+    }
+    const jsonStartMsg: string = JSON.stringify(startEngineMsg);
+
+    // kill engine command
+    const killEngineMsg: StdIOMessage = {
+        Type: 'KillEngine',
+        Payload: engine.NodeId
+    }
+    const jsonkillMsg: string = JSON.stringify(killEngineMsg);
+
+
+    // --- click handlers ---
 
     // handle the list item click -> trigger dropdown menu
     //
@@ -31,9 +52,7 @@ export default function EngineListItem({ node, expandedFlag }: ItemProps) {
     //
     const onStartProcess = () => {
         try {
-            // start command: 'start <node-id>'
-            const input: string = `start ${node.nodeId}`;
-            pushToLauncher(input);
+            pushToLauncher(jsonStartMsg);
             setOpenMenu(false); // update the openMenu flag
         }
         catch (error) {
@@ -42,9 +61,7 @@ export default function EngineListItem({ node, expandedFlag }: ItemProps) {
     }
     const onKillProcess = () => {
         try {
-            // kill command: 'kill <node-id>'
-            const input: string = `kill ${node.nodeId}`;
-            pushToLauncher(input);
+            pushToLauncher(jsonkillMsg);
             setOpenMenu(false); // update the openMenu flag
         }
         catch (error) {
@@ -55,10 +72,7 @@ export default function EngineListItem({ node, expandedFlag }: ItemProps) {
 
         // to do ...
 
-        // change link range command: 'link-r <node-id> <range>'
-        // const input: string = `link-r ${node.nodeId} ${}`;
         // pushToLauncher(input);
-
         setOpenMenu(false); // update the openMenu flag
     }
 
@@ -71,17 +85,17 @@ export default function EngineListItem({ node, expandedFlag }: ItemProps) {
                         <>
                             {/* node id and port on the same baseline */}
                             <div className="node-info-container">
-                                <span className="node-id">NodeID: {node.nodeId}</span>
-                                <span className="node-port">port: {node.port}</span>
+                                <span className="node-id">NodeID: {engine.NodeId}</span>
+                                <span className="node-port">port: {engine.Port}</span>
                             </div>
 
                             {/* process id on the right of the li */}
-                            <span className="node-pid">PID: {node.processId}</span>
+                            <span className="node-pid">PID: {engine.ProcessId}</span>
                         </>
                     ) : (
                         <>
                             {/* show initials if collapsed sidebar */}
-                            <span>{`${getNodeInitials(node.nodeId)}`}</span>
+                            <span>{`${getNodeInitials(engine.NodeId)}`}</span>
                         </>
                     )
                 }

@@ -7,38 +7,22 @@ import Header from "./components/Header";
 import Sidebar from "./components/simulation/Sidebar";
 import Canvas from './components/simulation/scenario-manager-screen/Canvas';
 import { StdIOMessage } from "../../shared/types/stdIOMessage";
+import { EngineInfo } from "../../shared/types/engineInfo";
+import useLauncherEventHandlers from "./hooks/launcherEventHandler.hook";
 
 function App(): React.JSX.Element {
+
   // use server event handlers
   useServerEventHandlers();
 
-  // remember engine state (running/down)
-  // const [engineRunning, setEngineRunning] = useState<boolean>(false);
+  // get the engines processes using the launcher events hook.
+  // when the engines state updates the hook will automatically update and render
+  // the array for the App component
+  //
+  const engineProcesses: Array<EngineInfo> = useLauncherEventHandlers();
 
-  // on engine info recevied
+
   useEffect(() => {
-
-    // // ASK for the engine state when the renderer process starts up...
-    // const getEngineState = async () => {
-    //   try {
-    //     const engineState = await invokeServer('get-engine-state', undefined);
-    //     setEngineRunning(engineState);
-    //   }
-    //   catch (error) {
-    //     console.error(`Could not get the engine state due to: ${error}`);
-    //   }
-    // }
-    // // ask for the engine's state when the renderer starts up
-    // getEngineState();
-    // engine state update
-    // onServerEvent('engine-state-updated', (_event, newState: boolean) => {
-    //   setEngineRunning(newState);
-    // }, false);
-
-    // window event handler to display engine
-    const handleDisplayEngine = (event: Event) => {
-      // const e = event as CustomEvent<EngineInfo>;
-    }
 
     // when the ui starts up, it must ask for the engine nodes from the backend logic.
     // to do that, the program invokes the main process to push to the launcher into it's
@@ -59,21 +43,17 @@ function App(): React.JSX.Element {
     }
     askForNodes();
 
-    // attach the custom event listeners to the window    
-    window.addEventListener('display-engine', handleDisplayEngine);
-
-    // remove listeners on component re-mount
-    return () => {
-      window.removeEventListener('display-engine', handleDisplayEngine);
-    };
-  }, []);
+  }, []); // run effect once on mount
 
   return (
     <>
       <Header />
       <div className="body-container">
-        <Sidebar />
-        <Canvas />
+
+        {/* pass the engine processes through the component props */}
+        <Sidebar listItems={engineProcesses} />
+        <Canvas items={engineProcesses} />
+
       </div>
     </>
   )

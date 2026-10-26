@@ -1,6 +1,7 @@
 import { BrowserWindow } from "electron";
 import { ChildProcess, spawn } from "node:child_process";
 import pushToClient from "../../../ipc/pushToClient";
+import { StdIOMessage } from "../../../../shared/types/stdIOMessage";
 import path from "node:path";
 
 let _launcher: ChildProcess; // the launcher process
@@ -70,13 +71,41 @@ function attachHandlers() {
     onClose();
 }
 
+// std output buffer to easily pull the output up to the '\n'
+// this buffer acts as a queue for the std output receivede. the reason
+// it is needed is because when ipc messages are sent through the io streams
+// they can sometimes get attached together with a couple of messages that
+// were pushed to the stream in the same instant. 
+// the buffer fixes this by splitting the messages by the new line character ('\n')
+//
+let _stdOutBuffer: string = '';
+
 // standard output received from the child process' output stream
 function onStdout() {
     if (_launcher) {
         _launcher.stdout?.on('data', (output) => {
-            // print the launcher output
+            
             const strOutput: string = output.toString();
-            console.log(`${strOutput}`);      
+            _stdOutBuffer += strOutput; // append to the buffer
+
+            let newLineIndex = _stdOutBuffer.indexOf('\n');
+
+            // if the buffer contains a new line
+            while (newLineIndex !== -1) {
+
+                // get the output from the begining up to the '\n'
+                const slicedOutput = _stdOutBuffer.slice(0, newLineIndex).trim();                
+
+                // print the launcher output if couldnt parse as json
+                if (!TryParseStdOut(slicedOutput))
+                    console.log(`${slicedOutput}`);
+
+                // slice off the string up to the '\n', keep string as is from the new line
+                // character up to the end, and get the next index of the '\n'
+                //
+                _stdOutBuffer = _stdOutBuffer.slice(newLineIndex + 1);
+                newLineIndex = _stdOutBuffer.indexOf('\n');
+            }                                  
         });  
     }
 }
@@ -147,5 +176,54 @@ export function pushToLauncher(input: string) {
     } 
     else {
         console.error('[Launcher] Failed to write to std input stream...');
+    }
+}
+
+
+// function that parses the launcher stdoutput and determines what to do with it
+function TryParseStdOut(outout: string): boolean {
+    try {
+
+        // test
+        // console.log(` sudhfshdfsdfh ${outout}`);
+
+        // parse the output message
+        const outputMessage: StdIOMessage = JSON.parse(outout);
+
+        // test
+        console.log(`received output message ${outputMessage.Type}. payload: ${outputMessage.Payload}`);
+
+
+        switch (outputMessage.Type) {
+            // launcher pushed the engine processes
+            case 'ReturnEngines': {
+                pushToClient(_browserWindow, 'return-engines', outputMessage.Payload);
+                break;
+            }
+            // engine process started
+            case 'EngineUp': {
+                pushToClient(_browserWindow, 'engine-up', outputMessage.Payload);
+                break;
+            }
+            // engine process terminated
+            case 'EngineDown': {
+                pushToClient(_browserWindow, 'engine-down', outputMessage.Payload);
+                break;
+            }
+            // engine process location updated
+            case 'EngineUpdate': {
+                pushToClient(_browserWindow, 'engine-update', outputMessage.Payload);
+                break;
+            }
+        }
+        return true;
+    }
+    catch (error) {
+        // ignore failed attempts at parsing the json outputs
+
+        // test
+        // console.log(`couldn't parse json: ${outout} due to: \"${error}\"`);
+
+        return false;
     }
 }

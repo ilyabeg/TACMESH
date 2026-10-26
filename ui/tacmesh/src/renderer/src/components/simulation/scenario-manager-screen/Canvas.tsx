@@ -2,8 +2,15 @@ import Draggable from 'react-draggable';
 import '../../../assets/styles/component-styles/canvasStyle.css';
 import Node from '../../Node';
 import { useRef } from 'react';
+import { EngineInfo } from '../../../../../shared/types/engineInfo';
 
-export default function Canvas() {
+
+// define the canvas props
+type CanvasProps = {
+    items: Array<EngineInfo>
+}
+
+export default function Canvas({ items }: CanvasProps) {
 
     // React Draggable employs the deprecated findDOMNode method, meaning the drag
     // won't work as intended.
