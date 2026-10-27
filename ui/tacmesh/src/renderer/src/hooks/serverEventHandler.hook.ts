@@ -14,21 +14,16 @@ export default function useServerEventHandlers() {
   }, []);
 
 
-  // clean up on re-render
   useEffect(() => {
 
     // attach event handler for server error event from main process
-    onServerEvent('error', onServerError, false); // once-flag: false
+    const offErrorrEvent = onServerEvent('error', onServerError, false); // once-flag: false
 
-    // a 'promise' that these functions will be disposed when the 
-    // component unmounts/re-renders
-    //
+    // --- cleanup event handlers on renders ---
     return () => {
 
-      // TEMPORARILY remove ALL event listeners for these events until
-      // I figure out how to implement an off server event
-      //
-      removeAllListenersToServerEvent('error');
+      // remove error handler on render
+      offErrorrEvent();
     };
   }, [onServerError]);
 }

@@ -1,11 +1,21 @@
 import { IpcRendererEvent } from 'electron';
 import { pushNotification } from '../../../shared/ipc/serverToClient';
 
-// Note: In Electron-Vite, functions such as listenerCount() or off() aren't defined,
-// so for now I will not implement a listeener count or off server method until i figure
-// out how to do it correctly.
 
-// attaches a callback handler to notification from main process
+// attaches a callback handler to notification from main process. and returns the 
+// cleanup method (removes the listener).
+//
+// Note: the reason for returning the on/once events is because the contextBridge
+// creates a copy of the handler passed to the on() attachers in memory.
+// when passing the same handler to removeListener(), the context bridge creates
+// a brand new copy. because the new copy's memory address does not match the original
+// copy's address, Electron does not recognize it. the listener is never removed, causing
+// memory leaks.
+// the vite-electron toolkit author (alex8088) overrode the electron ipcRenderer.on() 
+// method to return the safe cleanup method to the exact same copy of the handler in memory.
+//
+// so when using the onServerEvent method in a useEffect(), in the return block we run the 
+// returned 'unsubscriber' nethod to cleanup safely on renders
 //
 export function onServerEvent<T extends keyof pushNotification>(
   method: T,
@@ -14,25 +24,13 @@ export function onServerEvent<T extends keyof pushNotification>(
     payload: pushNotification[T]['payload']
   ) => void,
   onceFlag: boolean
-): void {
-  if (onceFlag) {
-    window.electron.ipcRenderer.once(method, handler);
-  } else {
-    window.electron.ipcRenderer.on(method, handler);
-  }
-}
+): () => void {
 
-// removes a specific server event handler
-//
-// export function offServerEvent<T extends keyof pushNotification>(
-//   method: T,
-//   handler: (
-//     _event: IpcRendererEvent,
-//     payload: pushNotification[T]['payload']
-//   ) => void
-// ): void {
-//   window.electron.ipcRenderer.off(method, handler);
-// }
+  if (onceFlag)
+    return window.electron.ipcRenderer.once(method, handler);
+  else
+    return window.electron.ipcRenderer.on(method, handler);
+}
 
 // removes all active listeners attached to a specific notification event
 //

@@ -67,17 +67,17 @@ export default function useLauncherEventHandlers() {
     // --- attach the handlers for the launcher events ---
     useEffect(() => {
 
-        onServerEvent('return-engines', changeEngines, false); // once-flag: false
-        onServerEvent('engine-up', engineUp, false);
-        onServerEvent('engine-down', engineDown, false);
-        onServerEvent('engine-update', engineUpdate, false);
+        const offReturnEngines = onServerEvent('return-engines', changeEngines, false); // once-flag: false
+        const offEngineUp = onServerEvent('engine-up', engineUp, false);
+        const offEngineDown = onServerEvent('engine-down', engineDown, false);
+        const offEngineUpdate = onServerEvent('engine-update', engineUpdate, false);
 
         return () => {
             // remove the handlers when re-rendered
-            removeAllListenersToServerEvent('return-engines');
-            removeAllListenersToServerEvent('engine-up');
-            removeAllListenersToServerEvent('engine-down');
-            removeAllListenersToServerEvent('engine-update');
+            offReturnEngines();
+            offEngineUp();
+            offEngineDown();
+            offEngineUpdate();
         }
     }, [changeEngines, engineUp, engineDown, engineUpdate]);
     
