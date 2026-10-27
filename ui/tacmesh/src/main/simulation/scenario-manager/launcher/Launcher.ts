@@ -183,16 +183,11 @@ export function pushToLauncher(input: string) {
 // function that parses the launcher stdoutput and determines what to do with it
 function TryParseStdOut(outout: string): boolean {
     try {
-
-        // test
-        // console.log(` sudhfshdfsdfh ${outout}`);
-
         // parse the output message
         const outputMessage: StdIOMessage = JSON.parse(outout);
 
         // test
         console.log(`received output message ${outputMessage.Type}. payload: ${outputMessage.Payload}`);
-
 
         switch (outputMessage.Type) {
             // launcher pushed the engine processes
@@ -218,12 +213,8 @@ function TryParseStdOut(outout: string): boolean {
         }
         return true;
     }
-    catch (error) {
+    catch {
         // ignore failed attempts at parsing the json outputs
-
-        // test
-        // console.log(`couldn't parse json: ${outout} due to: \"${error}\"`);
-
         return false;
     }
 }

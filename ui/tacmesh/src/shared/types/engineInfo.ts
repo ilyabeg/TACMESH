@@ -3,5 +3,6 @@
 export type EngineInfo = {
     NodeId: string,
     ProcessId: string,
-    Port: number,    
+    Port: number,  
+    down?: boolean, // determines if the engine process is down or not (not mandatory)  
 }

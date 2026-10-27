@@ -13,7 +13,7 @@
     justify-content: space-between;
     align-items: center;
     height: 40px;
-    gap: 12px;
+    gap: 20px;
 
     background-color: var(--c-sidebar-gray);
     border: none;
@@ -85,9 +85,25 @@
     font-size: 0.75rem;
     color: var(--c-text-2);
     background-color: var(--c-header-gray);
-    padding: 2px 6px;
+    padding: 2px 8px;
     border-radius: 4px;
     border: 1px solid var(--c-divider-gray);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+
+/* down card for a terminated process */
+.node-down-card {
+    max-width: 100px;
+    font-size: 0.75rem;
+    color: var(--c-err-red);
+    background-color: var(--c-bg-red);
+    padding: 2px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--c-divider-red);
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;

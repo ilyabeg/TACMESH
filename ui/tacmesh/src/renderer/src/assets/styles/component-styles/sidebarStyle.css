@@ -9,17 +9,17 @@
     padding: 10px 5px;
     background-color: var(--c-sidebar-gray);
     box-sizing: border-box;
-    transition: width 0.25s ease;
+    transition: min-width 0.25s ease;
 }
 
 /* tell CSS to explicitly find an element with the class 'sidebar-container' AND 'expanded' */
 .sidebar-container.expanded {
-    width: 300px;
+    min-width: 300px;
 }
 
 /* tell CSS to explicitly find an element with the class 'sidebar-container' AND 'collapsed' */
 .sidebar-container.collapsed {
-    width: 3vw;
+    min-width: 3vw;
 }
 
 /* container for the sidebar title area */
@@ -30,7 +30,6 @@
     flex-shrink: 0;
     overflow: hidden;
     white-space: nowrap;
-    min-width: 290px;
 }
 
 .sidebar-title {

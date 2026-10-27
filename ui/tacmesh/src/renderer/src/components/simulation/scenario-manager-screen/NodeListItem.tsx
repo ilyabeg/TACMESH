@@ -86,11 +86,14 @@ export default function EngineListItem({ engine, expandedFlag }: ItemProps) {
                             {/* node id and port on the same baseline */}
                             <div className="node-info-container">
                                 <span className="node-id">NodeID: {engine.NodeId}</span>
-                                <span className="node-port">port: {engine.Port}</span>
+                                {(!engine.down) && <span className="node-port">port: {engine.Port}</span>}
                             </div>
 
                             {/* process id on the right of the li */}
-                            <span className="node-pid">PID: {engine.ProcessId}</span>
+                            {(!engine.down) && <span className="node-pid">PID: {engine.ProcessId}</span>}
+
+                            {/* show engine down when the process is terminated */}
+                            {(engine.down && <span className="node-down-card">down</span>)}
                         </>
                     ) : (
                         <>

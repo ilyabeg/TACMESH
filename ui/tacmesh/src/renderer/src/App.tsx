@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useServerEventHandlers from './hooks/serverEventHandler.hook';
 import './assets/styles/main.css';
-import invokeServer from "./ipc/invokeServer";
-import { onServerEvent } from "./ipc/onServerEvent";
 import Header from "./components/Header";
 import Sidebar from "./components/simulation/Sidebar";
 import Canvas from './components/simulation/scenario-manager-screen/Canvas';

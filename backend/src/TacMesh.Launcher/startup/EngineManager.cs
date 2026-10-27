@@ -12,7 +12,7 @@ namespace TacMesh.Launcher.startup
     {
         // keep record for every Node process by their id
         // concurrent because many threads may write to the dictionary when receiving 'PORT=...' on stdout
-        private readonly ConcurrentDictionary<string, ProcessRecord> _nodeRecords = new();
+        private readonly ConcurrentDictionary<string, ProcessRecord?> _nodeRecords = new();
 
         // keep track of all engine processes by the engine ID
         // regular dictionary because only the main thread alters this (command executions)
@@ -115,12 +115,12 @@ namespace TacMesh.Launcher.startup
         }
 
 
-        // tries to add record by engine id
-        private void AddRecord(string engineId, string pId, int port) => _nodeRecords.TryAdd(engineId, new ProcessRecord(engineId, pId, port));
+        // adds or updates record by the engine id
+        private void AddRecord(string engineId, string pId, int port) => _nodeRecords[engineId] = new ProcessRecord(engineId, pId, port);
 
 
-        // tries to remove record by engine id
-        private void RemoveRecord(string engineId) => _nodeRecords.TryRemove(engineId, out _);
+        // sets the engine id's record to null as a placeholder until restarted as a new process
+        private void RemoveRecord(string engineId) => _nodeRecords[engineId] = null;
 
 
         // kills a specific process of an engine by their ID
@@ -129,7 +129,7 @@ namespace TacMesh.Launcher.startup
             try
             {
                 Process engine = _engines[engineId];
-                if (engine.HasExited) throw new ArgumentException();
+                if (engine == null || engine.HasExited) throw new ArgumentException();
 
                 engine.Kill(true);
                 engine.WaitForExit();
@@ -159,7 +159,7 @@ namespace TacMesh.Launcher.startup
             {
                 // give access to a new Process instance only if id existed
                 Process engine = _engines[engineId];
-                if (!engine.HasExited) throw new ArgumentException();
+                if (engine != null && !engine.HasExited) throw new ArgumentException();
 
                 // re-create Process instance to not use the same 'dead' one
                 engine = ProcessCreator.CreateNewEngineInstance(engineId);
@@ -173,7 +173,10 @@ namespace TacMesh.Launcher.startup
                 engine.Start();
                 engine.BeginOutputReadLine();
 
-                // notify the ui that the agent is back online
+                // freeze more engine creations until semaphore is by the new engine
+                _semaphore.WaitOne();
+
+                // notify the ui that the agent is back online after he released the semaphore
                 StdOut(IOMessageType.EngineUp, _nodeRecords[engineId]);
             }
             catch (KeyNotFoundException) {

@@ -30,13 +30,29 @@ export default function useLauncherEventHandlers() {
     const engineUp = useCallback(
         (_event: IpcRendererEvent, payload: EngineInfo) => {
 
+            // map the previous engine's state to the array but with the
+            // specific new engine process information
+            //
+            setEngines(prev => prev.map(
+                engine => engine.NodeId === payload.NodeId // the engine nodeId matches the event id
+                    ? payload // set as the new engine info
+                    : engine  // if doesn't match id, keep as is
+            ));
         },
     []);
 
     // handle engine preocess terminated
     const engineDown = useCallback(
         (_event: IpcRendererEvent, payload: string) => {
-
+            
+            // map the previous engine's state to the array but with the
+            // specific 'down' engine process marked as down
+            //
+            setEngines(prev => prev.map(
+                engine => engine.NodeId === payload // the engine nodeId matches the event id
+                    ? { ...engine, down: true } // spread the engine and mark it as down
+                    : engine // if doesn't match id, keep as is
+            ));
         },
     []);
 

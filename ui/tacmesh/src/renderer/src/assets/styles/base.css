@@ -18,6 +18,8 @@
   --c-divider-gray: #424242;
 
   --c-err-red: #de4545;
+  --c-divider-red: #ff8484;
+  --c-bg-red: #461b1b;
 }
 
 :root {
