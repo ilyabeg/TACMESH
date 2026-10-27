@@ -20,6 +20,7 @@ namespace TacMesh.Launcher
         MoveEngine,
         AdvanceEngine,
         ChgLinkRange,
+        EngineConfigs,
     }
 
     // class that represents the Json data sent from the Launcher to the main electron

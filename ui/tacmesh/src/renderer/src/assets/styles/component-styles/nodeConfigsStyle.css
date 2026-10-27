@@ -61,7 +61,6 @@
 .titles {
     display: flex;
     flex-direction: column;
-    flex: 0;
 
     font-size: medium;
     font-weight: 500;
@@ -90,9 +89,14 @@
     border-radius: 3px;
     background-color: var(--c-white-soft);
     width: 120px;
+    height: 20px;
 
     font-family: 'Consolas', 'Courier New', monospace;
     font-weight: 600;
+}
+
+.input:user-invalid {
+    border: 2px solid var(--c-err-red);
 }
 
 /* containers to keep alignment */
@@ -109,7 +113,6 @@
 }
 
 .input.speed {
-    border: none;
     border-radius: 3px;
     width: 30px;
 }
@@ -142,6 +145,24 @@
     border: none;
     border-radius: 3px;
     width: 30px;
+    margin-right: 5px;
+}
+
+
+/* --- link range --- */
+.link-range-input-container {
+    display: flex;
+    gap: 5px;
+}
+
+.link-range-units {
+    font-size: small;
+    color: var(--c-text-2);
+}
+
+.input.link-range {
+    border-radius: 3px;
+    width: 40px;
 }
 
 
@@ -247,11 +268,9 @@
 }
 
 /* --- titles & values --- */
-
 .preview-titles {
     display: flex;
     flex-direction: column;
-    flex: 0;
 
     font-size: small;
     color: var(--c-text-3);

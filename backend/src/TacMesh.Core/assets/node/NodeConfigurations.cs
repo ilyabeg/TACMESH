@@ -12,17 +12,19 @@ namespace TacMesh.Core.assets.node
         public string NodeId { get; private set; }
         public double Speed { get; private set; }
         public Location Location { get; private set; }
+        public double LinkRange { get; private set; }
         public List<string> PermittedNeighbors { get; private set; }
         public Queue<Location> Waypoints { get; private set; }
 
         // constructors
         public NodeConfigurations() { } // empty constructor for json serialization/deserialization
 
-        public NodeConfigurations(string nodeId, double speed, Location location, List<string> permitted, Queue<Location> waypoints)
+        public NodeConfigurations(string nodeId, double speed, Location location, double linkRange, List<string> permitted, Queue<Location> waypoints)
         {
             NodeId = nodeId;
             Speed = speed;
             Location = location;
+            LinkRange = linkRange;
             PermittedNeighbors = permitted;
             Waypoints = waypoints;
         }
