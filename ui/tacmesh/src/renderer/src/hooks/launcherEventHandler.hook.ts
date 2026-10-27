@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { EngineInfo } from "../../../shared/types/engineInfo"
-import { onServerEvent, removeAllListenersToServerEvent } from "@renderer/ipc/onServerEvent";
+import { onServerEvent } from "@renderer/ipc/onServerEvent";
 import { IpcRendererEvent } from "electron/main";
 
 

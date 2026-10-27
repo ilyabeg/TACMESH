@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import type { IpcRendererEvent } from 'electron';
-import { onServerEvent, removeAllListenersToServerEvent } from '../ipc/onServerEvent';
+import { onServerEvent } from '../ipc/onServerEvent';
 import { ServerError } from '../../../shared/types/serverError';
 
 // custom hook to re-use server event handlers anywhere

@@ -7,6 +7,7 @@ import Canvas from './components/simulation/scenario-manager-screen/Canvas';
 import { StdIOMessage } from "../../shared/types/stdIOMessage";
 import { EngineInfo } from "../../shared/types/engineInfo";
 import useLauncherEventHandlers from "./hooks/launcherEventHandler.hook";
+import NodeConfigurations from "./components/simulation/NodeConfigurations";
 
 function App(): React.JSX.Element {
 
@@ -49,8 +50,10 @@ function App(): React.JSX.Element {
       <div className="body-container">
 
         {/* pass the engine processes through the component props */}
-        <Sidebar listItems={engineProcesses} />
-        <Canvas items={engineProcesses} />
+        {/* <Sidebar listItems={engineProcesses} />
+        <Canvas items={engineProcesses} /> */}
+
+        <NodeConfigurations allNodes={engineProcesses} nodeId="Node-01" /> {/* TESTING */}
 
       </div>
     </>

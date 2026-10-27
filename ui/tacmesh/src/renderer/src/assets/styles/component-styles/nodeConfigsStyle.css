@@ -1,0 +1,324 @@
+@import '../base.css';
+
+/* the background blur screen */
+.bg-screen {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+
+/* holds the whole configurations "window" */
+.configs-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 600px;
+    z-index: 9999;
+
+    display: flex;
+    flex-direction: column;
+
+    background-color: var(--c-configs-bg);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 3px 5px 12px 0 rgba(0, 0, 0, 0.3);
+    font-family: 'Consolas', 'Courier New', monospace;
+}
+
+/* wraps the title */
+.title-container {
+    margin-top: 10px;
+    margin-left: 12px;
+    margin-bottom: 5px;
+}
+
+.configs-title {
+    color: var(--c-white);
+    font-size: large;
+}
+
+.divider-line {
+    background: var(--c-text-3);
+    width: 95%;
+    align-self: center;
+    margin-top: 0;
+}
+
+
+/* --- titles & inputs ---
+
+/* holds the configs items themselves */
+.items-container {
+    display: flex;
+    flex-direction: row;
+    flex: 0;
+    gap: 15px;
+}
+
+.titles {
+    display: flex;
+    flex-direction: column;
+    flex: 0;
+
+    font-size: medium;
+    font-weight: 500;
+    color: var(--c-text-1);
+
+    margin-left: 30px;
+}
+
+.item-title {
+    max-height: 25px;
+    margin-bottom: 5px;
+}
+
+.inputs {
+    display: flex;
+    flex-direction: column;
+    flex: 0;
+}
+
+
+/* --- input tags --- */
+
+/* style of input tags */
+.input {
+    border: none;
+    border-radius: 3px;
+    background-color: var(--c-white-soft);
+    width: 120px;
+
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-weight: 600;
+}
+
+/* containers to keep alignment */
+.input-field-container {
+    margin-bottom: 5px;
+    min-height: 25px;
+}
+
+
+/* --- speed --- */
+.speed-input-container {
+    display: flex;
+    gap: 5px;
+}
+
+.input.speed {
+    border: none;
+    border-radius: 3px;
+    width: 30px;
+}
+
+.speed-units {
+    font-size: small;
+    color: var(--c-text-2);
+}
+
+
+/* --- location --- */
+.location-input-container {
+    display: flex;
+}
+
+.location-field {
+    font-size: small;
+    color: var(--c-text-2);
+    margin-right: 5px;
+}
+
+.input.X {
+    border: none;
+    border-radius: 3px;
+    width: 30px;
+    margin-right: 10px;
+}
+
+.input.Y {
+    border: none;
+    border-radius: 3px;
+    width: 30px;
+}
+
+
+/* --- permitted neighbors --- */
+.permitted-container {
+    display: flex;
+}
+
+.add-btn {
+    background-color: var(--c-header-gray);
+    color: var(--c-text-2);
+    border: none;
+    border-radius: 5px;
+    margin-right: 5px;
+
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: small;
+
+    transition: all 0.2s ease;
+}
+
+.add-btn:hover {
+    background-color: var(--c-bg-green);
+    color: var(--c-ok-green)
+}
+
+.add-btn:active {
+    transform: scale(0.95);
+}
+
+.del-btn {
+    background-color: var(--c-header-gray);
+    color: var(--c-text-2);
+    border: none;
+    border-radius: 5px;
+
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: small;
+
+    transition: all 0.2s ease;
+}
+
+.del-btn:hover {
+    background-color: var(--c-bg-red);
+    color: var(--c-err-red)
+}
+
+.del-btn:active {
+    transform: scale(0.95);
+}
+
+.nodes-menu {
+    width: 120px;
+    height: 20px;
+
+    border: none;
+    border-radius: 3px;
+
+    background-color: var(--c-white-soft);
+    margin-right: 5px;
+
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-weight: 600;
+}
+
+
+/* --- waypoints --- */
+.waypoints-container {
+    display: flex;
+}
+
+
+/* --- preview --- */
+
+/* preview divider line */
+.preview-divider {
+    width: 100%;
+    background: var(--c-text-3);
+}
+
+/* holds the preview area */
+.preview-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: auto;
+
+    background-color: var(--c-sidebar-gray);
+    border-top: 1px solid var(--c-configs-divider);
+    border-bottom: 1px solid var(--c-configs-divider);
+}
+
+.preview-title {
+    color: var(--c-text-2);
+    font-size: smaller;
+    margin-left: 10px;
+    margin-top: 3px;
+}
+
+.preview-items-container {
+    display: flex;
+    flex: 0;
+    margin-bottom: 10px;
+}
+
+/* --- titles & values --- */
+
+.preview-titles {
+    display: flex;
+    flex-direction: column;
+    flex: 0;
+
+    font-size: small;
+    color: var(--c-text-3);
+
+    margin-left: 20px;
+}
+
+.preview-item-title {
+    height: 20px;
+    margin-bottom: 5px;
+}
+
+.preview-values {
+    display: flex;
+    flex-direction: column;
+    flex: 0;
+
+    font-size: small;
+    color: var(--c-text-3);
+
+    margin-left: 10px;
+    margin-right: 15px;
+}
+
+.preview-item-value {
+    height: 20px;
+    margin-bottom: 5px;
+
+    font-size: smaller;
+    color: var(--c-text-1);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* --- footer --- */
+
+/* holds the footer elements */
+.configs-footer-container {
+    display: flex;
+}
+
+.footer-btn {
+    background-color: var(--c-header-gray);
+    color: var(--c-text-2);
+    border: none;
+    border-radius: 4px;
+
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-weight: 500;
+    font-size: medium;
+
+    margin-top: 10px;
+    margin-bottom: 15px;
+    margin-right: 15px;
+    padding: 3px 12px;
+
+    transition: all 0.15s ease;
+    height: 25px;
+    width: 76px;
+}
+
+.footer-btn:hover {
+    background-color: var(--c-list-item-gray);
+    color: var(--c-white-soft);
+}
+
+.footer-btn:active {
+    transform: scale(0.96);
+}

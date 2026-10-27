@@ -14,66 +14,53 @@ export default function EngineListItem({ engine, expandedFlag }: ItemProps) {
     // flag to expand or collapse the list item options
     const [openMenu, setOpenMenu] = useState<boolean>(false);
 
-
-    // --- constant ipc commands to the launcher that reffer to this node ---
-
-    // start engine command
-    const startEngineMsg: StdIOMessage = {
-        Type: 'StartEngine',
-        Payload: engine.NodeId
-    }
-    const jsonStartMsg: string = JSON.stringify(startEngineMsg);
-
-    // kill engine command
-    const killEngineMsg: StdIOMessage = {
-        Type: 'KillEngine',
-        Payload: engine.NodeId
-    }
-    const jsonkillMsg: string = JSON.stringify(killEngineMsg);
-
-
-    // --- click handlers ---
-
     // handle the list item click -> trigger dropdown menu
-    //
     const handleItemClick = () => {
         // update the openMenu flag if the sidebar is extended
         if (expandedFlag)
             setOpenMenu(!openMenu);
     }
 
+    // push to launcher using the pushToLauncher API 
+    // from the preload script   
     const pushToLauncher = (input: string) => {
-        // push to launcher using the pushToLauncher API 
-        // from the preload script        
-        window.electronAPI.pushNotification('launcher-stdin', { stdInput: input });
-    }
-
-    // dropdown menu click handlers
-    //
-    const onStartProcess = () => {
         try {
-            pushToLauncher(jsonStartMsg);
-            setOpenMenu(false); // update the openMenu flag
+            window.electronAPI.pushNotification('launcher-stdin', { stdInput: input });
         }
         catch (error) {
-            console.error(`error caught while starting process: \"${error}\"`);
+            console.error(`error caught while trying to push a io msg to the launcher: \"${error}\"`);
         }
+    }
+
+
+    // --- constant ipc commands to the launcher that reffer to this node ---
+
+    // start engine command
+    const startEngineMsg: StdIOMessage = { Type: 'StartEngine', Payload: engine.NodeId }
+    const jsonStartMsg: string = JSON.stringify(startEngineMsg);
+
+    // kill engine command
+    const killEngineMsg: StdIOMessage = { Type: 'KillEngine', Payload: engine.NodeId }
+    const jsonkillMsg: string = JSON.stringify(killEngineMsg);
+
+    // advance engine node command
+    const advEngineMsg: StdIOMessage = { Type: 'AdvanceEngine', Payload: null }
+    const jsonAdvMsg: string = JSON.stringify(advEngineMsg);
+
+
+    // --- dropdown menu click handlers ---
+
+    const onStartProcess = () => {
+        pushToLauncher(jsonStartMsg);
+        setOpenMenu(false); // close menu on click
     }
     const onKillProcess = () => {
-        try {
-            pushToLauncher(jsonkillMsg);
-            setOpenMenu(false); // update the openMenu flag
-        }
-        catch (error) {
-            console.error(`error caught while terminating process: \"${error}\"`);
-        }
+        pushToLauncher(jsonkillMsg);
+        setOpenMenu(false);
     }
-    const onChgLink = () => {
-
-        // to do ...
-
-        // pushToLauncher(input);
-        setOpenMenu(false); // update the openMenu flag
+    const onAdvance = () => {
+        pushToLauncher(jsonAdvMsg);
+        setOpenMenu(false);
     }
 
     return (
@@ -109,7 +96,7 @@ export default function EngineListItem({ engine, expandedFlag }: ItemProps) {
                     <div className="dropdown-menu">
                         <button className="dropdown-btn" style={{ borderBottom: "1px solid #424242" }} onClick={onStartProcess}>Start Process</button>
                         <button className="dropdown-btn" style={{ borderBottom: "1px solid #424242" }} onClick={onKillProcess}>Terminate Process</button>
-                        <button className="dropdown-btn" onClick={onChgLink}>Change Link Range</button>
+                        <button className="dropdown-btn" onClick={onAdvance}>Advance Node</button>
                     </div>
                 )
             }

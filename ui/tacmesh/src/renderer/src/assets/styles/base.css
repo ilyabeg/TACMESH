@@ -20,6 +20,13 @@
   --c-err-red: #de4545;
   --c-divider-red: #ff8484;
   --c-bg-red: #461b1b;
+
+  --c-ok-green: #45de57;
+  --c-divider-green: #84ff8e;
+  --c-bg-green: #1b4622;
+
+  --c-configs-bg: #3e3e3e;
+  --c-configs-divider: rgb(141, 141, 141);
 }
 
 :root {

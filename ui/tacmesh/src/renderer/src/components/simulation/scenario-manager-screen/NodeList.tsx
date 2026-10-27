@@ -15,7 +15,7 @@ export default function NodeList({ listItems, expandedFlag }: NodeListProps) {
     return (
         <>
             <ol className="engine-list">
-                {listItems.map((item) => (
+                {listItems.map(item => (
                     <NodeListItem key={item.NodeId} engine={item} expandedFlag={expandedFlag} />
                 ))}
             </ol>
