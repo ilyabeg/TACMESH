@@ -1,7 +1,8 @@
+import { ConfigContext } from "@renderer/App";
 import { EngineInfo } from "../../../../../shared/types/engineInfo";
 import { StdIOMessage } from "../../../../../shared/types/stdIOMessage";
 import '../../../assets/styles/component-styles/nodeListItemStyle.css';
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 // define the list item props
 interface ItemProps {
@@ -13,6 +14,9 @@ export default function EngineListItem({ engine, expandedFlag }: ItemProps) {
 
     // flag to expand or collapse the list item options
     const [openMenu, setOpenMenu] = useState<boolean>(false);
+
+    // consume config context
+    const configContext = useContext(ConfigContext);
 
     // handle the list item click -> trigger dropdown menu
     const handleItemClick = () => {
@@ -62,6 +66,11 @@ export default function EngineListItem({ engine, expandedFlag }: ItemProps) {
         pushToLauncher(jsonAdvMsg);
         setOpenMenu(false);
     }
+    const onSettings = () => {
+        // update the confuig context selected node and close menu
+        configContext?.setSelectedNode(engine.NodeId);
+        setOpenMenu(false);
+    }
 
     return (
         <li className="list-item-container">
@@ -96,7 +105,8 @@ export default function EngineListItem({ engine, expandedFlag }: ItemProps) {
                     <div className="dropdown-menu">
                         <button className="dropdown-btn" style={{ borderBottom: "1px solid #424242" }} onClick={onStartProcess}>Start Process</button>
                         <button className="dropdown-btn" style={{ borderBottom: "1px solid #424242" }} onClick={onKillProcess}>Terminate Process</button>
-                        <button className="dropdown-btn" onClick={onAdvance}>Advance Node</button>
+                        <button className="dropdown-btn" style={{ borderBottom: "1px solid #424242" }} onClick={onAdvance}>Advance Node</button>
+                        <button className="dropdown-btn" onClick={onSettings}>Settings</button>
                     </div>
                 )
             }

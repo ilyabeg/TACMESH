@@ -1,5 +1,5 @@
 import { EngineInfo } from "../../../../../shared/types/engineInfo";
-import NodeListItem from './NodeListItem';
+import EngineListItem from './EngineListItem';
 import '../../../assets/styles/component-styles/engineListStyle.css';
 
 
@@ -16,7 +16,7 @@ export default function NodeList({ listItems, expandedFlag }: NodeListProps) {
         <>
             <ol className="engine-list">
                 {listItems.map(item => (
-                    <NodeListItem key={item.NodeId} engine={item} expandedFlag={expandedFlag} />
+                    <EngineListItem key={item.NodeId} engine={item} expandedFlag={expandedFlag} />
                 ))}
             </ol>
         </>

@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 import '../../assets/styles/component-styles/nodeConfigsStyle.css'
 import { EngineInfo } from '../../../../shared/types/engineInfo';
 import { NodeLocation } from '../../../../shared/types/engineLocation';
-import { NodeConfigs, ConfigConstants, buildConfigs } from '../../../../shared/types/nodeConfigs';
+import { NodeConfigs, ConfigConstants, buildConfigs, DEFAULT_LOCATION } from '../../../../shared/types/nodeConfigs';
 import { StdIOMessage } from '../../../../shared/types/stdIOMessage';
+import { ConfigContext } from '@renderer/App';
 
 
 interface NodeConfigsProps {
@@ -19,8 +20,8 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
 
     const [id, setId] = useState<string>(nodeId);
     const [speed, setSpeed] = useState<number>(ConfigConstants.MIN_SPEED);
-    const [location, setLocation] = useState<NodeLocation>({ X: 0, Y: 0 });
-    const [linkRange, setLinkRange] = useState<number>(ConfigConstants.MIN_LINK_RANGE);
+    const [location, setLocation] = useState<NodeLocation>(DEFAULT_LOCATION);
+    const [linkRange, setLinkRange] = useState<number>(ConfigConstants.MAX_LINK_RANGE);
     const [permittedNodes, setPermitted] = useState<Array<string>>([])
     const [waypoints, setWaypoints] = useState<Array<NodeLocation>>([]);
 
@@ -31,24 +32,19 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
     const selectRef = useRef<HTMLSelectElement>(null);
 
     // waypoint values states
-    const [currWaypoint, setWaypoint] = useState<NodeLocation>({ X: 0, Y: 0 });
+    const [currWaypoint, setWaypoint] = useState<NodeLocation>(DEFAULT_LOCATION);
 
 
     // --- click handlers ---
 
     // done click
     //
-    const validateInput = () => {
-
-        // if id wasn't defined or in use already, focus on the input
-        if (!id || allNodes.find(node => node.NodeId === id) !== undefined) {
-            setId(''); // clear input tag
-            idInputRef.current?.focus();
-            return;
-        }
+    const doneClick = () => {
+        // check if input valid before proceeding
+        if (!validInput()) return;
 
         // build the node configs
-        const doneConfigs: NodeConfigs = buildConfigs(id, speed, location, linkRange, permittedNodes, waypoints);
+        const doneConfigs: NodeConfigs = buildConfigs(id!, speed, location, linkRange, permittedNodes, waypoints);
 
         // build the IO stream message and convert to json
         const configsMsg: StdIOMessage = { Type: 'EngineConfigs', Payload: doneConfigs };
@@ -57,7 +53,19 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
         // push to the launcher the new configs of this engine process
         pushToLauncher(jsonConfigsMsg);
 
-        // to do: exit the configs window ...
+        // exit the configs window
+        exitConfig();
+    }
+
+    const validInput = (): boolean => {
+        // if id wasn't defined or in use already, focus on the input
+        if (!id || allNodes.find(node => node.NodeId === id) !== undefined) {
+            setId(''); // clear input tag
+            idInputRef.current?.focus();
+            return false;
+        }
+        // input valid
+        return true;
     }
 
     // push to launcher using the pushToLauncher API 
@@ -72,11 +80,26 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
     }
 
 
+    // consume the config context
+    const configContext = useContext(ConfigContext);
+
     // cancel click
     //
     const exitConfig = () => {
-        // to do: exit the configs window ...
+        // reset states, update the config context and exit the configs window
+        resetStates();
+        configContext?.setSelectedNode(null);
     }
+
+    const resetStates = () => {
+        setId('');
+        setSpeed(ConfigConstants.MIN_SPEED);
+        setLocation(DEFAULT_LOCATION);
+        setLinkRange(ConfigConstants.MAX_LINK_RANGE);
+        setPermitted([]);
+        setWaypoints([]);
+    }
+
 
     // permitted handling
     //
@@ -199,7 +222,7 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
         <div className='bg-screen'>
             <div className="configs-container">
 
-                <div className="title-container">
+                <div className="configs-title-container">
                     <span className='configs-title'>Engine Process Node Configuration Settings:</span>
                 </div>
 
@@ -309,7 +332,7 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
 
                 <div className="configs-footer-container" >
                     <button className="footer-btn" style={{ marginLeft: "auto" }} onClick={exitConfig}>Cancel</button>
-                    <button className="footer-btn" onClick={validateInput}>Done</button>
+                    <button className="footer-btn" onClick={doneClick}>Done</button>
                 </div>
 
             </div>

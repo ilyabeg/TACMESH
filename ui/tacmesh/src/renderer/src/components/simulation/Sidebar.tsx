@@ -1,4 +1,4 @@
-import EngineList from "./scenario-manager-screen/NodeList";
+import EngineList from "./scenario-manager-screen/EngineList";
 import '../../assets/styles/component-styles/sidebarStyle.css';
 import '../../assets/styles/base.css';
 import { useState } from "react";

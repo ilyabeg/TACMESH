@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { createContext, useEffect, useState } from "react";
 import useServerEventHandlers from './hooks/serverEventHandler.hook';
 import './assets/styles/main.css';
 import Header from "./components/Header";
@@ -8,6 +8,16 @@ import { StdIOMessage } from "../../shared/types/stdIOMessage";
 import { EngineInfo } from "../../shared/types/engineInfo";
 import useLauncherEventHandlers from "./hooks/launcherEventHandler.hook";
 import NodeConfigurations from "./components/simulation/NodeConfigurations";
+
+
+// define the config context type
+type ConfigContextType = {
+  selectedNode: string | null,
+  setSelectedNode: (val: string | null) => void
+}
+
+// create configuration context context
+export const ConfigContext = createContext<ConfigContextType | null>(null);
 
 function App(): React.JSX.Element {
 
@@ -20,6 +30,9 @@ function App(): React.JSX.Element {
   //
   const engineProcesses: Array<EngineInfo> = useLauncherEventHandlers();
 
+  // provide a context to the child components to configure a node
+  //
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
 
   useEffect(() => {
 
@@ -49,11 +62,18 @@ function App(): React.JSX.Element {
       <Header />
       <div className="body-container">
 
-        {/* pass the engine processes through the component props */}
-        {/* <Sidebar listItems={engineProcesses} />
-        <Canvas items={engineProcesses} /> */}
+        {/* provide the config context to the sidebar and it's child components*/}
+        <ConfigContext value={{ selectedNode, setSelectedNode }}>
 
-        <NodeConfigurations allNodes={engineProcesses} nodeId="Node-01" /> {/* TESTING */}
+          {/* pass the engine processes through the component props */}
+          <Sidebar listItems={engineProcesses} />
+
+          {/* show config setting only when node selected */}
+          {selectedNode && <NodeConfigurations allNodes={engineProcesses} nodeId={selectedNode} />}
+
+        </ConfigContext>
+
+        <Canvas items={engineProcesses} />
 
       </div>
     </>

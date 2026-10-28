@@ -23,6 +23,9 @@ export enum ConfigConstants {
     MAX_LINK_RANGE = 400,
 }
 
+// default location point
+export const DEFAULT_LOCATION: NodeLocation = { X: 0, Y: 0 };
+
 // return a clean node configs object
 //
 export function buildConfigs(
