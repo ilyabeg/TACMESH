@@ -1,8 +1,6 @@
-// define the shared engine information type
-
 import { NodeConfigs } from "./nodeConfigs"
 
-// define the engine process info
+// define the shared engine process type
 //
 export type EngineProcess = {
     NodeId: string,

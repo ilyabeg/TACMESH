@@ -1,6 +1,6 @@
 import { useContext, useRef, useState } from 'react';
 import '../../assets/styles/component-styles/nodeConfigsStyle.css'
-import { EngineProcess } from '../../../../shared/types/enginePeocess';
+import { EngineProcess } from '../../../../shared/types/engineProcess';
 import { NodeLocation } from '../../../../shared/types/engineLocation';
 import { NodeConfigs, ConfigConstants, buildConfigs, DEFAULT_LOCATION } from '../../../../shared/types/nodeConfigs';
 import { StdIOMessage } from '../../../../shared/types/stdIOMessage';

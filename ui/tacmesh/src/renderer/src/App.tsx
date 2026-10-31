@@ -5,7 +5,7 @@ import Header from "./components/Header";
 import Sidebar from "./components/simulation/Sidebar";
 import Canvas from './components/simulation/scenario-manager-screen/Canvas';
 import { StdIOMessage } from "../../shared/types/stdIOMessage";
-import { EngineProcess } from "../../shared/types/enginePeocess";
+import { EngineProcess } from "../../shared/types/engineProcess";
 import useLauncherEventHandlers from "./hooks/launcherEventHandler.hook";
 import NodeConfigurations from "./components/simulation/NodeConfigurations";
 

@@ -2,7 +2,7 @@ import EngineList from "./scenario-manager-screen/EngineList";
 import '../../assets/styles/component-styles/sidebarStyle.css';
 import '../../assets/styles/base.css';
 import { useState } from "react";
-import { EngineProcess } from "../../../../shared/types/enginePeocess";
+import { EngineProcess } from "../../../../shared/types/engineProcess";
 
 
 // define the props structure

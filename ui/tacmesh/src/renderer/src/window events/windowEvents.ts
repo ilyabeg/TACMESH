@@ -1,4 +1,4 @@
-import { EngineProcess } from "../../../shared/types/enginePeocess"
+import { EngineProcess } from "../../../shared/types/engineProcess"
 
 // define custom window events for the renderer process
 //

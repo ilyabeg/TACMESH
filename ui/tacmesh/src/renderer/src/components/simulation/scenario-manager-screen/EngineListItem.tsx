@@ -1,5 +1,5 @@
 import { ConfigContext } from "@renderer/App";
-import { EngineProcess } from "../../../../../shared/types/enginePeocess";
+import { EngineProcess } from "../../../../../shared/types/engineProcess";
 import { StdIOMessage } from "../../../../../shared/types/stdIOMessage";
 import '../../../assets/styles/component-styles/nodeListItemStyle.css';
 import { useContext, useState } from "react";

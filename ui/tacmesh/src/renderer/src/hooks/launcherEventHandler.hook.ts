@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { EngineProcess } from "../../../shared/types/enginePeocess"
+import { EngineProcess } from "../../../shared/types/engineProcess"
 import { onServerEvent } from "@renderer/ipc/onServerEvent";
 import { IpcRendererEvent } from "electron/main";
 import { NodeConfigs } from "../../../shared/types/nodeConfigs";

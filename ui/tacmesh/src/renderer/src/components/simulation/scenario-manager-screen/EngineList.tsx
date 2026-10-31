@@ -1,4 +1,4 @@
-import { EngineProcess } from "../../../../../shared/types/enginePeocess";
+import { EngineProcess } from "../../../../../shared/types/engineProcess";
 import EngineListItem from './EngineListItem';
 import '../../../assets/styles/component-styles/engineListStyle.css';
 

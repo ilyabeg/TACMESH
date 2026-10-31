@@ -1,4 +1,4 @@
-import { EngineProcess } from '../types/enginePeocess'
+import { EngineProcess } from '../types/engineProcess'
 import { NodeLocation } from '../types/engineLocation'
 import { NodeConfigs } from '../types/nodeConfigs'
 import { ServerError } from '../types/serverError'

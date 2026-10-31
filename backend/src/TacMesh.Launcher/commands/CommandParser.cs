@@ -28,7 +28,7 @@ namespace TacMesh.Launcher.commands
 
                 // if Ctrl+C was pressed, 'input' initiates to null, which causes an inifite loop.
                 // this is the purpose of this check: to end and break out of the loop
-                if (input == null) 
+                if (input == null || input.Trim().ToLower().Equals("exit")) 
                     break;
                 
                 if (string.IsNullOrWhiteSpace(input)) continue;

@@ -2,7 +2,7 @@ import { ChildProcess, spawn } from 'node:child_process';
 import pushToClient from './ipc/pushToClient';
 import path from 'node:path';
 import { BrowserWindow } from 'electron';
-import { EngineProcess } from '../shared/types/enginePeocess';
+import { EngineProcess } from '../shared/types/engineProcess';
 
 let _browserWindow: BrowserWindow; // the electron window instance
 let _engine: ChildProcess | null = null; // the engine process instance
