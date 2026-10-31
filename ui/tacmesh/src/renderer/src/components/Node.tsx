@@ -110,7 +110,7 @@ export default function Node({
     const getJsonMsg = (location: NodeLocation): string => {
         const moveMsg: StdIOMessage = {
             Type: 'MoveEngine',
-            Payload: { EngineId: node.NodeId, Location: location }
+            Payload: { NodeId: node.NodeId, Location: location }
         }
         return JSON.stringify(moveMsg);
     }

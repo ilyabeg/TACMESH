@@ -21,14 +21,14 @@ export interface pushNotification {
     },
     'engine-update': {
         payload: {
-            engineId: string,
-            location: NodeLocation
+            NodeId: string,
+            Location: NodeLocation
         }
     },
     'configs-ack': {
         payload: {
-            engineId: string,
-            configs: NodeConfigs
+            NodeId: string,
+            Configs: NodeConfigs
         }
     },
 }

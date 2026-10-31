@@ -6,13 +6,13 @@ namespace TacMesh.Core.utils.ipc.types
     //
     public class MoveMessage
     {
-        public string EngineId { get; set; }
+        public string NodeId { get; set; }
         public Location Location { get; set; }
 
         // constructor
-        public MoveMessage(string engineId, Location location)
+        public MoveMessage(string nodeId, Location location)
         {
-            EngineId = engineId;
+            NodeId = nodeId;
             Location = location;
         }
     }

@@ -87,7 +87,7 @@ export default function Canvas({ items }: CanvasProps) {
         <>
             <div className="canvas-container" ref={canvasRef} onWheel={wheelSpinHandler} >
                 {items.map(item =>
-                    <Node node={item} scale={scale} x_offset={offset.x_offset} y_offset={offset.y_offset} />
+                    (!item.down && <Node node={item} scale={scale} x_offset={offset.x_offset} y_offset={offset.y_offset} />)
                 )}
             </div>
         </>

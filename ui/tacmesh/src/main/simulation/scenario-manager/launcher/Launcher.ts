@@ -187,7 +187,7 @@ function TryParseStdOut(outout: string): boolean {
         const outputMessage: StdIOMessage = JSON.parse(outout);
 
         // test
-        console.log(`received output message ${outputMessage.Type}. payload: ${outputMessage.Payload}`);
+        // console.log(`[Launcher Electron Main-Process] Received output message ${outputMessage.Type}. payload: ${outputMessage.Payload}`);
 
         switch (outputMessage.Type) {
             // launcher pushed the engine processes
@@ -211,7 +211,7 @@ function TryParseStdOut(outout: string): boolean {
                 break;
             }
             // engine process configurations acknowledge
-            case 'EngineUpdate': {
+            case 'ConfigsAck': {
                 pushToClient(_browserWindow, 'configs-ack', outputMessage.Payload);
                 break;
             }

@@ -60,22 +60,27 @@ export default function useLauncherEventHandlers() {
 
     // handle engine update
     const engineUpdate = useCallback(
-        (_event: IpcRendererEvent, payload: { engineId: string, location: NodeLocation }) => {
-            // to do ...
+        (_event: IpcRendererEvent, payload: { NodeId: string, Location: NodeLocation }) => {
+            
+            // spread the previous engine state and change the new location in the configs
+            //
+            setEngines(prev => prev.map(
+                engine => engine.NodeId === payload.NodeId // the engine nodeId matches the event id
+                    ? { ...engine, configs: { ...engine.configs!, Location: payload.Location } }
+                    : engine // if doesn't match id, keep as is
+            ));
         },
     []);
 
     // handle engine configs acknowledge
     const configsAck = useCallback(
-        (_event: IpcRendererEvent, payload: { engineId: string, configs: NodeConfigs }) => {
-
-            console.log(`Received configs ack: ${payload.configs}`);
+        (_event: IpcRendererEvent, payload: { NodeId: string, Configs: NodeConfigs }) => {
 
             // update specific engine process configs
             //
             setEngines(prev => prev.map(
-                engine => engine.NodeId === payload.engineId
-                    ? {...engine, configs: payload.configs } // replace new configs
+                engine => engine.NodeId === payload.NodeId
+                    ? {...engine, configs: payload.Configs } // replace new configs
                     : engine // if doesn't match id, keep as is
             ));
         },

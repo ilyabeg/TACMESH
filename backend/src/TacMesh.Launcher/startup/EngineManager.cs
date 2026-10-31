@@ -81,19 +81,20 @@ namespace TacMesh.Launcher.startup
         {            
             string output = e.Data;
             if (output == null) return;
-
-            // print each engine's output in a FIXED format
-            Printer.AddNewLine(engineId, output);
-
+           
             // parse output if possible
-            TryParseStdout(engineId, sender, output);
+            if (!TryParseStdout(engineId, sender, output))
+                // print each engine's output in a FIXED format if launcher could'nt parse
+                Printer.AddNewLine(engineId, output);
         }
 
         // tries to parse the stdoutput
-        private void TryParseStdout(string engineId, object sender, string output)
+        private bool TryParseStdout(string engineId, object sender, string output)
         {
-            if (TryParsePort(output, sender, engineId)) return;
-            if (TryParsePosUpdate(output)) return;
+            if (TryParsePort(output, sender, engineId)) return true;
+            if (TryParsePosUpdate(output)) return true;
+            if (TryParseConfigAck(output, engineId)) return true;
+            return false;
         }
 
         // try to parse the port output
@@ -116,6 +117,11 @@ namespace TacMesh.Launcher.startup
             try
             {
                 MoveMessage posUpdate = JsonSerializer.Deserialize<MoveMessage>(output);
+
+                // if EngineId is null, this was a configs ack payload, not a move message.
+                // reject it so the next method (TryParseConfigAck) can handle it
+                if (string.IsNullOrEmpty(posUpdate.NodeId)) return false;
+
                 StdOut(IOMessageType.EngineUpdate, posUpdate);
                 return true;
             }
@@ -123,6 +129,23 @@ namespace TacMesh.Launcher.startup
                 return false;
             }
         }
+
+        // try parse successful config update acknowledge from engine process
+        private bool TryParseConfigAck(string output, string engineId)
+        {
+            try
+            {
+                NodeConfigs echoedConfigs = JsonSerializer.Deserialize<NodeConfigs>(output);
+                ConfigsMessage configAckMsg = new ConfigsMessage(engineId, echoedConfigs);
+
+                // acknowledge the new configs to the ui that they have been successfuly updated
+                StdOut(IOMessageType.ConfigsAck, configAckMsg);
+                return true;
+            }
+            catch (Exception) {
+                return false;
+            }
+        }        
 
         // writes input to the input stream of a specfic engine
         public void WriteToInputStream(string engineId, string input)
@@ -237,10 +260,7 @@ namespace TacMesh.Launcher.startup
         {
             // write new configs to engine process
             string jsonNewConfigs = JsonSerializer.Serialize(newConfigs);
-            WriteToInputStream(engineId, jsonNewConfigs);
-
-            // acknowledge the new configs to the ui that they have been successfuly updated
-            StdOut(IOMessageType.ConfigsAck, new ConfigsMessage(engineId, newConfigs));
+            WriteToInputStream(engineId, jsonNewConfigs);            
         }
 
         // prints the engine processes

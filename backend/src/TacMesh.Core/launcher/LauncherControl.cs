@@ -59,8 +59,8 @@ namespace TacMesh.Core.launcher
             _nodeConfigs.UpdateConfigurations(location: newLocation);
             Console.WriteLine($"[LAUNCHER CONTROL] Moved Node <{_nodeId}> to new position: ({newLocation.X},{newLocation.Y}).\n");
 
-            // TEMOPRARILY update the position via mcasting to all of the engine processes
-            // using the beacon emitter. this will be removed as soon as a full data packet
+            // TEMOPRARILY update the position for all engine prcesses via mcasting to all of the engine
+            // processes using the beacon emitter. this will be removed as soon as a full data packet
             // with node position reports in the heartbeats is implemented.
             //
             _emitter.EmitBeacon(newLocation);
@@ -72,7 +72,7 @@ namespace TacMesh.Core.launcher
         }
 
         // pushes a std io message to the launcher 
-        private void PushToLauncher(string payload) => Console.WriteLine(payload + "\n");
+        private void PushToLauncher(string payload) => Console.WriteLine(payload);
 
 
         // --- parsing methods ---
@@ -110,12 +110,20 @@ namespace TacMesh.Core.launcher
                 MoveMessage movCommand = JsonSerializer.Deserialize<MoveMessage>(input);
 
                 // ignore a message from the launcher not meant for this specific node
-                string nodeId = movCommand.EngineId;
+                string nodeId = movCommand.NodeId;
                 if (!nodeId.Equals(_nodeId)) return false;
 
                 // if successfull, pull the engine data
                 Location newLocation = movCommand.Location;
                 _nodeConfigs.UpdateConfigurations(location: newLocation);
+
+                // TEST
+                //Console.WriteLine($"[LAUNCHER CONTROL] Updated node location to: {movCommand.Location} successfuly");
+
+                // push the same exact message back to the launcher to acknowledge the
+                // position update to synchronize with the ui
+                PushToLauncher(input);
+
                 return true;
             }
             catch (Exception) {
@@ -145,12 +153,15 @@ namespace TacMesh.Core.launcher
             try
             {
                 NodeConfigs newConfigs = JsonSerializer.Deserialize<NodeConfigs>(input);
-                if (newConfigs == null) return false;
-
-                // TEST
-                Console.WriteLine($"UPDATING CONFIGS TO: {newConfigs}");
+                if (newConfigs == null) return false;                
 
                 _nodeConfigs.UpdateConfigurations(newConfigs);
+
+                // push to the launcher process the same exact message to acknowledge that
+                // the new config settings have been successfuly updated
+                //
+                PushToLauncher(input);
+
                 return true;
             }
             catch (Exception) {

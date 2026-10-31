@@ -45,14 +45,14 @@ namespace TacMesh.Launcher.commands
             try
             {
                 // test the input receiving...
-                Console.WriteLine($"[LAUNCHER RECEIVED] input: \"{input}\"");
+                //Console.WriteLine($"[LAUNCHER RECEIVED] input: \"{input}\"");
 
                 // deserialize as an ipc input message
                 StdIOMessage msg = JsonSerializer.Deserialize<StdIOMessage>(input)!;
                 IOMessageType msgType = Enum.Parse<IOMessageType>(msg.Type); // parse the message type as an enum
 
-                // test the message type...
-                Console.WriteLine($"[LACUNHER] Received IPC Message type: {msgType} ({msg.Type})");
+                //// test the message type...
+                //Console.WriteLine($"[LACUNHER] Received IPC Message type: {msgType} ({msg.Type})");
 
                 switch (msgType)
                 {
@@ -85,7 +85,7 @@ namespace TacMesh.Launcher.commands
                     case IOMessageType.MoveEngine:
                     {
                         MoveMessage data = JsonSerializer.Deserialize<MoveMessage>(msg.Payload)!;
-                        _engineManager.MoveEngine(data.EngineId, data.Location);
+                        _engineManager.MoveEngine(data.NodeId, data.Location);
                         break;
                     }
                     // start the node position advances

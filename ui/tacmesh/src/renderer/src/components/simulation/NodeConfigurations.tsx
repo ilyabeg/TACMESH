@@ -16,16 +16,33 @@ interface NodeConfigsProps {
 //
 export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProps) {
 
-    // all nodes id's except the selected node
-    const nodeIds: string[] = allNodes.filter(node => node.NodeId !== nodeId).map(node => node.NodeId);
+    // --- getting the selected node's current/default configs ---
+
+    let currSpeed: number;
+    let currLocation: NodeLocation;
+    let currLinkRange: number;
+    let currPermitted: string[];
+    let currWaypoints: NodeLocation[];
+
+    // the node's current configurations from the nodes list
+    const currNode: EngineProcess | undefined = allNodes.find(node => node.NodeId === nodeId);
+    if (!currNode) return;
+
+    currSpeed = currNode.configs?.Speed ?? ConfigConstants.MIN_SPEED; // if null, defaults to min speed
+    currLocation = currNode.configs?.Location ?? DEFAULT_LOCATION;    // if null, defaults to def location
+    currLinkRange = currNode.configs?.LinkRange ?? ConfigConstants.MAX_LINK_RANGE; // if null, defaults to max link range
+    // if null defaluts to everyone being permitted (all nodes id's except the selected node)
+    currPermitted = currNode.configs?.PermittedNeighbors ?? allNodes.filter(node => node.NodeId !== nodeId).map(node => node.NodeId);
+    currWaypoints = currNode.configs?.Waypoints ?? [];
+
 
     // --- configs states ---
 
-    const [speed, setSpeed] = useState<number>(ConfigConstants.MIN_SPEED);
-    const [location, setLocation] = useState<NodeLocation>(DEFAULT_LOCATION);
-    const [linkRange, setLinkRange] = useState<number>(ConfigConstants.MAX_LINK_RANGE);
-    const [permittedNodes, setPermitted] = useState<Array<string>>(nodeIds) // defaultly permit all nodes
-    const [waypoints, setWaypoints] = useState<Array<NodeLocation>>([]);
+    const [speed, setSpeed] = useState<number>(currSpeed);
+    const [location, setLocation] = useState<NodeLocation>(currLocation);
+    const [linkRange, setLinkRange] = useState<number>(currLinkRange);
+    const [permittedNodes, setPermitted] = useState<Array<string>>(currPermitted) // defaultly permit all nodes
+    const [waypoints, setWaypoints] = useState<Array<NodeLocation>>(currWaypoints);
 
     // select tag ref of the current selected value
     const selectRef = useRef<HTMLSelectElement>(null);
@@ -298,7 +315,7 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
 
                         <div className="preview-values">
                             <span className='preview-item-value'>{speed}</span>
-                            <span className='preview-item-value'>({location.X},{location.Y})</span>
+                            <span className='preview-item-value'>({location.X.toFixed(2)},{location.Y.toFixed(2)})</span>
                             <span className='preview-item-value'>{linkRange}</span>
                             <span className='preview-item-value'>{(permittedNodes.length == 0) ? 'none' : permittedNodes.toString()}</span>
                             <span className='preview-item-value'>{(waypoints.length == 0) ? 'none' : printWaypoints()}</span>

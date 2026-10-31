@@ -44,20 +44,16 @@ namespace TacMesh.Core.assets
                     double totalDist = currentLocation.Distance(endPoint);
                     double totalTime = Kinematics.TotalTime(totalDist, _nodeConfigs.Speed);
                     double time = 0; // time in ms
-                    int ticks = 0;   // ticks representing the amount of 10ms 'jumps' performed (1 tick = 10 ms)
 
                     // while didn't reach the endpoint (or advance time is less than the total time)
                     while (currentLocation.Distance(endPoint) > _DISTANCE_THRESHOLD && time <= totalTime)
                     {
                         // calculate the position at time t
                         currentLocation = Kinematics.PosAt(time, totalTime, startPoint, endPoint);
-                        PrintPosition(currentLocation, time);
+                        //PrintPosition(currentLocation, time);
 
-                        // invokes the current position every quarter of a second to throttle the mcasts
-                        // quarter of a second = 25 ticks (10ms * 25 = 250ms)
-                        if (ticks % 25 == 0)
-                            NodePositionUpdate?.Invoke(this, currentLocation);
-                        ticks++;
+                        // invokes the current position every 10ms tick (MAY CAUSE LAG IN THE FUTURE)
+                        NodePositionUpdate?.Invoke(this, currentLocation);
 
                         // get next time from converting the ms to seconds
                         // in other words, jump each 10ms
