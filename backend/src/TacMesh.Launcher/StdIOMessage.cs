@@ -1,7 +1,29 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using TacMesh.Core.assets.node;
 
 namespace TacMesh.Launcher
 {
+    // define the structure for parsing the configurations command sent fromt ui process
+    //
+    public class ConfigsMessage
+    {
+        // tell json to include private setter fields
+        [JsonInclude]
+        public string NodeId { get; private set; }
+        [JsonInclude]
+        public NodeConfigs Configs { get; private set; }
+
+        // empty constructor for json deserialization
+        public ConfigsMessage() { }
+        public ConfigsMessage(string nodeId, NodeConfigs nodeConfigs) 
+        {
+            NodeId = nodeId;
+            Configs = nodeConfigs;
+        }
+    }
+
+
     // defines the ipc nessage types sent from the launcher to the main process
     // throught the std io stream pipes, and vice versa
     //
@@ -12,6 +34,7 @@ namespace TacMesh.Launcher
         EngineUp,
         EngineDown,
         EngineUpdate,
+        ConfigsAck,
 
         // StdInput stream -> Launcher
         ListEngines,
@@ -19,7 +42,6 @@ namespace TacMesh.Launcher
         StartEngine,
         MoveEngine,
         AdvanceEngine,
-        ChgLinkRange,
         EngineConfigs,
     }
 

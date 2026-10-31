@@ -33,7 +33,7 @@ namespace TacMesh.Core.communication
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error caught while transmitting message: '{e.Message}'");
+                Console.WriteLine($"[Sim Transmitter] Error caught while transmitting message: '{e.Message}'");
                 Crashed?.Invoke(this, new CrashEventArgs(e));
                 return -1;
             }

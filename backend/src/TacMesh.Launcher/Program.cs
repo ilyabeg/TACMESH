@@ -32,7 +32,6 @@ namespace TacMesh.Launcher
 
             // inject engine manager
             CommandParser commandParser = new (engineManager);
-            WaypointManager waypointManager = new (engineManager);
 
             // kill processes when Ctrl+C is pressed
             Console.CancelKeyPress += (s, e) => myHandler(s, e);

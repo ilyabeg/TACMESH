@@ -40,7 +40,6 @@ namespace TacMesh.Core.database_related
         {
             lock (_lock)
             {
-                // ai design...
                 StringBuilder str = new StringBuilder();
 
                 str.AppendLine("┌──────────────────────────────────────────────────────────┐");

@@ -1,4 +1,5 @@
-﻿using TacMesh.Core.interfaces;
+﻿using System.Text.Json.Serialization;
+using TacMesh.Core.interfaces;
 
 namespace TacMesh.Core.graph_related
 {
@@ -8,7 +9,9 @@ namespace TacMesh.Core.graph_related
         // this class will be able to change to something more complicated in the future to
         // fit the actual graphs that are going to be used...
 
+        [JsonInclude]
         public double X { get; private set; }
+        [JsonInclude]
         public double Y { get; private set; }
 
         public Location(double x, double y)
@@ -22,7 +25,7 @@ namespace TacMesh.Core.graph_related
             X = x;
             Y = y;
         }
-        
+
         /// <summary>
         /// Distance calculator
         /// </summary>
@@ -41,5 +44,27 @@ namespace TacMesh.Core.graph_related
         }
 
         public override string ToString() => $"({X:F3},{Y:F3})";
+
+        /// <summary>
+        /// Copies the values from the current Location object to the other Location object.
+        /// </summary>
+        /// <param name="other"></param>
+        public void CopyTo(Location other)
+        {
+            other.X = this.X;
+            other.Y = this.Y;
+        }
+
+        /// <summary>
+        /// determines if the current Location obbject is equal to the other Location object.
+        /// </summary>
+        /// <returns></returns>
+        public override bool Equals(object? obj)
+        {
+            if (obj != null && obj is Location other) {
+                return this.X == other.X && this.Y == other.Y;
+            }
+            return false;
+        }
     }
 }

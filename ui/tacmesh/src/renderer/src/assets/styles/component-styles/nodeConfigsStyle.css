@@ -291,7 +291,8 @@
 .preview-values {
     display: flex;
     flex-direction: column;
-    flex: 0;
+    overflow: hidden;
+    flex: 1;
 
     font-size: small;
     color: var(--c-text-3);
@@ -308,6 +309,7 @@
     color: var(--c-text-1);
     text-overflow: ellipsis;
     white-space: nowrap;
+    overflow: hidden;
 }
 
 

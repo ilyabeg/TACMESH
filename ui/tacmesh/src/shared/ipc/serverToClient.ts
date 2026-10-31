@@ -1,4 +1,6 @@
-import { EngineInfo } from '../types/engineInfo'
+import { EngineProcess } from '../types/enginePeocess'
+import { NodeLocation } from '../types/engineLocation'
+import { NodeConfigs } from '../types/nodeConfigs'
 import { ServerError } from '../types/serverError'
 
 // define push notification 'events' from the main process 
@@ -9,10 +11,10 @@ export interface pushNotification {
         payload: ServerError
     },
     'return-engines': {
-        payload: Array<EngineInfo>
+        payload: Array<EngineProcess>
     }   
     'engine-up': {
-        payload: EngineInfo
+        payload: EngineProcess
     },
     'engine-down': {
         payload: string
@@ -20,7 +22,13 @@ export interface pushNotification {
     'engine-update': {
         payload: {
             engineId: string,
-            // location: Location
+            location: NodeLocation
+        }
+    },
+    'configs-ack': {
+        payload: {
+            engineId: string,
+            configs: NodeConfigs
         }
     },
 }

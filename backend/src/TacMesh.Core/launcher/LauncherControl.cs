@@ -1,17 +1,16 @@
 using System.Text.Json;
 using TacMesh.Core.assets;
+using TacMesh.Core.assets.node;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces.beacon_and_destination;
-using TacMesh.Core.models;
 using TacMesh.Core.utils.ipc.types;
 
 namespace TacMesh.Core.launcher
 {
     public class LauncherControl
     {
-        private readonly string _srcNode; // the Node that the Launcher is pushing the data to
-        private Location _currentLocation; // holds the current node location
-        private readonly double _nodeSpeed; // holds the current node speed
+        private readonly string _nodeId;
+        private readonly NodeConfigs _nodeConfigs; // hold ref to configs to update at runtime
         private readonly NodeAdvancer _advancer;
 
         // an emitter to TEMPORARILY emit a beacon to each radio model on the net of the updated
@@ -20,12 +19,11 @@ namespace TacMesh.Core.launcher
         // will be removed. it is currently strictly temporary for the simplified position advancing.
         private readonly IBeaconEmitter _emitter;
 
-        public LauncherControl(string srcNode, Location intialLocation, double speed, IBeaconEmitter emitter)
+        public LauncherControl(string nodeId, NodeConfigs nodeConfigs, IBeaconEmitter emitter)
         {
-            _srcNode = srcNode;
-            _currentLocation = intialLocation;
-            _nodeSpeed = speed;
-            _advancer = new NodeAdvancer();
+            _nodeId = nodeId;
+            _nodeConfigs = nodeConfigs;
+            _advancer = new NodeAdvancer(nodeConfigs);
             _emitter = emitter;
 
             // attach node position update event
@@ -42,39 +40,10 @@ namespace TacMesh.Core.launcher
                     try {
                         // parse input pushed from launcher
                         string input = Console.ReadLine();
+                        TryParseStdInput(input);
 
-                        if (input.Equals("EMIT_INITIATION_BEACON"))
-                        {
-                            // emit an initial beacon so other nodes recognize this node
-                            _emitter.EmitBeacon(_currentLocation!);
-                            continue;
-                        }
-
-                        // test receiving
-                        //Console.WriteLine($"[LAUNCHER CONTROL] received: \"{input}\"");
-
-                        if (TryParseStdInput(input, out string nodeId, out Location newLocation))
-                        {
-                            // ignore a message from the launcher not meant for this specific node
-                            if (!_srcNode.Equals(nodeId)) continue;
-
-                            // advance position of the node
-                            if (await _advancer.AdvancePosition(_currentLocation, newLocation, _nodeSpeed))
-                            {
-                                // print out the new location
-                                _currentLocation = newLocation;
-                                Console.WriteLine($"[LAUNCHER CONTROL] Moved Node <{nodeId!}> to new position: ({newLocation.X},{newLocation.Y}).\n");
-
-                                // mcast the final location after end to be extra precise
-                                OnNodePositionUpdate(newLocation);
-
-                                // print a signal that the node advanced to notify launcher
-                                Console.WriteLine($"adv.\n");
-                            }
-                            else {
-                                Console.WriteLine($"Node Advancer failed to advance the node to the new position: {newLocation}.\n");
-                            }
-                        }
+                        // test received input
+                        Console.WriteLine($"[LAUNCHER CONTROL] received: \"{input}\"");
                     }
                     catch (Exception e) {
                         Console.WriteLine($"[LAUNCHER CONTROL] Error: \"{e.Message}\"\n");
@@ -83,32 +52,108 @@ namespace TacMesh.Core.launcher
             });
         }
 
+        // handler of node moved event
+        private void OnNodePositionUpdate(Location newLocation)
+        {
+            // set and print out the new location
+            _nodeConfigs.UpdateConfigurations(location: newLocation);
+            Console.WriteLine($"[LAUNCHER CONTROL] Moved Node <{_nodeId}> to new position: ({newLocation.X},{newLocation.Y}).\n");
 
-        // TEMOPRARILY update the position via mcasting to all of the engine processes
-        // using the beacon emitter. this will be removed as soon as a full data packet
-        // with node position reports in the heartbeats is implemented.
-        private void OnNodePositionUpdate(Location newLocation) => _emitter.EmitBeacon(newLocation);
+            // TEMOPRARILY update the position via mcasting to all of the engine processes
+            // using the beacon emitter. this will be removed as soon as a full data packet
+            // with node position reports in the heartbeats is implemented.
+            //
+            _emitter.EmitBeacon(newLocation);
 
+            // push to the new pos to std output stream
+            MoveMessage posUpdate = new MoveMessage(_nodeId, newLocation);
+            string jsonPosUpdate = JsonSerializer.Serialize(posUpdate);            
+            PushToLauncher(jsonPosUpdate);
+        }
+
+        // pushes a std io message to the launcher 
+        private void PushToLauncher(string payload) => Console.WriteLine(payload + "\n");
+
+
+        // --- parsing methods ---
 
         // parse launcher position change inputs
-        private bool TryParseStdInput(string input, out string? nodeId, out Location? newLocation)
+        private void TryParseStdInput(string input)
+        {
+            // parse inputs
+            if (TryParseEmitBeacon(input)) return;
+            if (TryParseMov(input)) return;
+            if (TryParseAdv(input).Result) return;
+            if (TryParseConfigs(input)) return;
+
+            Console.WriteLine($"[Launcher Control] Couldn't parse StdInput due to: Unknown Input.");
+        }
+
+        // parsing the emit beacon signal
+        private bool TryParseEmitBeacon(string input)
+        {
+            if (input.Equals("EMIT_INITIATION_BEACON"))
+            {
+                // emit an initial beacon so other nodes recognize this node
+                _emitter.EmitBeacon(_nodeConfigs.Location);
+                return true;
+            }
+            return false;
+        }
+
+        // parsing a move command updates the node location instantly
+        private bool TryParseMov(string input)
         {
             try
             {
                 // try to parse the move command json string
-                MoveCommand movCommand = JsonSerializer.Deserialize<MoveCommand>(input);
+                MoveMessage movCommand = JsonSerializer.Deserialize<MoveMessage>(input);
+
+                // ignore a message from the launcher not meant for this specific node
+                string nodeId = movCommand.EngineId;
+                if (!nodeId.Equals(_nodeId)) return false;
 
                 // if successfull, pull the engine data
-                nodeId = movCommand.EngineId;
-                newLocation = movCommand.Location;
-
+                Location newLocation = movCommand.Location;
+                _nodeConfigs.UpdateConfigurations(location: newLocation);
                 return true;
             }
-            catch (Exception e)
+            catch (Exception) {
+                return false;
+            }
+        }
+
+        // parse node advance signal
+        private async Task<bool> TryParseAdv(string input)
+        {
+            try {
+                if (!input.Equals("INIT_ADVANCE")) return false;
+
+                // advance waypoints of the node
+                if (!await _advancer.AdvancePosition())
+                    Console.WriteLine($"[Launcher Control] Node Advancer failed to advance the node \'{_nodeId}\'.\n");
+                return true;
+            }
+            catch (Exception ) {
+                return false;
+            }
+        }
+
+        // parse the new node configurations and update them
+        private bool TryParseConfigs(string input)
+        {
+            try
             {
-                Console.WriteLine($"Couldn't parse StdInput: \"{e.Message}\"");
-                newLocation = null;
-                nodeId = null;
+                NodeConfigs newConfigs = JsonSerializer.Deserialize<NodeConfigs>(input);
+                if (newConfigs == null) return false;
+
+                // TEST
+                Console.WriteLine($"UPDATING CONFIGS TO: {newConfigs}");
+
+                _nodeConfigs.UpdateConfigurations(newConfigs);
+                return true;
+            }
+            catch (Exception) {
                 return false;
             }
         }

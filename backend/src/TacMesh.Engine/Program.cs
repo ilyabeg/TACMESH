@@ -7,7 +7,6 @@ using TacMesh.Core.assets.node;
 using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.communication.simulation_communication;
 using TacMesh.Core.database_related;
-using TacMesh.Core.graph_related;
 using TacMesh.Core.hardware_mode;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.beacon_and_destination;
@@ -25,7 +24,7 @@ namespace TacMesh.Engine
     public class Program
     {
         // arguments count
-        const int arguments_length = 4;
+        const int arguments_length = 2;
 
         static void Main(string[] args)
         {
@@ -41,11 +40,16 @@ namespace TacMesh.Engine
 
                 // --- arguments ---
 
-                string nodeId = args[0];
-                Location initialLocation = JsonSerializer.Deserialize<Location>(args[1])!;
-                //Console.WriteLine($"{nodeId} initial location: {initialLocation}");
-                double initialSpeed = double.Parse(args[2]);
-                List<string> permittedNodes = JsonSerializer.Deserialize<List<string>>(args[3])!;
+                // save node info
+                string nodeInfoJson = args[0];
+                NodeInfo? nodeInfo = DeserializeNodeInfo(nodeInfoJson);
+                if (nodeInfo == null) return;
+
+                // save node config settings to access the engine's specific node settings anywhere               
+                string configsJson = args[1];
+                NodeConfigs? nodeConfigs = DeserializeConfigSettings(configsJson);
+                if (nodeConfigs == null) return;
+
 
                 // --- create all dependencies ---
 
@@ -60,26 +64,26 @@ namespace TacMesh.Engine
                 DRandom dRandom = new DRandom();
 
                 // TEMPORARILY inject max range as magic number for the test, WILL BE CHANGED!
-                IRadioModel radioModel = new VirtualRadioModel(maximum_range: 10, dRandom, radioReceiver, terrainLoS);
+                IRadioModel radioModel = new VirtualRadioModel(nodeConfigs, dRandom, radioReceiver, terrainLoS);
 
                 // ITransport
                 ITransport simTransport = new SimTransport(engine_socket, radioModel);
 
                 // Heartbeats, NeighbourTable
-                HeartBeater heartBeater = GetHeartBeater(nodeId, simTransport, radioModel);
+                HeartBeater heartBeater = GetHeartBeater(nodeInfo.NodeId, simTransport, radioModel);
                 NeighborTable neighbourTable = new NeighborTable(new SystemClock());
 
                 // Beacon Emitter
-                IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeId, assignedPort, SystemConfigs.McastEndPoint);
-                LauncherControl launcherControl = new LauncherControl(nodeId, initialLocation, initialSpeed, beaconEmitter);
+                IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeInfo.NodeId, assignedPort, SysConfigs.McastEndPoint);
+                LauncherControl launcherControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
 
                 // Topology Filter
-                TopologyFilter topologyFilter = new TopologyFilter(permittedNodes); // <- inject permitted
+                TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);
 
 
                 // --- inject all dependencies --- 
 
-                Node node = new Node(nodeId, initialLocation, simTransport, neighbourTable, heartBeater, topologyFilter);
+                Node node = new Node(nodeInfo, nodeConfigs, simTransport, neighbourTable, heartBeater, topologyFilter);
 
 
                 // listen for launcher stdinput
@@ -111,9 +115,31 @@ namespace TacMesh.Engine
         }
 
         static Socket GetRadioSocket() 
-            => SocketGenerator.GenerateMcastListenerSocket(SystemConfigs.McastGroupIp, SystemConfigs.McastPort);
+            => SocketGenerator.GenerateMcastListenerSocket(SysConfigs.McastGroupIp, SysConfigs.McastPort);
 
         static HeartBeater GetHeartBeater(string nodeId, ITransport transport, IRadioModel radioModel) 
             => new HeartBeater(nodeId, new HeartbeatLogger(), new PacketHeaderSerializer(), transport, radioModel);
+
+        static NodeInfo? DeserializeNodeInfo(string json)
+        {
+            try {
+                return JsonSerializer.Deserialize<NodeInfo>(json);
+            }
+            catch (Exception e) {
+                Console.WriteLine($"[SYS CONFIGS] Error deserializing the node info: \"{e.Message}\"");
+                return null;
+            }
+        }
+
+        static NodeConfigs? DeserializeConfigSettings(string json)
+        {
+            try {
+                return JsonSerializer.Deserialize<NodeConfigs>(json);
+            }
+            catch (Exception e) {
+                Console.WriteLine($"[SYS CONFIGS] Error deserializing the node configs: \"{e.Message}\"");
+                return null;
+            }
+        }
     }
 }

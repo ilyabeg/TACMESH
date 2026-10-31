@@ -1,11 +1,11 @@
-import { EngineInfo } from "../../../../../shared/types/engineInfo";
+import { EngineProcess } from "../../../../../shared/types/enginePeocess";
 import EngineListItem from './EngineListItem';
 import '../../../assets/styles/component-styles/engineListStyle.css';
 
 
 // define the node list component props for the type 
 interface NodeListProps {
-    listItems: Array<EngineInfo>
+    listItems: Array<EngineProcess>
     expandedFlag: boolean
 }
 

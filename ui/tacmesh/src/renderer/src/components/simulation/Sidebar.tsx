@@ -2,12 +2,12 @@ import EngineList from "./scenario-manager-screen/EngineList";
 import '../../assets/styles/component-styles/sidebarStyle.css';
 import '../../assets/styles/base.css';
 import { useState } from "react";
-import { EngineInfo } from "../../../../shared/types/engineInfo";
+import { EngineProcess } from "../../../../shared/types/enginePeocess";
 
 
 // define the props structure
 type SidebarProps = {
-    listItems: Array<EngineInfo>
+    listItems: Array<EngineProcess>
 }
 
 export default function Sidebar({ listItems }: SidebarProps) {

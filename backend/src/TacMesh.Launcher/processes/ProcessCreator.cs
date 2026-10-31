@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
-using TacMesh.Core.graph_related;
+using TacMesh.Core.assets.node;
 
 namespace TacMesh.Launcher.processes
 {
@@ -14,68 +14,60 @@ namespace TacMesh.Launcher.processes
         private static readonly string _enginePath = Path.GetFullPath(Path.Combine(_baseDir, @"..\..\..\..\TacMesh.Engine\bin\Debug\net10.0\TacMesh.Engine.exe"));
 
 
-        // TEMPORARY STATIC LOCATION DICT FOR EVERY NODE UNTIL THE USER INPUTS IN THE FUTURE 
-        private static readonly Dictionary<string, Location> _locations = new()
-        {
-            ["Node-01"] = new Location(1, 1),
-            ["Node-02"] = new Location(1, 2),
-            ["Node-03"] = new Location(2, 2),
-            ["Node-04"] = new Location(2, 1),
-            ["Node-05"] = new Location(1.5, 1.5)
-        };
-        
-        // TEMPORARY STATIC SPEEDS DICT FOR EVERY NODE UNTIL THE USER INPUTS IN THE FUTURE 
-        private static readonly Dictionary<string, double> _speeds = new()
-        {
-            ["Node-01"] = 2,
-            ["Node-02"] = 1,
-            ["Node-03"] = 1.5,
-            ["Node-04"] = 1,
-            ["Node-05"] = 2
-        };
-
-        // TEMPORARY STATIC PERMITTED NODES LIST FOR EVERY NODE UNTIL THE USER INPUTS IN THE FUTURE 
-        private static readonly List<string> _permittedNodes = new()
-        {
-            "Node-01", "Node-02", "Node-03", "Node-04", "Node-05"
-        };
-
-
         // generate N engines
         public static Dictionary<string, Process> CreateEngines(int num_of_engines)
         {
             Dictionary<string, Process> engines = new();
 
+            // create a default permitted nodes list containing all of the node id's
+            List<string> permittedNodes = CreateDefaultPermitted(num_of_engines);
+
             for (int i = 0; i < num_of_engines; i++)
             {
                 // init engine process with the start info
                 string nodeId = $"Node-{i+1:D2}";
-                Process engine = CreateNewEngineInstance(nodeId);
+                Process engine = CreateNewEngineInstance(nodeId, permittedNodes);
                 engines.Add(nodeId, engine);
             }
             return engines;
         }
 
+        private static List<string> CreateDefaultPermitted(int num_of_engines)
+        {
+            List<string> allNodeIds = new List<string>();
+
+            for (int i = 0; i < num_of_engines; i++)
+                allNodeIds.Add($"Node-{i+1:D2}");
+
+            return allNodeIds;
+        }
+
         // single Process generator
-        public static Process CreateNewEngineInstance(string nodeId)
+        public static Process CreateNewEngineInstance(string nodeId, List<string> permittedNodes)
         {
             // init start info
-            // if node dies and restarted, the initial location is initiated with it again
-            string jsonLocation = JsonSerializer.Serialize(_locations[nodeId]);
-            double speed = _speeds[nodeId];
-            string permittedNodes = JsonSerializer.Serialize(_permittedNodes);
 
-            ProcessStartInfo start_info = InitStartInfo(_enginePath, nodeId, jsonLocation, speed, permittedNodes);
+            // temporarly create node info with same node role for everyone
+            NodeInfo nodeInfo = new NodeInfo(nodeId, NodeRole.Soldier);
+            string nodeInfoJson = JsonSerializer.Serialize(nodeInfo);
+
+            // if node dies and restarted, the default configs are initiated with it again
+            NodeConfigs def_configs = NodeConfigs.GetDefaultEngineConfigs(permittedNodes);
+            string configsJson = JsonSerializer.Serialize(def_configs);
+
+            // pass in arguments
+            ProcessStartInfo start_info = InitStartInfo(_enginePath, [nodeInfoJson, configsJson]);
 
             // init engine process with the start info
             return new Process() { StartInfo = start_info };
-        }
+        }        
 
-        private static ProcessStartInfo InitStartInfo(string filename, string nodeId, string location, double speed, string permittedNodes)
+        private static ProcessStartInfo InitStartInfo(string filename, string[] args)
         {
-            return new ProcessStartInfo(filename, [nodeId, location, speed.ToString(), permittedNodes])
+            return new ProcessStartInfo(filename, args)
             {
                 UseShellExecute = false,
+                WorkingDirectory = Path.GetDirectoryName(filename),
                 RedirectStandardOutput = true, // redirect output stream to the launcher process
                 RedirectStandardInput = true, // redirect input stream to the launcher process
                 CreateNoWindow = false,

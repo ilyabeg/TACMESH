@@ -1,11 +1,9 @@
 ﻿using System.Net;
-using System.Text.Json;
-using TacMesh.Core.graph_related;
 
 namespace TacMesh.Core.utils
 {
-    public class SystemConfigs
-    {
+    public class SysConfigs
+    {       
         // VERY IMPORTANT: TEMPORARILY MAGIC NUMBER!! WILL CHANGE IN THE FUTURE TO GRAB FROM CONFIGURATIONS FILE
         public static int HeartbeatDelayMs = 5000;
 
@@ -15,17 +13,5 @@ namespace TacMesh.Core.utils
         public const int McastPort = 51995;
         public static readonly IPAddress McastGroupIp = IPAddress.Parse("239.0.0.1");
         public static readonly IPEndPoint McastEndPoint = new IPEndPoint(McastGroupIp, McastPort);
-
-
-        // loads provided configs to memory
-        //public static void LoadConfigurations(string filePath)
-        //{
-        //    // read the json and deserialize
-        //    string scenario_positions = File.ReadAllText(filePath);
-
-        //    // if positions are null throw exception
-        //    NodePositions = JsonSerializer.Deserialize<Dictionary<string, Location>>(scenario_positions) 
-        //        ?? throw new ArgumentNullException("Scenario file can't be empty.");
-        //}
     }
 }

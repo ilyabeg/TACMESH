@@ -1,12 +1,12 @@
 import { ConfigContext } from "@renderer/App";
-import { EngineInfo } from "../../../../../shared/types/engineInfo";
+import { EngineProcess } from "../../../../../shared/types/enginePeocess";
 import { StdIOMessage } from "../../../../../shared/types/stdIOMessage";
 import '../../../assets/styles/component-styles/nodeListItemStyle.css';
 import { useContext, useState } from "react";
 
 // define the list item props
 interface ItemProps {
-    engine: EngineInfo
+    engine: EngineProcess
     expandedFlag: boolean
 }
 
@@ -48,7 +48,7 @@ export default function EngineListItem({ engine, expandedFlag }: ItemProps) {
     const jsonkillMsg: string = JSON.stringify(killEngineMsg);
 
     // advance engine node command
-    const advEngineMsg: StdIOMessage = { Type: 'AdvanceEngine', Payload: null }
+    const advEngineMsg: StdIOMessage = { Type: 'AdvanceEngine', Payload: engine.NodeId }
     const jsonAdvMsg: string = JSON.stringify(advEngineMsg);
 
 

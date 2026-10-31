@@ -5,7 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import dispatchEvent from './ipc/eventDispatcher'
 
 // import engine management
-import { startEngine, killEngine, getEngineState } from './EngineManager'
+import { getEngineState } from './EngineManager'
 import { launchLauncher, terminateLauncher, pushToLauncher } from './simulation/scenario-manager/launcher/Launcher';
 
 

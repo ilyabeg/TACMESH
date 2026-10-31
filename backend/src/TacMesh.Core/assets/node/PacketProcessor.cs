@@ -36,7 +36,7 @@ namespace TacMesh.Core.assets.node
             // drop packet if it is from an un-permitted neighbor before processing
             if (!_topologyFilter.Filter(header.SrcID))
             {
-                Console.WriteLine($"Dropping Packet from source \"{header.SrcID}\" due to: un-permitted neighbor");
+                Console.WriteLine($"[Packet Processor] Dropping Packet from source \"{header.SrcID}\" due to: un-permitted neighbor");
                 return;
             }
 

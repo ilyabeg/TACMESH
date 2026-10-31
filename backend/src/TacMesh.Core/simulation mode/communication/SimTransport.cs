@@ -60,7 +60,7 @@ namespace TacMesh.Core.communication.simulation_communication
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Console.WriteLine($"[Sim Transport] Error: \"{e.Message}\"");
                 }
             });
 

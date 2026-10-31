@@ -1,6 +1,6 @@
 import { useContext, useRef, useState } from 'react';
 import '../../assets/styles/component-styles/nodeConfigsStyle.css'
-import { EngineInfo } from '../../../../shared/types/engineInfo';
+import { EngineProcess } from '../../../../shared/types/enginePeocess';
 import { NodeLocation } from '../../../../shared/types/engineLocation';
 import { NodeConfigs, ConfigConstants, buildConfigs, DEFAULT_LOCATION } from '../../../../shared/types/nodeConfigs';
 import { StdIOMessage } from '../../../../shared/types/stdIOMessage';
@@ -8,7 +8,7 @@ import { ConfigContext } from '@renderer/App';
 
 
 interface NodeConfigsProps {
-    allNodes: Array<EngineInfo>,
+    allNodes: Array<EngineProcess>,
     nodeId: string,
 }
 
@@ -16,17 +16,16 @@ interface NodeConfigsProps {
 //
 export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProps) {
 
+    // all nodes id's except the selected node
+    const nodeIds: string[] = allNodes.filter(node => node.NodeId !== nodeId).map(node => node.NodeId);
+
     // --- configs states ---
 
-    const [id, setId] = useState<string>(nodeId);
     const [speed, setSpeed] = useState<number>(ConfigConstants.MIN_SPEED);
     const [location, setLocation] = useState<NodeLocation>(DEFAULT_LOCATION);
     const [linkRange, setLinkRange] = useState<number>(ConfigConstants.MAX_LINK_RANGE);
-    const [permittedNodes, setPermitted] = useState<Array<string>>([])
+    const [permittedNodes, setPermitted] = useState<Array<string>>(nodeIds) // defaultly permit all nodes
     const [waypoints, setWaypoints] = useState<Array<NodeLocation>>([]);
-
-    // node-id input tag ref
-    const idInputRef = useRef<HTMLInputElement>(null);
 
     // select tag ref of the current selected value
     const selectRef = useRef<HTMLSelectElement>(null);
@@ -40,14 +39,11 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
     // done click
     //
     const doneClick = () => {
-        // check if input valid before proceeding
-        if (!validInput()) return;
-
         // build the node configs
-        const doneConfigs: NodeConfigs = buildConfigs(id!, speed, location, linkRange, permittedNodes, waypoints);
+        const doneConfigs: NodeConfigs = buildConfigs(speed, location, linkRange, permittedNodes, waypoints);
 
         // build the IO stream message and convert to json
-        const configsMsg: StdIOMessage = { Type: 'EngineConfigs', Payload: doneConfigs };
+        const configsMsg: StdIOMessage = { Type: 'EngineConfigs', Payload: { NodeId: nodeId, Configs: doneConfigs } };
         const jsonConfigsMsg: string = JSON.stringify(configsMsg);
 
         // push to the launcher the new configs of this engine process
@@ -55,17 +51,6 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
 
         // exit the configs window
         exitConfig();
-    }
-
-    const validInput = (): boolean => {
-        // if id wasn't defined or in use already, focus on the input
-        if (!id || allNodes.find(node => node.NodeId === id) !== undefined) {
-            setId(''); // clear input tag
-            idInputRef.current?.focus();
-            return false;
-        }
-        // input valid
-        return true;
     }
 
     // push to launcher using the pushToLauncher API 
@@ -92,7 +77,6 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
     }
 
     const resetStates = () => {
-        setId('');
         setSpeed(ConfigConstants.MIN_SPEED);
         setLocation(DEFAULT_LOCATION);
         setLinkRange(ConfigConstants.MAX_LINK_RANGE);
@@ -230,7 +214,6 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
 
                 <div className="items-container">
                     <div className="titles">
-                        <span className='item-title'>Node-ID:</span>
                         <span className='item-title'>Speed:</span>
                         <span className='item-title'>Location:</span>
                         <span className='item-title'>Link-Range:</span>
@@ -238,11 +221,6 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
                         <span className='item-title'>Waypoints:</span>
                     </div>
                     <div className="inputs">
-
-                        {/* node id input */}
-                        <div className='input-field-container'>
-                            <input ref={idInputRef} className='input' type='text' required onChange={(e) => setId(e.target.value)} />
-                        </div>
 
                         {/* speed input */}
                         <div className='input-field-container'>
@@ -305,13 +283,12 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
 
                 <div className="preview-container">
 
-                    <span className='preview-title'>Preview:</span>
+                    <span className='preview-title'>Preview ({nodeId}):</span>
 
                     <hr className='divider-line' />
 
                     <div className='preview-items-container'>
                         <div className="preview-titles">
-                            <span className='preview-item-title'>Node-ID:</span>
                             <span className='preview-item-title'>Speed:</span>
                             <span className='preview-item-title'>Location:</span>
                             <span className='preview-item-title'>Link-Range:</span>
@@ -320,11 +297,10 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
                         </div>
 
                         <div className="preview-values">
-                            <span className='preview-item-value'>{id}</span>
                             <span className='preview-item-value'>{speed}</span>
                             <span className='preview-item-value'>({location.X},{location.Y})</span>
                             <span className='preview-item-value'>{linkRange}</span>
-                            <span className='preview-item-value'>{(permittedNodes.length == 0) ? 'all' : permittedNodes.toString()}</span>
+                            <span className='preview-item-value'>{(permittedNodes.length == 0) ? 'none' : permittedNodes.toString()}</span>
                             <span className='preview-item-value'>{(waypoints.length == 0) ? 'none' : printWaypoints()}</span>
                         </div>
                     </div>

@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
 using TacMesh.Core.assets;
+using TacMesh.Core.assets.node;
 using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.events;
 using TacMesh.Core.graph_related;
@@ -43,14 +44,17 @@ namespace TacMesh.Core.models
         private readonly ConcurrentDictionary<IPEndPoint, EngineRecord> _engine_locations;
         private readonly DRandom _dRandom; // deterministic random generator
         private const int _DELAY_RANGE = 5; // the random delay range 
-        private readonly int _MAX_RANGE; // not constant because will eventually change in runtime
+
+
+        // hold the node configurations settings to access the link range 
+        private readonly NodeConfigs _nodeConfigs;
 
 
         // inject max range in constructor
-        public VirtualRadioModel(int maximum_range, DRandom dRandom, IReceiver radioReceiver, ILineOfSight terrianTester)
+        public VirtualRadioModel(NodeConfigs nodeConfigs, DRandom dRandom, IReceiver radioReceiver, ILineOfSight terrianTester)
         {
             _engine_locations = new ConcurrentDictionary<IPEndPoint, EngineRecord>();
-            _MAX_RANGE = maximum_range;
+            _nodeConfigs = nodeConfigs;
 
             _dRandom = dRandom;
             _radioReceiver = radioReceiver;
@@ -132,7 +136,7 @@ namespace TacMesh.Core.models
         // --- private testing methods ---
 
         // Max range test
-        private bool TestRange(double distance) => distance <= _MAX_RANGE;
+        private bool TestRange(double distance) => distance <= _nodeConfigs.LinkRange;
 
         // Relative Distance test
         private bool TestRelativeDistance(double distance, string id)
@@ -145,7 +149,7 @@ namespace TacMesh.Core.models
             // or equal to the Probability, the packet "survives" the simulated transmission
 
             // because: distance <= MAXIMUM_RANGE, the relative distance is between 0 and 1
-            double relative_distance = distance / _MAX_RANGE;
+            double relative_distance = distance / _nodeConfigs.LinkRange;
             double probability_percent = (1 - relative_distance) * 100;
 
             // get a random number betweem 1-100

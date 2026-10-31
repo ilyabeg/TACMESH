@@ -1,4 +1,6 @@
-﻿namespace TacMesh.Core.hardware_mode
+﻿using TacMesh.Core.assets.node;
+
+namespace TacMesh.Core.hardware_mode
 {
     public class TopologyFilter
     {
@@ -10,9 +12,9 @@
         {
             _permittedNeighbors = new List<string>();
         }
-        public TopologyFilter(List<string> permitedNeighbors)
+        public TopologyFilter(NodeConfigs nodeConfigs)
         {
-            _permittedNeighbors = permitedNeighbors;
+            _permittedNeighbors = nodeConfigs.PermittedNeighbors;
         }
 
         /// <summary>

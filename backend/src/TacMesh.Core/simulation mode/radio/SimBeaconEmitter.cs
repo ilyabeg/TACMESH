@@ -1,35 +1,58 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using TacMesh.Core.assets.node;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces.beacon_and_destination;
 using TacMesh.Core.utils;
 
 namespace TacMesh.Core.communication.radio_communication
 {
+    // define the beacon structure
+    //
+    public class SimBeacon 
+    {
+        [JsonInclude]
+        public string NodeId { get; private set; }
+        [JsonInclude]
+        public int Port { get; private set; }
+        [JsonInclude]
+        public Location Location { get; set; }
+
+        public SimBeacon() { }
+        public SimBeacon(string nodeId, int port, Location location) 
+        {
+            NodeId = nodeId;
+            Port = port;
+            Location = location;
+        }
+    }
+
+
     /// <summary>
     /// Simulated beacon emitter used to send a Beacon to a remote endpoint to simulate
     /// a radio wave device broadcast to a wireless network.
     /// </summary>
     public class SimBeaconEmitter : IBeaconEmitter
     {
-        // constant delay between beacons
-        //private const int _beaconDelayMs = 1000;
-
+        private readonly SimBeacon _beacon;
         private readonly Socket _emittingSocket;
         private readonly IPEndPoint _virtualEndpoint; // the endpoint used to simulate a wireless space broadcast
-        private readonly string _sourceID;
-        private readonly int _sourcePort;
+        private readonly int _sourcePort; // engine process source port assigned by OS
 
 
         // inject engine info and endpoint to emit to
-        public SimBeaconEmitter(string sourceID, int sourcePort, IPEndPoint virtualEndpoint)
+        public SimBeaconEmitter(string nodeId, int sourcePort, IPEndPoint virtualEndpoint)
         {
             // any free ip and port
             _emittingSocket = SocketGenerator.GenerateUdpSocket();
             _virtualEndpoint = virtualEndpoint;
-            _sourceID = sourceID;
             _sourcePort = sourcePort;
+
+            // create initial beacon
+            _beacon = new SimBeacon(nodeId, sourcePort, null);
         }
 
         /// <summary>
@@ -41,8 +64,9 @@ namespace TacMesh.Core.communication.radio_communication
             try
             {
                 // constant engine beacon
-                string beacon = $"{_sourceID}|{_sourcePort}|{location.X},{location.Y}";
-                byte[] beaconBytes = Encoding.UTF8.GetBytes(beacon);
+                _beacon.Location = location;
+                string jsonBeacon = JsonSerializer.Serialize(_beacon);
+                byte[] beaconBytes = Encoding.UTF8.GetBytes(jsonBeacon);
 
                 // mcast the beacon to all radio model instances on the net
                 _emittingSocket.SendTo(beaconBytes, _virtualEndpoint);
@@ -60,35 +84,25 @@ namespace TacMesh.Core.communication.radio_communication
         /// <param name="senderID"></param>
         /// <param name="endPoint"></param>
         /// <returns>True if successfult parsed the signal or False otherwise</returns>
-        public static bool TryParseBeacon(string signal, out string? senderID, out IPEndPoint? endPoint, out Location? newLocaion)
+        public static bool TryParseBeacon(string signal, out string? senderID, out IPEndPoint? endPoint, out Location? location)
         {
             try
             {
-                // CURRENT signal structure: "ID|PORT|X,Y" (MAY CHANGE IN FUTURE)
-                // for example: "Node-01|51001|1,1"
-                string[] splitted = signal.Split('|');
+                // try to parse the json beacon
+                SimBeacon? receivedBeacon = JsonSerializer.Deserialize<SimBeacon>(signal) ?? throw new NullReferenceException();
 
-                senderID = splitted[0];            // "ID|...."
-                int port = int.Parse(splitted[1]); // "..|PORT"
-
-                // split location parts
-                string[] locationParts = splitted[2].Split(',');
-
-                // parse the location
-                double x = double.Parse(locationParts[0]);
-                double y = double.Parse(locationParts[1]);
-                newLocaion = new Location(x,y);
-
-                // create endpoint from the parsed port
-                endPoint = new IPEndPoint(IPAddress.Loopback, port);
+                // pull info
+                senderID = receivedBeacon.NodeId;
+                location = receivedBeacon.Location;
+                endPoint = new IPEndPoint(IPAddress.Loopback, receivedBeacon.Port);
                 return true;
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Couldn't parse virtual destination: '{e.Message}'");
+                Console.WriteLine($"[Sim Beacon Emitter] Couldn't parse virtual destination: '{e.Message}'");
                 senderID = null;
                 endPoint = null;
-                newLocaion = null;
+                location = null;
                 return false;
             }
         }

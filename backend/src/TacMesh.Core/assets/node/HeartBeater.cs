@@ -13,7 +13,7 @@ namespace TacMesh.Core.assets.node
         private const int _initialization_delay = 500;//ms
 
         // heart beater dependencies
-        private readonly string _srcID;
+        private readonly string _srcId; // id of the src node
         private readonly HeartbeatLogger _logger;
         private readonly PacketHeaderSerializer _serializer;
         private readonly ITransport _transporter;
@@ -21,9 +21,9 @@ namespace TacMesh.Core.assets.node
 
 
         // inject dependencies through constructor
-        public HeartBeater(string sourceID, HeartbeatLogger logger, PacketHeaderSerializer serializer, ITransport transporter, IRadioModel radioModel)
+        public HeartBeater(string nodeId, HeartbeatLogger logger, PacketHeaderSerializer serializer, ITransport transporter, IRadioModel radioModel)
         {
-            _srcID = sourceID;
+            _srcId = nodeId;
             _logger = logger;
             _serializer = serializer;
             _transporter = transporter;
@@ -55,7 +55,7 @@ namespace TacMesh.Core.assets.node
                             // THE PACKET HEADER OBJECT FOR NOW INSTEAD.
 
                             // ignore same node
-                            if (_srcID == destID)
+                            if (destID.Equals(_srcId))
                                 continue;
 
                             // pull node address
@@ -68,13 +68,13 @@ namespace TacMesh.Core.assets.node
                             // transmit packet and log heartbeat if successfuly sent bytes
                             if (_transporter.Transmit(headerBytes, destAddress) > 0)
                             { 
-                                _logger.FormatAndLogHeartbeat(LoggingMode.Sent, _srcID, destID);
+                                _logger.FormatAndLogHeartbeat(LoggingMode.Sent, _srcId, destID);
                             }
 
                             // test heartbeats received and sent
                             //_logger.PrintLogs();
                         }
-                        await Task.Delay(SystemConfigs.HeartbeatDelayMs);
+                        await Task.Delay(SysConfigs.HeartbeatDelayMs);
                     }
                     catch (Exception e)
                     {
@@ -95,7 +95,7 @@ namespace TacMesh.Core.assets.node
             builder.SetProtocolVersion(1)
                 .SetMessageType(PacketType.Heartbeat)
                 .SetMessageID(Guid.NewGuid())
-                .SetSourceID(_srcID)
+                .SetSourceID(_srcId)
                 .SetDestinationID(destinationID)
                 .SetHopCount()
                 .SetLogicalClock(0)

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json;
+using TacMesh.Core.assets.node;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.utils.ipc.types;
 using TacMesh.Launcher.info;
@@ -50,17 +51,24 @@ namespace TacMesh.Launcher.startup
             
             foreach (string engineId in sortedIds)
             {
-                Process engine_process = _engines[engineId];
+                try
+                {
+                    Process engine_process = _engines[engineId];
 
-                // attach echo data received event handler and pass engineId using the lambda,
-                // this saves the engineId for every Engine's own event handler with this specific id
-                engine_process.OutputDataReceived += (s, e) => OnStdOutReceived(engineId, s, e);
+                    // attach echo data received event handler and pass engineId using the lambda,
+                    // this saves the engineId for every Engine's own event handler with this specific id
+                    engine_process.OutputDataReceived += (s, e) => OnStdOutReceived(engineId, s, e);
 
-                engine_process.Start();
-                engine_process.BeginOutputReadLine(); // lets see output
+                    engine_process.Start();
+                    engine_process.BeginOutputReadLine(); // lets see output
 
-                // freeze creation here until semaphore is released
-                _semaphore.WaitOne();
+                    // freeze creation here until semaphore is released
+                    _semaphore.WaitOne();
+                }
+                catch (Exception e) 
+                {
+                    Console.WriteLine($"[ENGINE MANAGER] Failed to launch Engine process due to: \"{e.Message}\"");
+                }
             }
 
             // make the engines emit the beacon only after starting up all of the processes
@@ -84,17 +92,36 @@ namespace TacMesh.Launcher.startup
         // tries to parse the stdoutput
         private void TryParseStdout(string engineId, object sender, string output)
         {
+            if (TryParsePort(output, sender, engineId)) return;
+            if (TryParsePosUpdate(output)) return;
+        }
+
+        // try to parse the port output
+        private bool TryParsePort(string output, object sender, string engineId)
+        {
             // save process in record dict
             if (output.StartsWith("PORT="))
             {
                 int port = int.Parse(output.Split('=')[1]);
                 string processId = ((Process)sender).Id.ToString();
                 AddRecord(engineId, processId, port);
+                return true;
             }
+            return false;
+        }
 
-            // invoke the waypoint manager if advance signal received
-            if (output.Equals("adv."))
-                WaypointReached?.Invoke(this, engineId);
+        // try parse a position update from the engine process
+        private bool TryParsePosUpdate(string output)
+        {
+            try
+            {
+                MoveMessage posUpdate = JsonSerializer.Deserialize<MoveMessage>(output);
+                StdOut(IOMessageType.EngineUpdate, posUpdate);
+                return true;
+            }
+            catch (Exception) {
+                return false;
+            }
         }
 
         // writes input to the input stream of a specfic engine
@@ -104,16 +131,6 @@ namespace TacMesh.Launcher.startup
             Process engineProcess = _engines[engineId];
             engineProcess.StandardInput.WriteLine(input);
         }
-
-        // TEMPORARY initializer method to start the waypoint advances
-        // this will be changed in the future to handle the pos advances differently
-        public void InitAdvances()
-        {
-            // send all engines their first waypoint
-            foreach (string engineId in _engines.Keys)
-                WaypointReached?.Invoke(this, engineId);
-        }
-
 
         // adds or updates record by the engine id
         private void AddRecord(string engineId, string pId, int port) => _nodeRecords[engineId] = new ProcessRecord(engineId, pId, port);
@@ -162,7 +179,9 @@ namespace TacMesh.Launcher.startup
                 if (engine != null && !engine.HasExited) throw new ArgumentException();
 
                 // re-create Process instance to not use the same 'dead' one
-                engine = ProcessCreator.CreateNewEngineInstance(engineId);
+                // with default permitted nodes (all)
+                List<string> permittedNodes = _engines.Keys.ToList();
+                engine = ProcessCreator.CreateNewEngineInstance(engineId, permittedNodes);
 
                 // attach output handler, and update engines Dictionary
                 engine.OutputDataReceived += (s,e) => OnStdOutReceived(engineId, s, e);
@@ -204,8 +223,24 @@ namespace TacMesh.Launcher.startup
             }
 
             // move only the specific engine
-            string jsonMovCommand = JsonSerializer.Serialize(new MoveCommand(engineId, newPosition));
+            string jsonMovCommand = JsonSerializer.Serialize(new MoveMessage(engineId, newPosition));
             WriteToInputStream(engineId, jsonMovCommand);
+        }
+
+
+        // writes to a specified engine process the streaam message to advance the waypoints
+        public void InitAdvances(string engineId) => WriteToInputStream(engineId, "INIT_ADVANCE");
+
+
+        // update specific engine configurations
+        public void UpdateConfigs(string engineId, NodeConfigs newConfigs)
+        {
+            // write new configs to engine process
+            string jsonNewConfigs = JsonSerializer.Serialize(newConfigs);
+            WriteToInputStream(engineId, jsonNewConfigs);
+
+            // acknowledge the new configs to the ui that they have been successfuly updated
+            StdOut(IOMessageType.ConfigsAck, new ConfigsMessage(engineId, newConfigs));
         }
 
         // prints the engine processes
@@ -224,9 +259,9 @@ namespace TacMesh.Launcher.startup
         }
 
         // prints out a std io message in json format
-        private void StdOut(IOMessageType messageType, object data)
+        private void StdOut(IOMessageType messageType, object payload)
         {
-            StdIOMessage outputMessage = new StdIOMessage(messageType, data);
+            StdIOMessage outputMessage = new StdIOMessage(messageType, payload);
             string jsonMessage = JsonSerializer.Serialize(outputMessage);
             Console.WriteLine(jsonMessage);
         }

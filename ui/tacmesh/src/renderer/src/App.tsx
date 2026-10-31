@@ -5,7 +5,7 @@ import Header from "./components/Header";
 import Sidebar from "./components/simulation/Sidebar";
 import Canvas from './components/simulation/scenario-manager-screen/Canvas';
 import { StdIOMessage } from "../../shared/types/stdIOMessage";
-import { EngineInfo } from "../../shared/types/engineInfo";
+import { EngineProcess } from "../../shared/types/enginePeocess";
 import useLauncherEventHandlers from "./hooks/launcherEventHandler.hook";
 import NodeConfigurations from "./components/simulation/NodeConfigurations";
 
@@ -28,7 +28,7 @@ function App(): React.JSX.Element {
   // when the engines state updates the hook will automatically update and render
   // the array for the App component
   //
-  const engineProcesses: Array<EngineInfo> = useLauncherEventHandlers();
+  const engineProcesses: Array<EngineProcess> = useLauncherEventHandlers();
 
   // provide a context to the child components to configure a node
   //

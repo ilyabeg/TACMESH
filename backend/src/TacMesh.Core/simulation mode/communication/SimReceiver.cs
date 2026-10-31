@@ -52,7 +52,7 @@ namespace TacMesh.Core.communication.simulation_communication
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error caught while receiving message: '{e}'");
+                    Console.WriteLine($"[Sim Receiver] Error caught while receiving message: '{e}'");
                     Crashed?.Invoke(this, new CrashEventArgs(e));
                 }
             });           

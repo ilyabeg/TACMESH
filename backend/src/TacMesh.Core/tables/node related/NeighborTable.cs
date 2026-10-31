@@ -26,7 +26,7 @@ namespace TacMesh.Core.tables.node_related
         {
             _tableClock = tableClock;
             N = cyclesNumber;
-            _legal_timeDiff_seconds = (N * SystemConfigs.HeartbeatDelayMs / 1000);
+            _legal_timeDiff_seconds = (N * SysConfigs.HeartbeatDelayMs / 1000);
             NeighborRecords = new Dictionary<string, NeighborRecord>();
         }
 
@@ -85,7 +85,7 @@ namespace TacMesh.Core.tables.node_related
 
                     CheckExpiration();
                     PrintTable(); // table test
-                    await Task.Delay(SystemConfigs.HeartbeatDelayMs); // match heartbeat delay
+                    await Task.Delay(SysConfigs.HeartbeatDelayMs); // match heartbeat delay
                 }
             });
         }
@@ -93,7 +93,6 @@ namespace TacMesh.Core.tables.node_related
 
         public void PrintTable()
         {
-            // ai design...
             StringBuilder str = new StringBuilder();
 
             str.AppendLine("┌───────────────────────────────────────────────┐");

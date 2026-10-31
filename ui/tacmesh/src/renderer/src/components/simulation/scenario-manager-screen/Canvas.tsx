@@ -2,12 +2,12 @@ import Draggable from 'react-draggable';
 import '../../../assets/styles/component-styles/canvasStyle.css';
 import Node from '../../Node';
 import { useRef } from 'react';
-import { EngineInfo } from '../../../../../shared/types/engineInfo';
+import { EngineProcess } from '../../../../../shared/types/enginePeocess';
 
 
 // define the canvas props
 type CanvasProps = {
-    items: Array<EngineInfo>
+    items: Array<EngineProcess>
 }
 
 export default function Canvas({ items }: CanvasProps) {

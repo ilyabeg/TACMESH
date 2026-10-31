@@ -1,7 +1,7 @@
-import { EngineInfo } from "../../../shared/types/engineInfo"
+import { EngineProcess } from "../../../shared/types/enginePeocess"
 
 // define custom window events for the renderer process
 //
 export default interface CustomWindowEvents {
-    'display-engine': EngineInfo,
+    'display-engine': EngineProcess,
 }

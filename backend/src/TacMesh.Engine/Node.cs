@@ -8,9 +8,9 @@ namespace TacMesh.Engine
     public class Node
     {
         // Node Fields
-        public string NodeID { get; private set; }
+        public NodeInfo NodeInfo { get; private set; }
+        public NodeConfigs NodeConfigs { get; private set; } // hold configs ref to access the up to date settings
         public int AssignedPort { get; private set; }
-        public ILocation NodeLocacation { get; private set; }
 
         // private fields
         private readonly ITransport _transporter;
@@ -22,12 +22,11 @@ namespace TacMesh.Engine
 
 
         // Constructor
-        public Node(string nodeID, ILocation location, ITransport transporter, NeighborTable neighborTable, HeartBeater heartbeater, TopologyFilter topologyFilter)
+        public Node(NodeInfo nodeInfo, NodeConfigs nodeConfigs, ITransport transporter, NeighborTable neighborTable, HeartBeater heartbeater, TopologyFilter topologyFilter)
         {
-            // --- Node ID & Location --- 
-            // save node id and initial location
-            NodeID = nodeID;
-            NodeLocacation = location;
+            // --- Node Info & Settings --- 
+            NodeInfo = nodeInfo;
+            NodeConfigs = nodeConfigs;
 
             // --- Transporter --- 
             // start receiving background thread            
@@ -47,6 +46,9 @@ namespace TacMesh.Engine
 
             // --- Topology Filter --- 
             _topologyFilter = topologyFilter;
+
+            // --- Packet Buffer ---
+            // comes later ...
 
             // --- Packet Processor --- 
             // create packet processor to process received packets

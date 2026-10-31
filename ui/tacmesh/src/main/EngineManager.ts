@@ -2,7 +2,7 @@ import { ChildProcess, spawn } from 'node:child_process';
 import pushToClient from './ipc/pushToClient';
 import path from 'node:path';
 import { BrowserWindow } from 'electron';
-import { EngineInfo } from '../shared/types/engineInfo';
+import { EngineProcess } from '../shared/types/enginePeocess';
 
 let _browserWindow: BrowserWindow; // the electron window instance
 let _engine: ChildProcess | null = null; // the engine process instance
@@ -75,7 +75,7 @@ function onStdout() {
                     console.log(`[Main Process] Engine initiated on PORT: ${_assignedPort}`);
 
                     // build the engine information
-                    const engineInfo : EngineInfo = {
+                    const engineInfo : EngineProcess = {
                         nodeId: "tempId", // TEMPORARILY use a temp id
                         port: _assignedPort,
                         processId: "12345" // TEMPORARILY use a temp pid

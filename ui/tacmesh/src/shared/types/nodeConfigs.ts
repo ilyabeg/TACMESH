@@ -3,7 +3,6 @@ import { NodeLocation } from "./engineLocation"
 // defines the node's configuration settings
 //
 export type NodeConfigs = {
-    NodeId: string,
     Speed: number,
     Location: NodeLocation,
     LinkRange: number,
@@ -29,7 +28,6 @@ export const DEFAULT_LOCATION: NodeLocation = { X: 0, Y: 0 };
 // return a clean node configs object
 //
 export function buildConfigs(
-    nodeId: string,
     speed: number,
     location: NodeLocation,
     linkRange: number,
@@ -37,7 +35,6 @@ export function buildConfigs(
     waypoints: Array<NodeLocation>
 ): NodeConfigs {
     return {
-        NodeId: nodeId,
         Speed: speed,
         Location: location,
         LinkRange: linkRange,

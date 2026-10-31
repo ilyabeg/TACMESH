@@ -24,12 +24,11 @@ namespace TacMesh.Launcher.commands
         {
             while (true)
             {
-                //Console.WriteLine("[COMMAND PARSER] Enter a command at any time [list / start <id> / kill <id> / pos <id> <X,Y>]:\n");
                 string input = Console.ReadLine();
 
                 // if Ctrl+C was pressed, 'input' initiates to null, which causes an inifite loop.
                 // this is the purpose of this check: to end and break out of the loop
-                if (input == null || input.Trim().ToLower().Equals("exit")) 
+                if (input == null) 
                     break;
                 
                 if (string.IsNullOrWhiteSpace(input)) continue;
@@ -48,15 +47,12 @@ namespace TacMesh.Launcher.commands
                 // test the input receiving...
                 Console.WriteLine($"[LAUNCHER RECEIVED] input: \"{input}\"");
 
-
                 // deserialize as an ipc input message
                 StdIOMessage msg = JsonSerializer.Deserialize<StdIOMessage>(input)!;
                 IOMessageType msgType = Enum.Parse<IOMessageType>(msg.Type); // parse the message type as an enum
 
-
                 // test the message type...
                 Console.WriteLine($"[LACUNHER] Received IPC Message type: {msgType} ({msg.Type})");
-
 
                 switch (msgType)
                 {
@@ -88,30 +84,31 @@ namespace TacMesh.Launcher.commands
                     // moves the specified engine process
                     case IOMessageType.MoveEngine:
                     {
-                        MoveCommand data = JsonSerializer.Deserialize<MoveCommand>(msg.Payload)!;
+                        MoveMessage data = JsonSerializer.Deserialize<MoveMessage>(msg.Payload)!;
                         _engineManager.MoveEngine(data.EngineId, data.Location);
                         break;
                     }
                     // start the node position advances
                     case IOMessageType.AdvanceEngine:
                     {
-                        _engineManager.InitAdvances();
-                        break;                    
+                        string nodeToAdvance = JsonSerializer.Deserialize<string>(msg.Payload)!;
+                        _engineManager.InitAdvances(nodeToAdvance);
+                        break;
                     }
-                    // change the specified engine process link range
-                    case IOMessageType.ChgLinkRange:
+                    // change the specified engine process node config setting
+                    case IOMessageType.EngineConfigs:
                     {
-
-                        // to do ...
-
+                        // pass new configs to the specified node in the configs message
+                        ConfigsMessage configMessage = JsonSerializer.Deserialize<ConfigsMessage>(msg.Payload)!;
+                        _engineManager.UpdateConfigs(configMessage.NodeId, configMessage.Configs);
                         break;
                     }
                     // unrecognized command input
                     default: throw new Exception();
                 }
             }
-            catch {
-                Console.WriteLine("[COMMAND PARSER] Unkown command.");
+            catch (Exception e) {
+                Console.WriteLine($"[COMMAND PARSER] Error parsing StdInput: \"{e.Message}\".");
             }            
         }
     }

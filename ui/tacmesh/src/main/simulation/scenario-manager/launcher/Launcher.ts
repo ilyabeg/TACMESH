@@ -210,6 +210,11 @@ function TryParseStdOut(outout: string): boolean {
                 pushToClient(_browserWindow, 'engine-update', outputMessage.Payload);
                 break;
             }
+            // engine process configurations acknowledge
+            case 'EngineUpdate': {
+                pushToClient(_browserWindow, 'configs-ack', outputMessage.Payload);
+                break;
+            }
         }
         return true;
     }
