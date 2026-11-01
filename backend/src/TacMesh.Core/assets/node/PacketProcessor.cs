@@ -1,8 +1,10 @@
 ﻿using TacMesh.Core.database_related;
 using TacMesh.Core.events;
 using TacMesh.Core.hardware_mode;
+using TacMesh.Core.packet;
+using TacMesh.Core.packet_related;
 using TacMesh.Core.tables.node_related;
-using TacMesh.Core.utils.packet;
+using TacMesh.Core.utils.serializers;
 
 namespace TacMesh.Core.assets.node
 {
@@ -30,25 +32,95 @@ namespace TacMesh.Core.assets.node
         /// <param name="e"></param>
         public void ProcessPacket(MessageReceivedEventArgs e)
         {
-            // understand the packet
-            PacketHeader header = PacketReader.ReadPacket(e);
+            // interprate the packet
+            DataPacket? packet = ReadPacket(e);
 
-            // drop packet if it is from an un-permitted neighbor before processing
-            if (!_topologyFilter.Filter(header.SrcID))
+            if (packet != null)
             {
-                Console.WriteLine($"[Packet Processor] Dropping Packet from source \"{header.SrcID}\" due to: un-permitted neighbor");
-                return;
-            }
+                // drop packet if it is from an un-permitted neighbor before processing
+                //
+                if (!_topologyFilter.Filter(packet.PacketHeader.SrcID))
+                {
+                    Console.WriteLine($"[Packet Processor] Dropping Packet from source \"{packet.PacketHeader.SrcID}\" due to: un-permitted neighbor");
+                    return;
+                }
 
-            // process packet ...            
-            if (header.MsgType == PacketType.Heartbeat)
+                // process packet ...
+                // 
+                if (ProcessHeartbeat(packet, e)) return;
+                if (ProcessUserMessage(packet, e)) return;
+                if (ProcessLinkState(packet, e)) return;
+            }            
+        }
+
+        /// <summary>
+        /// Reads the received message bytes and tries to parse it as a DataPacket
+        /// </summary>
+        /// <param name="e">Message Received Event Args containing the received bytes</param>
+        /// <returns>a DataPacket object if deserialized successfuly or null otherwise.</returns>
+        private DataPacket? ReadPacket(MessageReceivedEventArgs e)
+        {
+            try
+            {
+                // deserialize pacjet bytes
+                DataPacket packet = PacketSerializer.Deserialize(e.MessageBytes);
+                return packet;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Packet Processor] Couldn't interprate the DataPacket due to: \"{ex.Message}\"");
+                return null;
+            }
+        }
+
+        // --- Processing the different Packet Types ---
+
+        /// <summary>
+        /// tries to process the packet as a heartbeat packet
+        /// </summary>
+        /// <returns>true if successfuly processed as a heartbeat packet</returns>
+        private bool ProcessHeartbeat(DataPacket packet, MessageReceivedEventArgs e)
+        {
+            if (packet.PacketHeader.MsgType == PacketType.Heartbeat)
             {
                 // log heartbeat
-                _heartbeater.LogHeartbeat(LoggingMode.Received, header.SrcID, header.DstID);
+                _heartbeater.LogHeartbeat(LoggingMode.Received, packet.PacketHeader.SrcID, packet.PacketHeader.DstID);
 
                 // add/update record of peer in neighbour table
-                _neighborTable.UpdateRecord(header.SrcID, e.RemoteEndPoint);
+                _neighborTable.UpdateRecord(packet.PacketHeader.SrcID, e.RemoteEndPoint);
+                return true;
             }
+            return false;
+        }
+
+        /// <summary>
+        /// tries to process the packet as a user message packet
+        /// </summary>
+        /// <returns>true if successfuly processed as a user message packet</returns>
+        private bool ProcessUserMessage(DataPacket packet, MessageReceivedEventArgs e)
+        {
+            if (packet.PacketHeader.MsgType == PacketType.UserMessage)
+            {
+                // TEST print out packet
+                Console.WriteLine($"[PACKET PROCESSOR] Received User Message: \n{packet}");
+
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// tries to process the packet as a link state packet
+        /// </summary>
+        /// <returns>true if successfuly processed as a link state packet</returns>
+        private bool ProcessLinkState(DataPacket packet, MessageReceivedEventArgs e)
+        {
+            if (packet.PacketHeader.MsgType == PacketType.LinkState)
+            {
+                // To Do ...
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -2,8 +2,9 @@
 using TacMesh.Core.database_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
+using TacMesh.Core.packet;
+using TacMesh.Core.packet_related;
 using TacMesh.Core.utils;
-using TacMesh.Core.utils.builders;
 using TacMesh.Core.utils.serializers;
 
 namespace TacMesh.Core.assets.node
@@ -15,17 +16,15 @@ namespace TacMesh.Core.assets.node
         // heart beater dependencies
         private readonly string _srcId; // id of the src node
         private readonly HeartbeatLogger _logger;
-        private readonly PacketHeaderSerializer _serializer;
         private readonly ITransport _transporter;
         private readonly IRadioModel _radioModel;              
 
 
         // inject dependencies through constructor
-        public HeartBeater(string nodeId, HeartbeatLogger logger, PacketHeaderSerializer serializer, ITransport transporter, IRadioModel radioModel)
+        public HeartBeater(string nodeId, HeartbeatLogger logger, ITransport transporter, IRadioModel radioModel)
         {
             _srcId = nodeId;
             _logger = logger;
-            _serializer = serializer;
             _transporter = transporter;
             _radioModel = radioModel;
         }
@@ -51,9 +50,6 @@ namespace TacMesh.Core.assets.node
 
                         foreach (string destID in destinations.Keys)
                         {
-                            // NOTE: DATA PACKET NOT IMPLEMENTED YET SO I USE ONLY
-                            // THE PACKET HEADER OBJECT FOR NOW INSTEAD.
-
                             // ignore same node
                             if (destID.Equals(_srcId))
                                 continue;
@@ -61,12 +57,12 @@ namespace TacMesh.Core.assets.node
                             // pull node address
                             IPEndPoint destAddress = destinations[destID];
 
-                            // serialize each header for each destination
-                            PacketHeader header = CreateHeader(destID);
-                            byte[] headerBytes = _serializer.Serialize(header);
+                            // serialize each packet for each destination
+                            DataPacket packet = CreateHeartbeatPacket(destID);
+                            byte[] packetBytes = PacketSerializer.Serialize(packet);
 
                             // transmit packet and log heartbeat if successfuly sent bytes
-                            if (_transporter.Transmit(headerBytes, destAddress) > 0)
+                            if (_transporter.Transmit(packetBytes, destAddress) > 0)
                             { 
                                 _logger.FormatAndLogHeartbeat(LoggingMode.Sent, _srcId, destID);
                             }
@@ -85,25 +81,15 @@ namespace TacMesh.Core.assets.node
             });
         }
 
-        private PacketHeader CreateHeader(string destinationID)
-        {
-            PacketHeaderBuilder builder = new PacketHeaderBuilder();
+        private DataPacket CreateHeartbeatPacket(string destinationID)
+        {            
+            // init heartbeat data packet packet header
+            PacketHeader header = PacketHeader.InitHeader(PacketType.Heartbeat, _srcId, destinationID);
 
-            // TEMPORARILY USE MAGIC NUMBERS HERE, WILL BE CHANGED IN THE FUTURE.
-            // FOR NOW I USE MAGIC NUMBERS UNTILL I IMPLEMENT A CONFIGURATION FILE.
+            // FOR NOW, heartbeat payload will be empty, until location report is added
+            string payload = string.Empty;
 
-            builder.SetProtocolVersion(1)
-                .SetMessageType(PacketType.Heartbeat)
-                .SetMessageID(Guid.NewGuid())
-                .SetSourceID(_srcId)
-                .SetDestinationID(destinationID)
-                .SetHopCount()
-                .SetLogicalClock(0)
-                .SetTimeToLive(5)
-                .SetPriority(1)
-                .SetSenderCounter(0);
-
-            return builder.BuildHeader();
+            return new DataPacket(header, payload);
         }
 
         // logs heartbeat

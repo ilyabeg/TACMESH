@@ -33,7 +33,7 @@ namespace TacMesh.Core.communication.simulation_communication
                 {
                     while (true)
                     {
-                        byte[] buffer = new byte[DataPacket.MaxPacketSize]; // buffer to hold the remote messages
+                        byte[] buffer = new byte[DataPacket.MAX_PACKET_SIZE]; // buffer to hold the remote messages
                         EndPoint remoteEP = new IPEndPoint(IPAddress.Any, SocketGenerator.RandomPort); // remote endpoint holder
                         int len = _source.ReceiveFrom(buffer, ref remoteEP);
 

@@ -1,11 +1,11 @@
 using System.Net;
 using System.Net.Sockets;
-using TacMesh.Core;
 using TacMesh.Core.communication.simulation_communication;
 using TacMesh.Core.events;
 using TacMesh.Core.hardware_mode;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
+using TacMesh.Core.packet;
 using TacMesh.Core.utils;
 using TacMesh.Core.utils.packet;
 using TacMesh.Core.utils.serializers;

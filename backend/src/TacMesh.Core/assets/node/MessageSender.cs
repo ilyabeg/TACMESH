@@ -1,0 +1,59 @@
+﻿using System.Net;
+using TacMesh.Core.interfaces;
+using TacMesh.Core.packet_related;
+using TacMesh.Core.tables.node_related;
+using TacMesh.Core.utils.serializers;
+
+namespace TacMesh.Core.assets.node
+{
+    /// <summary>
+    /// The class used to send messages to other end users
+    /// </summary>
+    public class MessageSender
+    {
+        // dependencies
+        private readonly NeighborTable _neighborTable;
+        private readonly ITransport _transporter;
+        private readonly PacketBuffer _packetBuffer;
+
+
+        // constructor
+        public MessageSender(NeighborTable neighborTable, ITransport transporter, PacketBuffer packetBuffer)
+        {
+            _neighborTable = neighborTable;
+            _transporter = transporter;
+            _packetBuffer = packetBuffer;
+        }
+
+        /// <summary>
+        /// method used to send a message to the provided peer
+        /// </summary>
+        /// <param name="packet">The message to send</param>
+        /// <returns>True if the message was sent successfuly, or False otherwise.</returns>
+        public bool SendMessage(DataPacket packet)
+        {
+            // if the provided peer is a current neighbor
+            //
+            string peerId = packet.PacketHeader.DstID;
+            IPEndPoint? peerAddress = _neighborTable.GetNeigborAddress(peerId);
+
+            if (peerAddress != null)
+            {
+                // TEMPORARILY transmit simply the message bytes, later the payload will be encrypted
+                //
+                byte[] packetBytes = PacketSerializer.Serialize(packet);
+
+                // if message was sent successfuly, exit the function
+                //
+                if (_transporter.Transmit(packetBytes, peerAddress) != -1)
+                    return true;
+            }
+
+            // if peer isn't currently a neighbor OR the message could not be sent,
+            // stash the message in the buffer until a suited connection evaluates
+            //
+            _packetBuffer.Add(packet);
+            return false;
+        }
+    }
+}

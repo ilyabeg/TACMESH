@@ -8,8 +8,10 @@ using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.communication.simulation_communication;
 using TacMesh.Core.database_related;
 using TacMesh.Core.hardware_mode;
+using TacMesh.Core.hardware_mode.communication;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.beacon_and_destination;
+using TacMesh.Core.interfaces.communication;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
 using TacMesh.Core.launcher;
@@ -62,40 +64,42 @@ namespace TacMesh.Engine
                 IReceiver radioReceiver = new SimReceiver(radio_socket);
                 ILineOfSight terrainLoS = new TerrainLineOfSight();
                 DRandom dRandom = new DRandom();
-
-                // TEMPORARILY inject max range as magic number for the test, WILL BE CHANGED!
                 IRadioModel radioModel = new VirtualRadioModel(nodeConfigs, dRandom, radioReceiver, terrainLoS);
 
                 // ITransport
                 ITransport simTransport = new SimTransport(engine_socket, radioModel);
 
                 // Heartbeats, NeighbourTable
-                HeartBeater heartBeater = GetHeartBeater(nodeInfo.NodeId, simTransport, radioModel);
-                NeighborTable neighbourTable = new NeighborTable(new SystemClock());
+                HeartBeater heartbeater = GetHeartBeater(nodeInfo.NodeId, simTransport, radioModel);
+                NeighborTable neighborTable = new NeighborTable(new SystemClock());
 
                 // Beacon Emitter
                 IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeInfo.NodeId, assignedPort, SysConfigs.McastEndPoint);
-                LauncherControl launcherControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
+                //IInputListener launcherControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
+
+                IInputListener userControl = new UserControl();
 
                 // Topology Filter
                 TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);
 
+                // Packet Processor
+                PacketProcessor packetProcessor = new PacketProcessor(topologyFilter, heartbeater, neighborTable);
+
 
                 // --- inject all dependencies --- 
-
-                Node node = new Node(nodeInfo, nodeConfigs, simTransport, neighbourTable, heartBeater, topologyFilter);
-
-
-                // listen for launcher stdinput
-                launcherControl.ListenForStdInput();
+                Node node = new Node(nodeInfo, nodeConfigs, simTransport, neighborTable, heartbeater, packetProcessor, userControl);
 
 
                 // Release the Semaphore to allow the next engine to be initialized in the launcher
                 string semName = "TacMesh-Global-Sem";
-                using (Semaphore semaphore = Semaphore.OpenExisting(semName))
+
+                if (Semaphore.TryOpenExisting(semName, out Semaphore? semaphore))
                 {
-                    // un-freeze the launcher
-                    semaphore.Release();
+                    using (semaphore)
+                    {
+                        // un-freeze the launcher
+                        semaphore.Release();
+                    }
                 }
 
                 Thread.Sleep(Timeout.Infinite);
@@ -118,7 +122,7 @@ namespace TacMesh.Engine
             => SocketGenerator.GenerateMcastListenerSocket(SysConfigs.McastGroupIp, SysConfigs.McastPort);
 
         static HeartBeater GetHeartBeater(string nodeId, ITransport transport, IRadioModel radioModel) 
-            => new HeartBeater(nodeId, new HeartbeatLogger(), new PacketHeaderSerializer(), transport, radioModel);
+            => new HeartBeater(nodeId, new HeartbeatLogger(), transport, radioModel);
 
         static NodeInfo? DeserializeNodeInfo(string json)
         {

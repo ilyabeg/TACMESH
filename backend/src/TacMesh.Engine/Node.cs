@@ -1,6 +1,6 @@
 using TacMesh.Core.assets.node;
-using TacMesh.Core.hardware_mode;
 using TacMesh.Core.interfaces;
+using TacMesh.Core.interfaces.communication;
 using TacMesh.Core.tables.node_related;
 
 namespace TacMesh.Engine
@@ -16,13 +16,13 @@ namespace TacMesh.Engine
         private readonly ITransport _transporter;
         private readonly NeighborTable _neighborTable;
         private readonly HeartBeater _heartbeater;
-        private readonly TopologyFilter _topologyFilter;
         private readonly PacketBuffer _packetBuffer;
         private readonly PacketProcessor _packetProcessor;
+        private readonly IInputListener _inputListener;
 
 
         // Constructor
-        public Node(NodeInfo nodeInfo, NodeConfigs nodeConfigs, ITransport transporter, NeighborTable neighborTable, HeartBeater heartbeater, TopologyFilter topologyFilter)
+        public Node(NodeInfo nodeInfo, NodeConfigs nodeConfigs, ITransport transporter, NeighborTable neighborTable, HeartBeater heartbeater, PacketProcessor packetProcessor, IInputListener inputListener)
         {
             // --- Node Info & Settings --- 
             NodeInfo = nodeInfo;
@@ -44,21 +44,19 @@ namespace TacMesh.Engine
             _heartbeater = heartbeater;
             _heartbeater.TransmitHeartbeat();
 
-            // --- Topology Filter --- 
-            _topologyFilter = topologyFilter;
-
             // --- Packet Buffer ---
             // comes later ...
 
             // --- Packet Processor --- 
-            // create packet processor to process received packets
-            _packetProcessor = new PacketProcessor(_topologyFilter, _heartbeater, _neighborTable);
-
             // attach packet reading event handler
+            _packetProcessor = packetProcessor;            
             _transporter.MessageReceived += (s, e) => _packetProcessor.ProcessPacket(e);
 
+            // --- Input Listener ---
+            _inputListener = inputListener;
+            _inputListener.ListenForInput();
 
-            // TEMPORARY TEST. THIS WILL NOT STAY HERE FOREVER.
+            // --- Node Initialization Signal ---
             Console.WriteLine($"PORT={AssignedPort}");          
 
             // attach Ctrl+C event handler

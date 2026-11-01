@@ -30,6 +30,31 @@ namespace TacMesh.Core.tables.node_related
             NeighborRecords = new Dictionary<string, NeighborRecord>();
         }
 
+        // determines wether the provided neighbor id exists in the neighbor table
+        public bool Contains(string neighborId)
+        {
+            using (_rwLock.Read())
+            {
+                return NeighborRecords.ContainsKey(neighborId);
+            }
+        }
+
+        // returns the ip endpoint destination of the provided neighbor id
+        public IPEndPoint? GetNeigborAddress(string neighborId)
+        {
+            using (_rwLock.Read())
+            {
+                // if neigbor exists
+                if (NeighborRecords.ContainsKey(neighborId)) 
+                {
+                    return NeighborRecords[neighborId].Address;
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+
         // adds new record if doesn't exist OR overrides an existing one
         public void UpdateRecord(string neighborId, IPEndPoint address)
         {

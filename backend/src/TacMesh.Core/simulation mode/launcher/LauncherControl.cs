@@ -3,11 +3,16 @@ using TacMesh.Core.assets;
 using TacMesh.Core.assets.node;
 using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces.beacon_and_destination;
+using TacMesh.Core.interfaces.communication;
 using TacMesh.Core.utils.ipc.types;
 
 namespace TacMesh.Core.launcher
 {
-    public class LauncherControl
+    /// <summary>
+    /// Input listener class to control the IPC messages received from the Launcher
+    /// Process at simulation mode
+    /// </summary>
+    public class LauncherControl : IInputListener
     {
         private readonly string _nodeId;
         private readonly NodeConfigs _nodeConfigs; // hold ref to configs to update at runtime
@@ -27,29 +32,36 @@ namespace TacMesh.Core.launcher
             _emitter = emitter;
 
             // attach node position update event
-            _advancer.NodePositionUpdate += (s, newLocation) => OnNodePositionUpdate(newLocation);
+            _advancer.NodePositionUpdate += (s, newLocation) => OnNodePositionUpdate(newLocation);            
         }
 
         // listens for StdInput pushed via the StdInputStream from the Launcher (the scenario manager)
-        public void ListenForStdInput()
+        public void ListenForInput()
         {
-            Task.Run(async () =>
+            // create a dedicated thread for listening for input instead of using a thread from 
+            // the thread pool via a Task, because a Console.ReadLine() is a synchronous operation
+            // and will block the thread from working in the meantime of waiting for input
+            //
+            Thread listener = new Thread(() =>
             {
                 while (true)
                 {
-                    try {
+                    try
+                    {
                         // parse input pushed from launcher
                         string input = Console.ReadLine();
                         TryParseStdInput(input);
 
                         // test received input
-                        Console.WriteLine($"[LAUNCHER CONTROL] received: \"{input}\"");
+                        //Console.WriteLine($"[LAUNCHER CONTROL] received: \"{input}\"");
                     }
                     catch (Exception e) {
                         Console.WriteLine($"[LAUNCHER CONTROL] Error: \"{e.Message}\"\n");
                     }
                 }
             });
+            listener.IsBackground = true; // set as bg thread to make it die when the main thread dies
+            listener.Start();            
         }
 
         // handler of node moved event
@@ -77,7 +89,6 @@ namespace TacMesh.Core.launcher
 
         // --- parsing methods ---
 
-        // parse launcher position change inputs
         private void TryParseStdInput(string input)
         {
             // parse inputs
@@ -122,9 +133,6 @@ namespace TacMesh.Core.launcher
                 // with node position reports in the heartbeats is implemented.
                 //
                 _emitter.EmitBeacon(newLocation);
-
-                // TEST
-                //Console.WriteLine($"[LAUNCHER CONTROL] Updated node location to: {movCommand.Location} successfuly");
 
                 // push the same exact message back to the launcher to acknowledge the
                 // position update to synchronize with the ui

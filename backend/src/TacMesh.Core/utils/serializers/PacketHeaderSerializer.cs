@@ -1,5 +1,5 @@
 ﻿using TacMesh.Core.interfaces;
-using TacMesh.Core.utils.builders;
+using TacMesh.Core.packet;
 
 namespace TacMesh.Core.utils.serializers
 {
@@ -16,7 +16,7 @@ namespace TacMesh.Core.utils.serializers
         public byte[] Serialize(PacketHeader header)
         {
             // byte stream exactly 76 bytes
-            byte[] byteStream = new byte[PacketHeader.HeaderSize];
+            byte[] byteStream = new byte[PacketHeader.HEADER_SIZE];
 
             // byte writer to convert data into bytes and write to the stream 
             ByteWriter byteWriter = new ByteWriter(byteStream);
@@ -43,26 +43,24 @@ namespace TacMesh.Core.utils.serializers
         public PacketHeader Deserialize(byte[] byteStream)
         {
             // reject byte streams shorter than the header size
-            if (byteStream.Length != PacketHeader.HeaderSize)
-                throw new ArgumentOutOfRangeException($"Unable to Deserialize due to: Provided byte stream was not {PacketHeader.HeaderSize} bytes");
+            if (byteStream.Length != PacketHeader.HEADER_SIZE)
+                throw new ArgumentOutOfRangeException($"Unable to Deserialize due to: Provided byte stream was not {PacketHeader.HEADER_SIZE} bytes");
 
-            PacketHeaderBuilder builder = new PacketHeaderBuilder();
             ByteReader reader = new ByteReader(byteStream);
-
             int len = PacketHeader.LegalStringLength;
 
-            builder.SetProtocolVersion(reader.ReadByte())
-                .SetMessageType((PacketType)reader.ReadByte())
-                .SetMessageID(reader.ReadGuid())
-                .SetSourceID(reader.ReadString(len))
-                .SetDestinationID(reader.ReadString(len))
-                .SetHopCount(reader.ReadByte())
-                .SetLogicalClock(reader.ReadLong())
-                .SetTimeToLive(reader.ReadLong())
-                .SetPriority(reader.ReadByte())
-                .SetSenderCounter(reader.ReadLong());
-
-            return builder.BuildHeader();
+            return new PacketHeader(
+                p_version: reader.ReadByte(),
+                msgType: (PacketType)reader.ReadByte(),
+                msgID: reader.ReadGuid(),
+                srcID: reader.ReadString(len),
+                dstID: reader.ReadString(len),
+                hopCount: reader.ReadByte(),
+                logicalClock: reader.ReadLong(),
+                ttl: reader.ReadLong(),
+                priority: reader.ReadByte(),
+                sender_counter: reader.ReadLong()
+            );
         }
     }
 }

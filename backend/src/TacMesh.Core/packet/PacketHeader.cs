@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using TacMesh.Core.utils.design;
 
-namespace TacMesh.Core
+namespace TacMesh.Core.packet
 {
     // type of the packet
     public enum PacketType : byte
@@ -17,7 +17,7 @@ namespace TacMesh.Core
     public class PacketHeader
     {
         // fixed global header size
-        public const int HeaderSize = 76; // bytes
+        public const int HEADER_SIZE = 76; // bytes
 
         #region TEMPORARY MAGIC NUMBERS
         // THESE ARE TEMPORARY MAGIC NUMBERS AND I KNOW IT IS WRONG.
@@ -213,6 +213,31 @@ namespace TacMesh.Core
 
 
         /// <summary>
+        /// Initializes a PacketHeader with default values except mandatory ones
+        /// </summary>
+        /// <param name="msgType"></param>
+        /// <param name="srcID"></param>
+        /// <param name="dstID"></param>
+        /// <returns></returns>
+        public static PacketHeader InitHeader(PacketType msgType, string srcID, string dstID)
+        {
+            // Note: TEMPORARILY use magic numbers (will be changed)
+            //
+            return new PacketHeader(
+                p_version: 1,
+                msgType: msgType,
+                msgID: Guid.NewGuid(),
+                srcID: srcID,
+                dstID: dstID,
+                hopCount: 0,
+                logicalClock: 0,
+                ttl: 5,
+                priority: 1,
+                sender_counter: 0
+            );
+        }
+
+        /// <summary>
         /// Returns a string representation of the Packet Header in an organized block
         /// </summary>
         /// <returns></returns>
@@ -222,7 +247,7 @@ namespace TacMesh.Core
 
             str.AppendLine("┌────────────────────────────────────────────────────────────────────────┐");
 
-            string title = $" PACKET HEADER (Size: {HeaderSize} Bytes)";
+            string title = $" PACKET HEADER (Size: {HEADER_SIZE} Bytes)";
             str.AppendLine($"│{title.PadRight(ConsoleDesign._72_padRight)}│");
 
             str.AppendLine("├────────────────────┬──────────┬────────────────────────────────────────┤");
