@@ -117,6 +117,12 @@ namespace TacMesh.Core.launcher
                 Location newLocation = movCommand.Location;
                 _nodeConfigs.UpdateConfigurations(location: newLocation);
 
+                // TEMOPRARILY update the position for all engine prcesses via mcasting to all of the engine
+                // processes using the beacon emitter. this will be removed as soon as a full data packet
+                // with node position reports in the heartbeats is implemented.
+                //
+                _emitter.EmitBeacon(newLocation);
+
                 // TEST
                 //Console.WriteLine($"[LAUNCHER CONTROL] Updated node location to: {movCommand.Location} successfuly");
 

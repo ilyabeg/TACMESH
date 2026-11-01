@@ -65,7 +65,7 @@ app.whenReady().then(() => {
   const browserWindow = createWindow()
 
   // execute the launcher instance for this app
-  const numOfEngines = 1; // <- TEMPORARY 
+  const numOfEngines = 2; // <- TEMPORARY 
   launchLauncher(browserWindow, numOfEngines);
 
   attachEventDispatchers();
