@@ -6,7 +6,7 @@ using TacMesh.Core.packet_related;
 using TacMesh.Core.tables.node_related;
 using TacMesh.Core.utils.serializers;
 
-namespace TacMesh.Core.assets.node
+namespace TacMesh.Core.assets.node.packet
 {
     /// <summary>
     /// Packet processor to determine what to do and how to act upon receving a DataPacket.

@@ -4,6 +4,7 @@ using System.Text.Json;
 using TacMesh.Core.assets;
 using TacMesh.Core.assets.clocks;
 using TacMesh.Core.assets.node;
+using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.communication.simulation_communication;
 using TacMesh.Core.database_related;
@@ -32,26 +33,33 @@ namespace TacMesh.Engine
         {
             try
             {
-                if (args.Length != arguments_length)
-                {
-                    Console.WriteLine("ERROR: Engine Process arguments did not match. Terminating process...");
-                    return;
-                }
+                //if (args.Length != arguments_length)
+                //{
+                //    Console.WriteLine("ERROR: Engine Process arguments did not match. Terminating process...");
+                //    return;
+                //}
                 // set the output encoding to UTF-8 encoding
                 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
                 // --- arguments ---
 
                 // save node info
-                string nodeInfoJson = args[0];
-                NodeInfo? nodeInfo = DeserializeNodeInfo(nodeInfoJson);
-                if (nodeInfo == null) return;
+                //string nodeInfoJson = args[0];
+                //NodeInfo? nodeInfo = DeserializeNodeInfo(nodeInfoJson);
+                //if (nodeInfo == null) return;
 
-                // save node config settings to access the engine's specific node settings anywhere               
-                string configsJson = args[1];
-                NodeConfigs? nodeConfigs = DeserializeConfigSettings(configsJson);
-                if (nodeConfigs == null) return;
+                //// save node config settings to access the engine's specific node settings anywhere               
+                //string configsJson = args[1];
+                //NodeConfigs? nodeConfigs = DeserializeConfigSettings(configsJson);
+                //if (nodeConfigs == null) return;
 
+
+                // !!! TEMP TEST !!!
+
+                string nodeId = args[0].ToString();
+                string otherNode = nodeId.ElementAt(nodeId.Length - 1) == '1' ? "Node2" : "Node1";
+                NodeInfo nodeInfo = new NodeInfo(nodeId, NodeRole.Soldier);
+                NodeConfigs nodeConfigs = new NodeConfigs(1.0, new Core.graph_related.Location(0, 0), 400, new List<string>([otherNode]), new Queue<Core.graph_related.Location>());
 
                 // --- create all dependencies ---
 
@@ -75,15 +83,17 @@ namespace TacMesh.Engine
 
                 // Beacon Emitter
                 IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeInfo.NodeId, assignedPort, SysConfigs.McastEndPoint);
-                //IInputListener launcherControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
-
-                IInputListener userControl = new UserControl();
 
                 // Topology Filter
                 TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);
 
-                // Packet Processor
+                // Packet Sender, Packet Processor
+                PacketSender packetSender = new PacketSender(neighborTable, simTransport, new PacketBuffer());
                 PacketProcessor packetProcessor = new PacketProcessor(topologyFilter, heartbeater, neighborTable);
+
+                // IInputListener
+                //IInputListener launcherControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
+                IInputListener userControl = new UserControl(packetSender, nodeConfigs, beaconEmitter);                
 
 
                 // --- inject all dependencies --- 
@@ -91,16 +101,16 @@ namespace TacMesh.Engine
 
 
                 // Release the Semaphore to allow the next engine to be initialized in the launcher
-                string semName = "TacMesh-Global-Sem";
+                //string semName = "TacMesh-Global-Sem";
 
-                if (Semaphore.TryOpenExisting(semName, out Semaphore? semaphore))
-                {
-                    using (semaphore)
-                    {
-                        // un-freeze the launcher
-                        semaphore.Release();
-                    }
-                }
+                //if (Semaphore.TryOpenExisting(semName, out Semaphore? semaphore))
+                //{
+                //    using (semaphore)
+                //    {
+                //        // un-freeze the launcher
+                //        semaphore.Release();
+                //    }
+                //}
 
                 Thread.Sleep(Timeout.Infinite);
             }

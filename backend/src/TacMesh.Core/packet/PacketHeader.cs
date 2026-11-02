@@ -23,15 +23,15 @@ namespace TacMesh.Core.packet
         // THESE ARE TEMPORARY MAGIC NUMBERS AND I KNOW IT IS WRONG.
         // UNTILL I ADD THE MISSION PACKAGE OR GET IT FROM CONFIG FILE LATER,
         // THESS WILL BE DEFAULT CONFIGURATIONS STRICTLY FOR TESTING.
-        private readonly byte _currentProtocolVersion = 1;
-        private readonly long _maxTTL = 10000000; // in seconds
-        private readonly long _minTTL = 1;
-        private readonly byte _minPriority = 1; 
-        private readonly byte _maxPriority = 10;
-        private readonly byte _minHopCount = 0;
-        private readonly byte _maxHopCount = 255;
-        private readonly long _minLogicalClock = 0;
-        private readonly long _maxLogicalClock = long.MaxValue;
+        public const byte PROTOCOL_VERSION = 1;
+        public const long MAX_TTL = 10000000; // in seconds
+        public const long MIN_TTL = 1;
+        public const byte MIN_PRIORITY = 1; 
+        public const byte MAX_PRIORITY = 10;
+        public const byte DEFAULT_HOP = 0;
+        public const byte MAX_HOP = 255;
+        public const long MIN_LOGICAL_CLOCK = 0;
+        public const long MAX_LOGICAL_CLOCK = long.MaxValue;
         #endregion
 
         // current legal string length 16 bytes
@@ -47,7 +47,7 @@ namespace TacMesh.Core.packet
             get; 
             private set
             {
-                if (value != _currentProtocolVersion)
+                if (value != PROTOCOL_VERSION)
                     throw new ArgumentException("Unknown protocol version");
                 field = value;
             }
@@ -76,8 +76,8 @@ namespace TacMesh.Core.packet
             get;
             private set
             {
-                if (value < _minHopCount || value > _maxHopCount)
-                    throw new ArgumentException($"Error initiating Hop Count. Hop Count must be between {_minHopCount}-{_maxHopCount}");
+                if (value < DEFAULT_HOP || value > MAX_HOP)
+                    throw new ArgumentException($"Error initiating Hop Count. Hop Count must be between {DEFAULT_HOP}-{MAX_HOP}");
                 field = value;
             }
         }
@@ -105,7 +105,7 @@ namespace TacMesh.Core.packet
             {
                 // AGAIN, MAX TTL IS YET TO BE DESIDED AND THIS MAGIC NUMBER IS STRICTLY TEMPORARY.
 
-                if (value < _minTTL || value > _maxTTL)
+                if (value < MIN_TTL || value > MAX_TTL)
                     throw new ArgumentException("Error initiating TTL");
                 field = value;
             }
@@ -158,8 +158,8 @@ namespace TacMesh.Core.packet
             {
                 // AGAIN, THESE ARE STRICTLY ONLY TEMPORARY VALUES AND WILL BE CHANGED.
 
-                if (value < _minPriority || value > _maxPriority)
-                    throw new ArgumentException($"Error initializing message priority. The priority must be between {_minPriority}-{_maxPriority}");
+                if (value < MIN_PRIORITY || value > MAX_PRIORITY)
+                    throw new ArgumentException($"Error initializing message priority. The priority must be between {MIN_PRIORITY}-{MAX_PRIORITY}");
                 field = value;
             }
         }
@@ -169,8 +169,8 @@ namespace TacMesh.Core.packet
             get;
             private set
             {
-                if (value < _minLogicalClock || value > _maxLogicalClock)
-                    throw new ArgumentException($"Error initializing Logical Clock. The Logical Clock must be between {_minLogicalClock}-{_maxLogicalClock:e3}");
+                if (value < MIN_LOGICAL_CLOCK || value > MAX_LOGICAL_CLOCK)
+                    throw new ArgumentException($"Error initializing Logical Clock. The Logical Clock must be between {MIN_LOGICAL_CLOCK}-{MAX_LOGICAL_CLOCK:e3}");
                 field = value;
             }
         }
@@ -201,8 +201,8 @@ namespace TacMesh.Core.packet
         /// <exception cref="InvalidOperationException"></exception>
         public void IncrementHopCount()
         {
-            if (HopCount == _maxHopCount)
-                throw new InvalidOperationException($"Cannot increment Hop Count. Hop Count is already at maximum value of {_maxHopCount}");
+            if (HopCount == MAX_HOP)
+                throw new InvalidOperationException($"Cannot increment Hop Count. Hop Count is already at maximum value of {MAX_HOP}");
             HopCount++;
         }
 

@@ -1,5 +1,10 @@
 ﻿using System.Text.Json;
+using TacMesh.Core.assets.node;
+using TacMesh.Core.assets.node.packet;
+using TacMesh.Core.interfaces.beacon_and_destination;
 using TacMesh.Core.interfaces.communication;
+using TacMesh.Core.packet;
+using TacMesh.Core.packet_related;
 
 namespace TacMesh.Core.hardware_mode.communication
 {
@@ -8,9 +13,22 @@ namespace TacMesh.Core.hardware_mode.communication
     /// at simulation mode
     /// </summary>
     public class UserControl : IInputListener
-    {
+    {        
+        // dependencies
+        private readonly PacketSender _packetSender;
+
+        // maybe temporary
+        private readonly NodeConfigs _nodeConfigs;
+        private readonly IBeaconEmitter _beaconEmitter;
+
+
         // Constructor 
-        public UserControl() { }
+        public UserControl(PacketSender packetSender, NodeConfigs nodeConfigs, IBeaconEmitter beaconEmitter) 
+        {
+            _packetSender = packetSender;
+            _nodeConfigs = nodeConfigs;
+            _beaconEmitter = beaconEmitter;
+        }
 
 
         public void ListenForInput()
@@ -27,6 +45,13 @@ namespace TacMesh.Core.hardware_mode.communication
                     {
                         // parse input pushed from the user frontend
                         string input = Console.ReadLine();
+
+                        if (input.Equals("."))
+                        {
+                            // emit a beacon to all radio models on the net
+                            _beaconEmitter.EmitBeacon(_nodeConfigs.Location);
+                        }
+
                         TryParseStdInput(input);
 
                         // test received input
@@ -56,18 +81,21 @@ namespace TacMesh.Core.hardware_mode.communication
             {
                 UserMessage? userMessage = JsonSerializer.Deserialize<UserMessage>(input) ?? throw new Exception();
 
-                // TEST print out the user message
-                Console.WriteLine($"[USER CONTROL] received: \"{userMessage.Source}\" -> \"{userMessage.Destination}\": \"{userMessage.Message}\"");
-
                 // build and send the packet to the destination
-
-                // to do ...
-
+                //
+                DataPacket packet = CreateSourcePacket(userMessage);
+                _packetSender.SendPacket(packet);
                 return true;
             }
-            catch {
-                return false;
-            }
+            catch { return false; }
+        }
+
+        private DataPacket CreateSourcePacket(UserMessage userMessage)
+        {
+            return new DataPacket(
+                PacketHeader.InitHeader(PacketType.UserMessage, userMessage.Source, userMessage.Destination), 
+                userMessage.Message
+            );
         }
     }
 }

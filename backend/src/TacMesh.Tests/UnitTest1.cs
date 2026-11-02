@@ -7,7 +7,6 @@ using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.packet;
 using TacMesh.Core.utils;
-using TacMesh.Core.utils.packet;
 using TacMesh.Core.utils.serializers;
 
 namespace TacMesh.Tests;

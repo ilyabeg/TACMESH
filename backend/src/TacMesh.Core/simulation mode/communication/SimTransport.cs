@@ -46,26 +46,24 @@ namespace TacMesh.Core.communication.simulation_communication
         /// <param name="destination"></param>
         /// <returns>The number of bytes sent or -1 if failed to send.</returns>
         public int Transmit(byte[] data, IPEndPoint destinationAddress)
-        {
-            int count = -1;
-            Task.Run(async () =>
+        {            
+            Task<int> transmitTask = Task.Run(async () =>
             {
+                int count = -1;
                 try
                 {
                     // evaluate connection before sending
                     if (await _radioModel.TestConnection(_sourceAddress, destinationAddress))
-                    {
                         count = _transmitter.Transmit(data, destinationAddress);
-                    }
                 }
-                catch (Exception e)
-                {
+                catch (Exception e) {
                     Console.WriteLine($"[Sim Transport] Error: \"{e.Message}\"");
                 }
+                return count;
             });
 
-            // return bytes sent
-            return count;
+            // return bytes sent from the task result
+            return transmitTask.Result;
         }
 
         /// <summary>

@@ -4,12 +4,12 @@ using TacMesh.Core.packet_related;
 using TacMesh.Core.tables.node_related;
 using TacMesh.Core.utils.serializers;
 
-namespace TacMesh.Core.assets.node
+namespace TacMesh.Core.assets.node.packet
 {
     /// <summary>
     /// The class used to send messages to other end users
     /// </summary>
-    public class MessageSender
+    public class PacketSender
     {
         // dependencies
         private readonly NeighborTable _neighborTable;
@@ -18,7 +18,7 @@ namespace TacMesh.Core.assets.node
 
 
         // constructor
-        public MessageSender(NeighborTable neighborTable, ITransport transporter, PacketBuffer packetBuffer)
+        public PacketSender(NeighborTable neighborTable, ITransport transporter, PacketBuffer packetBuffer)
         {
             _neighborTable = neighborTable;
             _transporter = transporter;
@@ -30,7 +30,7 @@ namespace TacMesh.Core.assets.node
         /// </summary>
         /// <param name="packet">The message to send</param>
         /// <returns>True if the message was sent successfuly, or False otherwise.</returns>
-        public bool SendMessage(DataPacket packet)
+        public bool SendPacket(DataPacket packet)
         {
             // if the provided peer is a current neighbor
             //

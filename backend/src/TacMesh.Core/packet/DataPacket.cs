@@ -38,7 +38,6 @@ namespace TacMesh.Core.packet_related
             if (PacketHeader != null)
             {
                 str.Append(PacketHeader.ToString());
-                str.AppendLine();
             }
 
             // payload area
@@ -49,7 +48,7 @@ namespace TacMesh.Core.packet_related
 
             if (string.IsNullOrEmpty(Payload))
             {
-                str.AppendLine($"│ {"[EMPTY]".PadRight(ConsoleDesign._72_padRight)} │");
+                str.AppendLine($"│ {"[EMPTY]".PadRight(ConsoleDesign._70_padRight)} │");
             }
             else
             {

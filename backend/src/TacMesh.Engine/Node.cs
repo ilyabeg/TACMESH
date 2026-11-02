@@ -1,4 +1,5 @@
 using TacMesh.Core.assets.node;
+using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication;
 using TacMesh.Core.tables.node_related;

@@ -13,6 +13,7 @@
         public const int _47_padRight = 47;
         public const int _58_padRight = 58;
         public const int _68_padRight = 68;
+        public const int _70_padRight = 70;
         public const int _72_padRight = 72;
         #endregion
     }
