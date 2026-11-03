@@ -12,6 +12,7 @@ using TacMesh.Core.hardware_mode;
 using TacMesh.Core.hardware_mode.communication;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.beacon_and_destination;
+using TacMesh.Core.interfaces.clock_interfaces;
 using TacMesh.Core.interfaces.communication;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
@@ -59,7 +60,7 @@ namespace TacMesh.Engine
                 string nodeId = args[0].ToString();
                 string otherNode = nodeId.ElementAt(nodeId.Length - 1) == '1' ? "Node2" : "Node1";
                 NodeInfo nodeInfo = new NodeInfo(nodeId, NodeRole.Soldier);
-                NodeConfigs nodeConfigs = new NodeConfigs(1.0, new Core.graph_related.Location(0, 0), 400, new List<string>([otherNode]), new Queue<Core.graph_related.Location>());
+                NodeConfigs nodeConfigs = new NodeConfigs(1.0, new Core.graph_related.Location(0, 0), 10, new List<string>([otherNode]), new Queue<Core.graph_related.Location>());
 
                 // --- create all dependencies ---
 
@@ -77,9 +78,12 @@ namespace TacMesh.Engine
                 // ITransport
                 ITransport simTransport = new SimTransport(engine_socket, radioModel);
 
+                // IClock
+                IClock systemClock = new SystemClock();
+
                 // Heartbeats, NeighbourTable
                 HeartBeater heartbeater = GetHeartBeater(nodeInfo.NodeId, simTransport, radioModel);
-                NeighborTable neighborTable = new NeighborTable(new SystemClock());
+                NeighborTable neighborTable = new NeighborTable(systemClock);
 
                 // Beacon Emitter
                 IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeInfo.NodeId, assignedPort, SysConfigs.McastEndPoint);
@@ -88,12 +92,12 @@ namespace TacMesh.Engine
                 TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);
 
                 // Packet Sender, Packet Processor
-                PacketSender packetSender = new PacketSender(neighborTable, simTransport, new PacketBuffer());
+                PacketSender packetSender = new PacketSender(neighborTable, simTransport, new PacketBuffer(systemClock));
                 PacketProcessor packetProcessor = new PacketProcessor(topologyFilter, heartbeater, neighborTable);
 
                 // IInputListener
                 //IInputListener launcherControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
-                IInputListener userControl = new UserControl(packetSender, nodeConfigs, beaconEmitter);                
+                IInputListener userControl = new UserControl(packetSender, nodeConfigs, beaconEmitter, nodeId);                
 
 
                 // --- inject all dependencies --- 

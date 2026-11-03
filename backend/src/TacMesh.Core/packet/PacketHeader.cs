@@ -231,7 +231,7 @@ namespace TacMesh.Core.packet
                 dstID: dstID,
                 hopCount: 0,
                 logicalClock: 0,
-                ttl: 5,
+                ttl: 15000, // ms
                 priority: 1,
                 sender_counter: 0
             );

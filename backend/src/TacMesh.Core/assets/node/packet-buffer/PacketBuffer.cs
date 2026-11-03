@@ -84,7 +84,14 @@ namespace TacMesh.Core.assets.node
                 AddToRecipients(packet);
 
                 // increment total count
-                Interlocked.Increment(ref _TOTAL_PACKETS);            
+                Interlocked.Increment(ref _TOTAL_PACKETS);
+
+
+
+                // TESTING
+                Print(packet, true);
+
+
             }
             // NOTE: if the packet already exists in the queue it is dropped ...
         }
@@ -201,6 +208,13 @@ namespace TacMesh.Core.assets.node
 
                     // decrement total count
                     Interlocked.Decrement(ref _TOTAL_PACKETS);
+
+
+                    // TESTING
+                    Print(nextPacket, false);
+
+
+
                 }
                 // remove the kvp of the recipient messages dictionary
                 if (messages?.Count == 0) _messagesByRecipient.Remove(recipientId);
@@ -272,6 +286,11 @@ namespace TacMesh.Core.assets.node
                     // the time difference between the timestamps
                     double time_diff = (double)(currentTime - expirationTime).TotalSeconds;
 
+
+                    // TESTING 
+                    Console.WriteLine($"[PACKET BUFFER] Calculated {time_diff}sec time diff between packet arrival and expiration time");
+
+
                     // positive = current time passed the packet expiration time
                     //
                     if (time_diff >= 0)
@@ -284,6 +303,14 @@ namespace TacMesh.Core.assets.node
 
                             // decrement total count
                             Interlocked.Decrement(ref _TOTAL_PACKETS);
+
+
+
+                            // TESTING
+                            Print(expiredPacket!, false);
+
+
+
                         }
                         else
                             // continue to next packet if dequeue failed, meaning the packet was already removed
@@ -313,6 +340,14 @@ namespace TacMesh.Core.assets.node
                     }
                 }
             });
+        }
+
+
+
+        // TMP TESTING
+        private void Print(DataPacket packet, bool added)
+        {
+            Console.WriteLine($"[PACKET BUFFER] {(added ? "Added" : "Removed")} packet. TOTAL: {Interlocked.Read(ref _TOTAL_PACKETS)}");
         }
     }
 }
