@@ -15,6 +15,9 @@ namespace TacMesh.Core.assets.node
 
         // the priority buckets
         private readonly PriorityBucket[] _buckets;
+        
+        // dictionary to hold messages by their recipient id, ordered by max priority
+        private readonly Dictionary<string, PriorityQueue<DataPacket, int>> _messagesByRecipient;
 
 
         // constructor
@@ -23,7 +26,6 @@ namespace TacMesh.Core.assets.node
             _sysClock = clock;
 
             // init total packets count as 0
-            //
             _TOTAL_PACKETS = 0;
 
             // buckets array which holds 10 'buckets' for each priority. each bucket contains
@@ -36,9 +38,17 @@ namespace TacMesh.Core.assets.node
             for (int i = 0; i < _buckets.Length; i++)
                 _buckets[i] = new PriorityBucket(clock);
 
+            // create new messaged by destination dict to efficiently rmeove messaged for specific
+            // destinations upon receiving new neigbors and calculating new routes on the net
+            //
+            _messagesByRecipient = new Dictionary<string, PriorityQueue<DataPacket, int>>();
+
             // automatically start expiration check on startup
             StartExpiration();
         }
+
+
+        // --- Addition logic ---
 
         /// <summary>
         /// adds a new message to the packet buffer.
@@ -69,7 +79,12 @@ namespace TacMesh.Core.assets.node
             {
                 // insert the packet
                 bucket.Enqueue(packet); // O(logM) [because priority queue used min-heap]
-                Interlocked.Increment(ref _TOTAL_PACKETS);
+
+                // insert to recipients dict
+                AddToRecipients(packet);
+
+                // increment total count
+                Interlocked.Increment(ref _TOTAL_PACKETS);            
             }
             // NOTE: if the packet already exists in the queue it is dropped ...
         }
@@ -89,14 +104,114 @@ namespace TacMesh.Core.assets.node
             {
                 // remove oldest packet from the lowest priority
                 //
-                if (!_buckets[i].Empty())
+                if (!_buckets[i].Empty() && _buckets[i].TryDequeue(out DataPacket? packet))
                 {
-                    _buckets[i].TryDequeue(out _);
+                    // remove same message from dictionary 
+                    TryRemoveFromRecipients(packet!);
+
+                    // decrement total count
                     Interlocked.Decrement(ref _TOTAL_PACKETS);
                     break;
                 }
             }
         }
+
+
+        // --- Recipient dictionary logic ---
+
+        // max priority comparer to order messages of specific destination by the max priority
+        private Comparer<int> MaxPriorityComparer() => Comparer<int>.Create((x, y) => y.CompareTo(x));
+
+        // NOTE: seperate recipient dictionary lock to avoid race conditions. for example: thread A adds new message
+        // while thread B removed a message and shifts around the new priority queue state of the messages
+        //
+        private static readonly object _dictKey = new object();
+
+        /// <summary>
+        /// Adds new packet to the messages of the specific recipient messages queue
+        /// </summary>
+        /// <param name="packet"></param>
+        private void AddToRecipients(DataPacket packet)
+        {
+            lock (_dictKey)
+            {
+                // insert to specific destinations messages dictionary
+                string destId = packet.PacketHeader.DstID;
+
+                // create new messages queue if destination does not exist in the dict
+                //
+                if (!_messagesByRecipient.ContainsKey(destId))
+                    _messagesByRecipient.TryAdd(destId, new PriorityQueue<DataPacket, int>(MaxPriorityComparer()));
+
+                // enqueue the packet with it's priority
+                _messagesByRecipient[destId].Enqueue(packet, packet.PacketHeader.Priority);
+            }
+        }
+
+        /// <summary>
+        /// Tries to remove a specific packet from the messages by recipient dictionary
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <returns>True if successful, False otherwise.</returns>
+        private bool TryRemoveFromRecipients(DataPacket packet)
+        {
+            lock (_dictKey)
+            {
+                string destId = packet.PacketHeader.DstID;
+                _messagesByRecipient.TryGetValue(destId, out PriorityQueue<DataPacket, int>? recipientQueue);
+                bool result = recipientQueue?.Remove(packet, out _, out _) ?? false;
+
+                // if the queue is empty, remove the key value pair
+                if (recipientQueue?.Count == 0)
+                    _messagesByRecipient.Remove(destId);
+
+                // return the removal result
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Get the queuesd messages of a specific provided recipient.
+        /// </summary>
+        /// <param name="recipientId">the specific recipient</param>
+        /// <param name="recipientMessages">the recipient's messages in the buffer</param>
+        /// <returns>The queued messages of the specific recipient or null if does not exist.</returns>
+        public bool GetRecipientMessages(string recipientId, out Queue<DataPacket>? recipientMessages)
+        {
+            lock (_dictKey)
+            {
+                // TryGetValue() returns true if the dictionary contains an
+                // element with the specified key, or false otherwise
+                //
+                bool result = _messagesByRecipient.TryGetValue(recipientId, out PriorityQueue<DataPacket, int>? messages);
+                recipientMessages = new Queue<DataPacket>();
+
+                // pull all messages of the specific recipient
+                //
+                while (messages?.Count > 0)
+                {
+                    // get the next packet
+                    DataPacket nextPacket = messages.Dequeue();
+                    recipientMessages.Enqueue(nextPacket);
+
+                    // remove it from the buffer entirely
+                    // O(1) Removal for K messages = Total O(K) t.c                    
+                    //
+                    _buckets[nextPacket.PacketHeader.Priority - 1].Remove(nextPacket);
+
+                    // decrement total count
+                    Interlocked.Decrement(ref _TOTAL_PACKETS);
+                }
+                // remove the kvp of the recipient messages dictionary
+                if (messages?.Count == 0) _messagesByRecipient.Remove(recipientId);
+
+                // return the result of the removal
+                return result;
+            }            
+        }
+
+
+        // --- Peek logic ---
 
         /// <summary>
         /// Gets and removes the most prioritiezed next packet saved in the buffer
@@ -108,9 +223,15 @@ namespace TacMesh.Core.assets.node
             {
                 if (!_buckets[i].Empty())
                 {
-                    _buckets[i].TryDequeue(out DataPacket? packet);
-                    Interlocked.Decrement(ref _TOTAL_PACKETS);
-                    return packet;
+                    if (_buckets[i].TryDequeue(out DataPacket? packet))
+                    {
+                        // remove same message from dictionary 
+                        TryRemoveFromRecipients(packet!);
+
+                        // decrement total count
+                        Interlocked.Decrement(ref _TOTAL_PACKETS);
+                        return packet;
+                    }                    
                 }
             }
             return null;
@@ -124,13 +245,15 @@ namespace TacMesh.Core.assets.node
         {
             for (int i = _buckets.Length - 1; i >= 0; i--)
             {
-                if (!_buckets[i].Empty() && _buckets[i].TryPeek(out DataPacket? packet))
-                {
+                if (!_buckets[i].Empty() && _buckets[i].TryPeek(out DataPacket? packet)) {
                     return packet;
                 }
             }
             return null;
         }
+
+
+        // --- Expiration logic ---
 
         // O(M) Worst [M - number of total packets in the buffer]
         //
@@ -154,8 +277,14 @@ namespace TacMesh.Core.assets.node
                     if (time_diff >= 0)
                     {
                         // remove if packet expired
-                        if (currBucket.TryDequeue(out _))
+                        if (currBucket.TryDequeue(out DataPacket? expiredPacket))
+                        {
+                            // remove same message from dictionary 
+                            TryRemoveFromRecipients(expiredPacket!);
+
+                            // decrement total count
                             Interlocked.Decrement(ref _TOTAL_PACKETS);
+                        }
                         else
                             // continue to next packet if dequeue failed, meaning the packet was already removed
                             continue;
