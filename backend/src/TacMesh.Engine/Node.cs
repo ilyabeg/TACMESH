@@ -17,7 +17,6 @@ namespace TacMesh.Engine
         private readonly ITransport _transporter;
         private readonly NeighborTable _neighborTable;
         private readonly HeartBeater _heartbeater;
-        private readonly PacketBuffer _packetBuffer;
         private readonly PacketProcessor _packetProcessor;
         private readonly IInputListener _inputListener;
 
@@ -44,9 +43,6 @@ namespace TacMesh.Engine
             // start transmitting heartbeats
             _heartbeater = heartbeater;
             _heartbeater.TransmitHeartbeat();
-
-            // --- Packet Buffer ---
-            // comes later ...
 
             // --- Packet Processor --- 
             // attach packet reading event handler

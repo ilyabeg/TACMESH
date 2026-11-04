@@ -21,10 +21,6 @@ namespace TacMesh.Core.tables.node_related
         private readonly TacReadWriteLock _rwLock = new TacReadWriteLock();
 
 
-        // TEMP event for testing out the packet buffer logic
-        public event EventHandler<NeighborRecord> NewNeighborDiscovered;
-
-
         // inject any clock to the table
         public NeighborTable(IClock tableClock, int cyclesNumber = 3) // if cycles isn't provided, default = 3
         {
@@ -62,20 +58,10 @@ namespace TacMesh.Core.tables.node_related
         // adds new record if doesn't exist OR overrides an existing one
         public void UpdateRecord(string neighborId, IPEndPoint address)
         {
-            // TESTING
-            NeighborRecord neighborRecord;
-
             using (_rwLock.Write())
             {
                 NeighborRecords[neighborId] = new NeighborRecord(neighborId, address, _tableClock.GetTime());
-
-                // TMP TESTING
-                neighborRecord = NeighborRecords[neighborId];
             }
-
-            // TEST
-            NewNeighborDiscovered?.Invoke(this, NeighborRecords[neighborId]);
-
         }
 
         // checks for expired nodes and removes

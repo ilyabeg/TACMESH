@@ -23,9 +23,6 @@ namespace TacMesh.Core.assets.node.packet
             _neighborTable = neighborTable;
             _transporter = transporter;
             _packetBuffer = packetBuffer;
-
-            // TESTING PACKET BUFFER LOGIC UPON MEETING NEW NEIGHBOR
-            _neighborTable.NewNeighborDiscovered += (s,e) => OnNewNeighborDiscovered(e);
         }
 
         /// <summary>
@@ -57,29 +54,6 @@ namespace TacMesh.Core.assets.node.packet
             //
             _packetBuffer.Add(packet);
             return false;
-        }
-
-
-
-        // TMP TESTING
-        private void OnNewNeighborDiscovered(NeighborRecord newNeighborRecord)
-        {
-            // NOTE: this test simply tests out the packet buffer logic. it does not test multi-hop forwards
-            // upon discovering a new neighbor.
-
-            Console.WriteLine($"[PACKET SENDER] New Neighbor Discovered: \"{newNeighborRecord.NeighborID}\"");
-
-            if (_packetBuffer.GetRecipientMessages(newNeighborRecord.NeighborID, out Queue<DataPacket>? messages))
-            {
-                Console.WriteLine($"[PACKET SENDER] This Node has {messages!.Count} messages to the neighbor \"{newNeighborRecord.NeighborID}\"");
-                int count = 1;
-
-                while (messages!.Count > 0)
-                {
-                    bool res = SendPacket(messages.Dequeue());
-                    Console.WriteLine($"[PACKET SENDER] Message #{count} forward {(res ? "Success!" : "Failed.")}");
-                }
-            }
         }
     }
 }
