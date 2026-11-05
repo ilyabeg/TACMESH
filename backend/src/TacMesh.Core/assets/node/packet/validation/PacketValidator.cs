@@ -2,7 +2,6 @@
 using TacMesh.Core.assets.clocks;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.packet;
-using TacMesh.Core.packet_related;
 
 namespace TacMesh.Core.assets.node.packet.validation
 {

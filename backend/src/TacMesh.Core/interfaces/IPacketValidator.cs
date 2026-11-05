@@ -1,4 +1,4 @@
-﻿using TacMesh.Core.packet_related;
+﻿using TacMesh.Core.packet;
 
 namespace TacMesh.Core.interfaces
 {

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using TacMesh.Core.assets;
+using TacMesh.Core.assets.graph;
 using TacMesh.Core.assets.node;
-using TacMesh.Core.graph_related;
 using TacMesh.Core.interfaces.beacon_and_destination;
 using TacMesh.Core.interfaces.communication;
 using TacMesh.Core.utils.ipc.types;

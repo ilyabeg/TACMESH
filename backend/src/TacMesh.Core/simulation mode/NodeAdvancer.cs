@@ -1,5 +1,5 @@
-﻿using TacMesh.Core.assets.node;
-using TacMesh.Core.graph_related;
+﻿using TacMesh.Core.assets.graph;
+using TacMesh.Core.assets.node;
 using TacMesh.Core.utils.physics;
 
 namespace TacMesh.Core.assets

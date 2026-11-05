@@ -1,8 +1,7 @@
 ﻿using System.Text;
-using TacMesh.Core.packet;
 using TacMesh.Core.utils.design;
 
-namespace TacMesh.Core.packet_related
+namespace TacMesh.Core.packet
 {
     public class DataPacket
     {
@@ -67,5 +66,25 @@ namespace TacMesh.Core.packet_related
 
             return str.ToString();
         }
+
+        /// <summary>
+        /// Overriden Equals() to treat different packet references with the same 
+        /// MsgID Guid as the same exact packets
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns>If this packet is equal to the obj packet</returns>
+        public override bool Equals(object? obj)
+        {
+            if (obj is DataPacket other) {
+                return PacketHeader.MsgID == other.PacketHeader.MsgID;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Overriden GetHashCode() for comparing
+        /// </summary>
+        /// <returns>The hashcode of the packet message id</returns>
+        public override int GetHashCode() => PacketHeader.MsgID.GetHashCode();
     }
 }

@@ -1,4 +1,4 @@
-﻿using TacMesh.Core.graph_related;
+﻿using TacMesh.Core.assets.graph;
 
 namespace TacMesh.Core.interfaces.raster
 {

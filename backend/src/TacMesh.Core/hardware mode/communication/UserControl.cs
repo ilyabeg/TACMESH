@@ -5,7 +5,6 @@ using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.interfaces.beacon_and_destination;
 using TacMesh.Core.interfaces.communication;
 using TacMesh.Core.packet;
-using TacMesh.Core.packet_related;
 
 namespace TacMesh.Core.hardware_mode.communication
 {
@@ -84,11 +83,6 @@ namespace TacMesh.Core.hardware_mode.communication
             {
                 UserMessage? userMessage = JsonSerializer.Deserialize<UserMessage>(input) ?? throw new Exception();
 
-
-                // TEMP TEST
-                Console.WriteLine($"[USER CONTROL] Parsed user message: {userMessage.Source} -> {userMessage.Destination}, logical clock: {userMessage.LogicalClock}");
-
-
                 // build and send the packet to the destination
                 //
                 DataPacket packet = CreateSourcePacket(userMessage);
@@ -102,7 +96,7 @@ namespace TacMesh.Core.hardware_mode.communication
         {
             // TEMPORARILY inject as link state message for lamport clock test
             return new DataPacket(
-                new PacketHeader(PacketType.LinkState, userMessage.Source, userMessage.Destination, Guid.NewGuid(), logicalClock: userMessage.LogicalClock /*_lamportClock.GetCurrent()*/), 
+                new PacketHeader(PacketType.LinkState, userMessage.Source, userMessage.Destination, Guid.NewGuid(), logicalClock: _lamportClock.GetCurrent()), 
                 userMessage.Message
             );
         }

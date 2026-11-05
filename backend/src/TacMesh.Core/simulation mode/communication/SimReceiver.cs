@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using TacMesh.Core.custom_events;
 using TacMesh.Core.events;
 using TacMesh.Core.interfaces;
-using TacMesh.Core.packet_related;
+using TacMesh.Core.packet;
 using TacMesh.Core.utils;
 
 namespace TacMesh.Core.communication.simulation_communication

@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
-using TacMesh.Core.interfaces;
+using TacMesh.Core.interfaces.location;
 
-namespace TacMesh.Core.graph_related
+namespace TacMesh.Core.assets.graph
 {
     public class Location : ILocation
     {

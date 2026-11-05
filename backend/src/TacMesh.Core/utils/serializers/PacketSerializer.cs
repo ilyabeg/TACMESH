@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using TacMesh.Core.packet;
-using TacMesh.Core.packet_related;
 
 namespace TacMesh.Core.utils.serializers
 {

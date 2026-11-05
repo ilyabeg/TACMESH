@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Text.Json;
 using TacMesh.Core.assets;
 using TacMesh.Core.assets.clocks;
+using TacMesh.Core.assets.graph;
 using TacMesh.Core.assets.node;
 using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.assets.node.packet.buffer;
@@ -18,12 +19,10 @@ using TacMesh.Core.interfaces.clock_interfaces;
 using TacMesh.Core.interfaces.communication;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
-using TacMesh.Core.launcher;
 using TacMesh.Core.map_related;
 using TacMesh.Core.models;
 using TacMesh.Core.tables.node_related;
 using TacMesh.Core.utils;
-using TacMesh.Core.utils.serializers;
 
 namespace TacMesh.Engine
 {
@@ -62,7 +61,7 @@ namespace TacMesh.Engine
                 string nodeId = args[0].ToString();
                 string otherNode = nodeId.ElementAt(nodeId.Length - 1) == '1' ? "Node-02" : "Node-01";
                 NodeInfo nodeInfo = new NodeInfo(nodeId, NodeRole.Soldier);
-                NodeConfigs nodeConfigs = new NodeConfigs(1.0, new Core.graph_related.Location(0, 0), 400, new List<string>([otherNode]), new Queue<Core.graph_related.Location>());
+                NodeConfigs nodeConfigs = new NodeConfigs(1.0, new Location(0, 0), 400, new List<string>([otherNode]), new Queue<Location>());
 
                 // --- create all dependencies ---
 

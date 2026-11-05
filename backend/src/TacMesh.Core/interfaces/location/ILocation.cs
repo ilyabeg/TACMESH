@@ -1,4 +1,4 @@
-﻿namespace TacMesh.Core.interfaces
+﻿namespace TacMesh.Core.interfaces.location
 {
     public interface ILocation
     {

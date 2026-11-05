@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using TacMesh.Core.graph_related;
+using TacMesh.Core.assets.graph;
 using TacMesh.Core.interfaces.beacon_and_destination;
 using TacMesh.Core.utils;
 

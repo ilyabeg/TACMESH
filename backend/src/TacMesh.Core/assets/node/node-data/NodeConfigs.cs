@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json.Serialization;
-using TacMesh.Core.graph_related;
+using TacMesh.Core.assets.graph;
 
 namespace TacMesh.Core.assets.node
 {

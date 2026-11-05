@@ -1,4 +1,4 @@
-﻿using TacMesh.Core.graph_related;
+﻿using TacMesh.Core.assets.graph;
 using TacMesh.Core.interfaces.raster;
 
 namespace TacMesh.Core.map_related

@@ -1,5 +1,5 @@
 ﻿using TacMesh.Core.interfaces.clock_interfaces;
-using TacMesh.Core.packet_related;
+using TacMesh.Core.packet;
 
 namespace TacMesh.Core.assets.node.packet.buffer
 {

@@ -36,12 +36,6 @@ namespace TacMesh.Core.assets.node.packet.validation
                     _logicalClockValue = newValue;
                     return true;
                 }
-
-
-                // TEMP TEST
-                Console.WriteLine($"[VALIDATION LOGIC] Dropping packet from source because new logical clock is: {newValue} <= {_logicalClockValue}");
-
-
                 return false;
             }
         }
