@@ -5,6 +5,8 @@ using TacMesh.Core.assets;
 using TacMesh.Core.assets.clocks;
 using TacMesh.Core.assets.node;
 using TacMesh.Core.assets.node.packet;
+using TacMesh.Core.assets.node.packet.buffer;
+using TacMesh.Core.assets.node.packet.validation;
 using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.communication.simulation_communication;
 using TacMesh.Core.database_related;
@@ -91,9 +93,13 @@ namespace TacMesh.Engine
                 // Topology Filter
                 TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);
 
-                // Packet Sender, Packet Processor
+                // Lamport Logical Clock
+                LamportClock lamportClock = new LamportClock();
+
+                // Packet Sender, Packet Validator, Packet Processor
+                PacketValidator packetValidator = new PacketValidator(lamportClock);
                 PacketSender packetSender = new PacketSender(neighborTable, simTransport, new PacketBuffer(systemClock));
-                PacketProcessor packetProcessor = new PacketProcessor(topologyFilter, heartbeater, neighborTable);
+                PacketProcessor packetProcessor = new PacketProcessor(topologyFilter, heartbeater, neighborTable, packetValidator);
 
                 // IInputListener
                 //IInputListener launcherControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);

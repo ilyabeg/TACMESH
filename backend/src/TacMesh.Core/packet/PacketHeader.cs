@@ -20,24 +20,18 @@ namespace TacMesh.Core.packet
         public const int HEADER_SIZE = 76; // bytes
 
         #region TEMPORARY MAGIC NUMBERS
-        // THESE ARE TEMPORARY MAGIC NUMBERS AND I KNOW IT IS WRONG.
-        // UNTILL I ADD THE MISSION PACKAGE OR GET IT FROM CONFIG FILE LATER,
-        // THESS WILL BE DEFAULT CONFIGURATIONS STRICTLY FOR TESTING.
+        public const int DEFAULT_MIN_VALUE = 0;
         public const byte PROTOCOL_VERSION = 1;
-        public const long MAX_TTL = 10000000; // in seconds
-        public const long MIN_TTL = 1;
+        public const long DEFAULT_TTL = 5000; // representing ms (default 5 sec)
         public const byte MIN_PRIORITY = 1; 
         public const byte MAX_PRIORITY = 10;
-        public const byte DEFAULT_HOP = 0;
         public const byte MAX_HOP = 255;
-        public const long MIN_LOGICAL_CLOCK = 0;
-        public const long MAX_LOGICAL_CLOCK = long.MaxValue;
         #endregion
 
         // current legal string length 16 bytes
         // CAN BE CHANGED AT ANY TIME OR BE PROVIDED FROM AN OTHER SOURCE,
         // SUCH AS THE CONFIG FILE OR MISSION PACKAGE.
-        public const int LegalStringLength = 16;
+        public const int LEGAL_STRING_LENGTH = 16;
 
 
         // Header fields in order of transmision
@@ -64,8 +58,8 @@ namespace TacMesh.Core.packet
                 // check if actual byte length and not the amount of characters
                 int byteCount = Encoding.UTF8.GetByteCount(value);
 
-                if (byteCount > LegalStringLength)
-                    throw new ArgumentException($"Error initiating Source ID. The ID must be {LegalStringLength} bytes or less");
+                if (byteCount > LEGAL_STRING_LENGTH)
+                    throw new ArgumentException($"Error initiating Source ID. The ID must be {LEGAL_STRING_LENGTH} bytes or less");
                 
                 field = value;
             }
@@ -76,8 +70,8 @@ namespace TacMesh.Core.packet
             get;
             private set
             {
-                if (value < DEFAULT_HOP || value > MAX_HOP)
-                    throw new ArgumentException($"Error initiating Hop Count. Hop Count must be between {DEFAULT_HOP}-{MAX_HOP}");
+                if (value < DEFAULT_MIN_VALUE || value > MAX_HOP)
+                    throw new ArgumentException($"Error initiating Hop Count. Hop Count must be between {DEFAULT_MIN_VALUE}-{MAX_HOP}");
                 field = value;
             }
         }
@@ -86,14 +80,9 @@ namespace TacMesh.Core.packet
         {
             get;
             private set
-            {
-                // THERE IS NO CHECK FOR THIS FIELDS, AND I KNOW THIS IS WRONG.
-                // I JUST DIDN'T GET TO LEARN YET WHAT THIS FIELD DOES EXACTLY, THUS I
-                // DON'T HAVE A CHECK YET. THIS IS STRICTLY TEMPORARY AND WILL BE FIXED
-                // IN THE FUTURE.
-
-                //if (value ...)
-                //    throw new ArgumentException("Error initiating Sender Counter.");
+            {                
+                if (value < DEFAULT_MIN_VALUE || value > long.MaxValue)
+                    throw new ArgumentException("Error initiating Sender Counter.");
                 field = value;
             }
         }
@@ -103,9 +92,7 @@ namespace TacMesh.Core.packet
             get;
             private set
             {
-                // AGAIN, MAX TTL IS YET TO BE DESIDED AND THIS MAGIC NUMBER IS STRICTLY TEMPORARY.
-
-                if (value < MIN_TTL || value > MAX_TTL)
+                if (value < DEFAULT_MIN_VALUE || value > long.MaxValue)
                     throw new ArgumentException("Error initiating TTL");
                 field = value;
             }
@@ -144,8 +131,8 @@ namespace TacMesh.Core.packet
                 // check if actual byte length and not the amount of characters
                 int byteCount = Encoding.UTF8.GetByteCount(value);
 
-                if (byteCount > LegalStringLength)
-                    throw new ArgumentException($"Error initiating Destination ID. The ID must be {LegalStringLength} bytes or less");
+                if (byteCount > LEGAL_STRING_LENGTH)
+                    throw new ArgumentException($"Error initiating Destination ID. The ID must be {LEGAL_STRING_LENGTH} bytes or less");
 
                 field = value;
             }
@@ -156,8 +143,6 @@ namespace TacMesh.Core.packet
             get;
             private set
             {
-                // AGAIN, THESE ARE STRICTLY ONLY TEMPORARY VALUES AND WILL BE CHANGED.
-
                 if (value < MIN_PRIORITY || value > MAX_PRIORITY)
                     throw new ArgumentException($"Error initializing message priority. The priority must be between {MIN_PRIORITY}-{MAX_PRIORITY}");
                 field = value;
@@ -169,19 +154,27 @@ namespace TacMesh.Core.packet
             get;
             private set
             {
-                if (value < MIN_LOGICAL_CLOCK || value > MAX_LOGICAL_CLOCK)
-                    throw new ArgumentException($"Error initializing Logical Clock. The Logical Clock must be between {MIN_LOGICAL_CLOCK}-{MAX_LOGICAL_CLOCK:e3}");
+                if (value < DEFAULT_MIN_VALUE || value > long.MaxValue)
+                    throw new ArgumentException($"Error initializing Logical Clock. The Logical Clock must be between {DEFAULT_MIN_VALUE}-{long.MaxValue:e3}");
                 field = value;
             }
         }
         #endregion
 
-        // Constructor NEEDS all fields at once, no way to make header with a missing field
+        // Constructor build the packet header with the specified fields if they are included. non included
+        // fields default to the constant default values
+        //
         public PacketHeader(
-            byte p_version, PacketType msgType,
-            Guid msgID, string srcID, string dstID,
-            byte hopCount, long logicalClock,
-            long ttl, byte priority, long sender_counter)
+            PacketType msgType,
+            string srcID, 
+            string dstID,
+            Guid msgID,
+            byte priority = MIN_PRIORITY,
+            long logicalClock = DEFAULT_MIN_VALUE,
+            long ttl = DEFAULT_TTL,
+            long sender_counter = DEFAULT_MIN_VALUE,
+            byte p_version = PROTOCOL_VERSION,
+            byte hopCount = DEFAULT_MIN_VALUE)
         {
             ProtocolVersion = p_version;
             MsgType = msgType;
@@ -204,37 +197,6 @@ namespace TacMesh.Core.packet
             if (HopCount == MAX_HOP)
                 throw new InvalidOperationException($"Cannot increment Hop Count. Hop Count is already at maximum value of {MAX_HOP}");
             HopCount++;
-        }
-
-
-        // IMPORTANT NOTE: UPDATERS FOR SENDER COUNTER, TTL, AND LOGICAL CLOCK HAVE NOT BEEN HANDLED YET
-        // AND I AM AWARE, AND WILL FIX. THIS IS BECAUSE I DIDN'T DECIDE YET HOW I AM GOING TO IMPLEMENT.
-        // THIS IS AN INITIAL IMPLEMENTATION AND I DON'T PLAN OF HAVING IT LIKE THIS IN THE FINAL VERSION.
-
-
-        /// <summary>
-        /// Initializes a PacketHeader with default values except mandatory ones
-        /// </summary>
-        /// <param name="msgType"></param>
-        /// <param name="srcID"></param>
-        /// <param name="dstID"></param>
-        /// <returns></returns>
-        public static PacketHeader InitHeader(PacketType msgType, string srcID, string dstID)
-        {
-            // Note: TEMPORARILY use magic numbers (will be changed)
-            //
-            return new PacketHeader(
-                p_version: 1,
-                msgType: msgType,
-                msgID: Guid.NewGuid(),
-                srcID: srcID,
-                dstID: dstID,
-                hopCount: 0,
-                logicalClock: 0,
-                ttl: 15000, // ms
-                priority: 1,
-                sender_counter: 0
-            );
         }
 
         /// <summary>

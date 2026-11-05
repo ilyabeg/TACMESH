@@ -24,8 +24,8 @@ namespace TacMesh.Core.utils.serializers
             byteWriter.WriteBytes(header.ProtocolVersion);
             byteWriter.WriteBytes((byte)header.MsgType);
             byteWriter.WriteBytes(header.MsgID);
-            byteWriter.WriteBytes(header.SrcID, PacketHeader.LegalStringLength);
-            byteWriter.WriteBytes(header.DstID, PacketHeader.LegalStringLength);
+            byteWriter.WriteBytes(header.SrcID, PacketHeader.LEGAL_STRING_LENGTH);
+            byteWriter.WriteBytes(header.DstID, PacketHeader.LEGAL_STRING_LENGTH);
             byteWriter.WriteBytes(header.HopCount);
             byteWriter.WriteBytes(header.LogicalClock);
             byteWriter.WriteBytes(header.TTL);
@@ -47,7 +47,7 @@ namespace TacMesh.Core.utils.serializers
                 throw new ArgumentOutOfRangeException($"Unable to Deserialize due to: Provided byte stream was not {PacketHeader.HEADER_SIZE} bytes");
 
             ByteReader reader = new ByteReader(byteStream);
-            int len = PacketHeader.LegalStringLength;
+            int len = PacketHeader.LEGAL_STRING_LENGTH;
 
             return new PacketHeader(
                 p_version: reader.ReadByte(),

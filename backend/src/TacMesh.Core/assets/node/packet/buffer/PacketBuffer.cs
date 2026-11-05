@@ -1,9 +1,8 @@
-﻿using TacMesh.Core.assets.node.packet_buffer;
-using TacMesh.Core.interfaces.clock_interfaces;
+﻿using TacMesh.Core.interfaces.clock_interfaces;
 using TacMesh.Core.packet;
 using TacMesh.Core.packet_related;
 
-namespace TacMesh.Core.assets.node
+namespace TacMesh.Core.assets.node.packet.buffer
 {
     public class PacketBuffer
     {

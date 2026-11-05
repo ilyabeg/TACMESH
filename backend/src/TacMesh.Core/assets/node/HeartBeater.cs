@@ -84,7 +84,7 @@ namespace TacMesh.Core.assets.node
         private DataPacket CreateHeartbeatPacket(string destinationID)
         {            
             // init heartbeat data packet packet header
-            PacketHeader header = PacketHeader.InitHeader(PacketType.Heartbeat, _srcId, destinationID);
+            PacketHeader header = new PacketHeader(PacketType.Heartbeat, _srcId, destinationID, Guid.NewGuid());
 
             // FOR NOW, heartbeat payload will be empty, until location report is added
             string payload = string.Empty;

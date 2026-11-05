@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using TacMesh.Core.assets.clocks;
 using TacMesh.Core.assets.node;
 using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.interfaces.beacon_and_destination;
@@ -20,14 +21,16 @@ namespace TacMesh.Core.hardware_mode.communication
         // maybe temporary
         private readonly NodeConfigs _nodeConfigs;
         private readonly IBeaconEmitter _beaconEmitter;
+        private readonly LamportClock _lamportClock;
 
 
         // Constructor 
-        public UserControl(PacketSender packetSender, NodeConfigs nodeConfigs, IBeaconEmitter beaconEmitter) 
+        public UserControl(PacketSender packetSender, NodeConfigs nodeConfigs, IBeaconEmitter beaconEmitter, LamportClock lamportClock) 
         {
             _packetSender = packetSender;
             _nodeConfigs = nodeConfigs;
             _beaconEmitter = beaconEmitter;
+            _lamportClock = lamportClock;
         }
 
 
@@ -89,11 +92,11 @@ namespace TacMesh.Core.hardware_mode.communication
             }
             catch { return false; }
         }
-
+        
         private DataPacket CreateSourcePacket(UserMessage userMessage)
         {
             return new DataPacket(
-                PacketHeader.InitHeader(PacketType.UserMessage, userMessage.Source, userMessage.Destination), 
+                new PacketHeader(PacketType.UserMessage, userMessage.Source, userMessage.Destination, Guid.NewGuid(), logicalClock: _lamportClock.GetCurrent()), 
                 userMessage.Message
             );
         }

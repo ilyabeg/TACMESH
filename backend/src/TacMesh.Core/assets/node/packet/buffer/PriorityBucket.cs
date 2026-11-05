@@ -1,7 +1,7 @@
 ﻿using TacMesh.Core.interfaces.clock_interfaces;
 using TacMesh.Core.packet_related;
 
-namespace TacMesh.Core.assets.node.packet_buffer
+namespace TacMesh.Core.assets.node.packet.buffer
 {
     /// <summary>
     /// Priority bucket object to hold a MinHeap containing DataPackets of the same priority

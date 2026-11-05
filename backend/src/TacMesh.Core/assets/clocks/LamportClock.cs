@@ -3,17 +3,30 @@
     /// <summary>
     /// Lamport's logical clock to determine the order of updates
     /// </summary>
-    public static class LamportClock
+    public class LamportClock
     {
         // counter which starts as 0
-        private static long _COUNTER = 0;
+        private long _COUNTER;
         private static readonly object _syncLock = new object();
+
+        // constructor
+        public LamportClock()
+        {
+            // init count
+            _COUNTER = 0;
+        }
+
+        /// <summary>
+        /// Gets the current value of the local logical clock
+        /// </summary>
+        /// <returns>The current value of the clock</returns>
+        public long GetCurrent() => Interlocked.Read(ref _COUNTER);
 
         /// <summary>
         /// Get's the next value of the counter 
         /// </summary>
         /// <returns>Returns the value of the counter + 1</returns>
-        public static long GetNext() => Interlocked.Increment(ref _COUNTER); // using atomic increment for thread safety
+        public long GetNext() => Interlocked.Increment(ref _COUNTER); // using atomic increment for thread safety
 
         /// <summary>
         /// Syncs the local counter with the maximum between the current and remote counter, 
@@ -21,7 +34,7 @@
         /// </summary>
         /// <param name="remoteCounter">The remote counter which was received</param>
         /// <returns>The new value of the local counter after the change</returns>
-        public static long Sync(long remoteCounter)
+        public long Sync(long remoteCounter)
         {
             // lock to avoid race conditions
             //
