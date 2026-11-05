@@ -1,4 +1,5 @@
-﻿using TacMesh.Core.assets.node.packet.validation;
+﻿using TacMesh.Core.assets.clocks;
+using TacMesh.Core.assets.node.packet.validation;
 using TacMesh.Core.database_related;
 using TacMesh.Core.events;
 using TacMesh.Core.hardware_mode;
@@ -110,6 +111,12 @@ namespace TacMesh.Core.assets.node.packet
             if (packet.PacketHeader.MsgType == PacketType.LinkState && _packetValidator.ValidateLogicalClock(packet))
             {
                 // To Do ...
+
+
+                // TEMP TEST
+                Console.WriteLine($"[PACKET PROCESSOR] Link state packet from source {packet.PacketHeader.SrcID} was valid. Processing now ...");
+
+
                 return true;
             }
             return false;

@@ -14,6 +14,13 @@ namespace TacMesh.Core.hardware_mode.communication
         [JsonInclude]
         public string Message { get; private set; }
 
+
+        // TEMP TEST add the logical clock to test out packet drops 
+
+        [JsonInclude]
+        public long LogicalClock { get; private set; }
+
+
         // empty constructor for json recognition
         public UserMessage() { }
     }

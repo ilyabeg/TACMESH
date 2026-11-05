@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using TacMesh.Core.assets.clocks;
 using TacMesh.Core.database_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
@@ -17,16 +18,18 @@ namespace TacMesh.Core.assets.node
         private readonly string _srcId; // id of the src node
         private readonly HeartbeatLogger _logger;
         private readonly ITransport _transporter;
-        private readonly IRadioModel _radioModel;              
+        private readonly IRadioModel _radioModel;
+        private readonly LamportClock _lamportClock;
 
 
         // inject dependencies through constructor
-        public HeartBeater(string nodeId, HeartbeatLogger logger, ITransport transporter, IRadioModel radioModel)
+        public HeartBeater(string nodeId, HeartbeatLogger logger, ITransport transporter, IRadioModel radioModel, LamportClock lamportClock)
         {
             _srcId = nodeId;
             _logger = logger;
             _transporter = transporter;
             _radioModel = radioModel;
+            _lamportClock = lamportClock;
         }
 
         /// <summary>
@@ -84,7 +87,14 @@ namespace TacMesh.Core.assets.node
         private DataPacket CreateHeartbeatPacket(string destinationID)
         {            
             // init heartbeat data packet packet header
-            PacketHeader header = new PacketHeader(PacketType.Heartbeat, _srcId, destinationID, Guid.NewGuid());
+            //
+            PacketHeader header = new PacketHeader(
+                PacketType.Heartbeat,
+                _srcId, 
+                destinationID, 
+                Guid.NewGuid(), 
+                logicalClock: _lamportClock.GetNext()
+            );
 
             // FOR NOW, heartbeat payload will be empty, until location report is added
             string payload = string.Empty;

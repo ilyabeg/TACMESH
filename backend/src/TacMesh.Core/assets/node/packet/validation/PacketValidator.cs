@@ -83,7 +83,10 @@ namespace TacMesh.Core.assets.node.packet.validation
         {
             string source = packet.PacketHeader.SrcID;
 
-            if (_userValidationRecords.TryAdd(source, new ValidationRecord(packet.PacketHeader.LogicalClock)))
+            // init with the value of the current logical clock - 1, so the first ever record
+            // doesn't get dropped immedietly after the standard validation
+            //
+            if (_userValidationRecords.TryAdd(source, new ValidationRecord(packet.PacketHeader.LogicalClock - 1)))
             {
                 // sync clocks ...
                 //

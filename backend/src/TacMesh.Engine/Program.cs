@@ -60,7 +60,7 @@ namespace TacMesh.Engine
                 // !!! TEMP TEST !!!
 
                 string nodeId = args[0].ToString();
-                string otherNode = nodeId.ElementAt(nodeId.Length - 1) == '1' ? "Node2" : "Node1";
+                string otherNode = nodeId.ElementAt(nodeId.Length - 1) == '1' ? "Node-02" : "Node-01";
                 NodeInfo nodeInfo = new NodeInfo(nodeId, NodeRole.Soldier);
                 NodeConfigs nodeConfigs = new NodeConfigs(1.0, new Core.graph_related.Location(0, 0), 400, new List<string>([otherNode]), new Queue<Core.graph_related.Location>());
 
@@ -80,21 +80,19 @@ namespace TacMesh.Engine
                 // ITransport
                 ITransport simTransport = new SimTransport(engine_socket, radioModel);
 
-                // IClock
+                // IClock and Lamport Logical Clock
                 IClock systemClock = new SystemClock();
+                LamportClock lamportClock = new LamportClock();
 
                 // Heartbeats, NeighbourTable
-                HeartBeater heartbeater = GetHeartBeater(nodeInfo.NodeId, simTransport, radioModel);
+                HeartBeater heartbeater = new HeartBeater(nodeInfo.NodeId, new HeartbeatLogger(), simTransport, radioModel, lamportClock);
                 NeighborTable neighborTable = new NeighborTable(systemClock);
 
                 // Beacon Emitter
                 IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeInfo.NodeId, assignedPort, SysConfigs.McastEndPoint);
 
                 // Topology Filter
-                TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);
-
-                // Lamport Logical Clock
-                LamportClock lamportClock = new LamportClock();
+                TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);                
 
                 // Packet Sender, Packet Validator, Packet Processor
                 PacketValidator packetValidator = new PacketValidator(lamportClock);
@@ -103,7 +101,7 @@ namespace TacMesh.Engine
 
                 // IInputListener
                 //IInputListener launcherControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
-                IInputListener userControl = new UserControl(packetSender, nodeConfigs, beaconEmitter);                
+                IInputListener userControl = new UserControl(packetSender, nodeConfigs, beaconEmitter, lamportClock);                
 
 
                 // --- inject all dependencies --- 
@@ -140,10 +138,7 @@ namespace TacMesh.Engine
 
         static Socket GetRadioSocket() 
             => SocketGenerator.GenerateMcastListenerSocket(SysConfigs.McastGroupIp, SysConfigs.McastPort);
-
-        static HeartBeater GetHeartBeater(string nodeId, ITransport transport, IRadioModel radioModel) 
-            => new HeartBeater(nodeId, new HeartbeatLogger(), transport, radioModel);
-
+        
         static NodeInfo? DeserializeNodeInfo(string json)
         {
             try {

@@ -1,4 +1,6 @@
-﻿namespace TacMesh.Core.assets.node.packet.validation
+﻿using TacMesh.Core.assets.clocks;
+
+namespace TacMesh.Core.assets.node.packet.validation
 {
     /// <summary>
     /// Record class to hold the highest logical clock received and 
@@ -34,6 +36,12 @@
                     _logicalClockValue = newValue;
                     return true;
                 }
+
+
+                // TEMP TEST
+                Console.WriteLine($"[VALIDATION LOGIC] Dropping packet from source because new logical clock is: {newValue} <= {_logicalClockValue}");
+
+
                 return false;
             }
         }

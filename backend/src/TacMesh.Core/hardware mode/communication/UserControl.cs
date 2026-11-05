@@ -74,15 +74,20 @@ namespace TacMesh.Core.hardware_mode.communication
 
         private void TryParseStdInput(string input)
         {
-            if (TryParseUserMessage(input)) return;
+            if (TryParseMessage(input)) return;
         }
 
         // try to parse as a user message json
-        private bool TryParseUserMessage(string input)
+        private bool TryParseMessage(string input)
         {
             try
             {
                 UserMessage? userMessage = JsonSerializer.Deserialize<UserMessage>(input) ?? throw new Exception();
+
+
+                // TEMP TEST
+                Console.WriteLine($"[USER CONTROL] Parsed user message: {userMessage.Source} -> {userMessage.Destination}, logical clock: {userMessage.LogicalClock}");
+
 
                 // build and send the packet to the destination
                 //
@@ -95,8 +100,9 @@ namespace TacMesh.Core.hardware_mode.communication
         
         private DataPacket CreateSourcePacket(UserMessage userMessage)
         {
+            // TEMPORARILY inject as link state message for lamport clock test
             return new DataPacket(
-                new PacketHeader(PacketType.UserMessage, userMessage.Source, userMessage.Destination, Guid.NewGuid(), logicalClock: _lamportClock.GetCurrent()), 
+                new PacketHeader(PacketType.LinkState, userMessage.Source, userMessage.Destination, Guid.NewGuid(), logicalClock: userMessage.LogicalClock /*_lamportClock.GetCurrent()*/), 
                 userMessage.Message
             );
         }
