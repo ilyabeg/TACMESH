@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using TacMesh.Core.assets.clocks;
 using TacMesh.Core.assets.node;
 using TacMesh.Core.assets.node.packet;
@@ -96,8 +97,8 @@ namespace TacMesh.Core.hardware_mode.communication
         {
             // TEMPORARILY inject as link state message for lamport clock test
             return new DataPacket(
-                new PacketHeader(PacketType.LinkState, userMessage.Source, userMessage.Destination, Guid.NewGuid(), logicalClock: _lamportClock.GetCurrent()), 
-                userMessage.Message
+                new PacketHeader(PacketType.LinkState, userMessage.Source, userMessage.Destination, Guid.NewGuid(), logicalClock: _lamportClock.GetCurrent()),
+                Encoding.UTF8.GetBytes(userMessage.Message)
             );
         }
     }

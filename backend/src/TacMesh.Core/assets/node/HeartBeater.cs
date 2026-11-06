@@ -15,6 +15,7 @@ namespace TacMesh.Core.assets.node
 
         // heart beater dependencies
         private readonly string _srcId; // id of the src node
+        private readonly NodeConfigs _nodeConfigs; // keep access to node location
         private readonly HeartbeatLogger _logger;
         private readonly ITransport _transporter;
         private readonly IRadioModel _radioModel;
@@ -22,9 +23,10 @@ namespace TacMesh.Core.assets.node
 
 
         // inject dependencies through constructor
-        public HeartBeater(string nodeId, HeartbeatLogger logger, ITransport transporter, IRadioModel radioModel, LamportClock lamportClock)
+        public HeartBeater(string nodeId, NodeConfigs nodeConfigs, HeartbeatLogger logger, ITransport transporter, IRadioModel radioModel, LamportClock lamportClock)
         {
             _srcId = nodeId;
+            _nodeConfigs = nodeConfigs;
             _logger = logger;
             _transporter = transporter;
             _radioModel = radioModel;
@@ -96,7 +98,7 @@ namespace TacMesh.Core.assets.node
             );
 
             // FOR NOW, heartbeat payload will be empty, until location report is added
-            string payload = string.Empty;
+            byte[] payload = [];
 
             return new DataPacket(header, payload);
         }

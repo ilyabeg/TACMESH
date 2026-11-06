@@ -2,10 +2,11 @@
 using System.Text;
 using TacMesh.Core.assets;
 using TacMesh.Core.interfaces.clock_interfaces;
+using TacMesh.Core.tables.node_related;
 using TacMesh.Core.utils;
 using TacMesh.Core.utils.design;
 
-namespace TacMesh.Core.tables.node_related
+namespace TacMesh.Core.tables.node
 {
     public class NeighborTable
     {

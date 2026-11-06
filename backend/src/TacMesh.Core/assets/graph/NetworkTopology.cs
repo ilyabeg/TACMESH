@@ -6,5 +6,8 @@
     /// </summary>
     public class NetworkTopology
     {
+        // event to invoke when the local topology state changes
+        //
+        public event EventHandler? OnTopologyChanged;
     }
 }

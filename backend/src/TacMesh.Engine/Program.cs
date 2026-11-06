@@ -21,7 +21,7 @@ using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
 using TacMesh.Core.map_related;
 using TacMesh.Core.models;
-using TacMesh.Core.tables.node_related;
+using TacMesh.Core.tables.node;
 using TacMesh.Core.utils;
 
 namespace TacMesh.Engine
@@ -84,7 +84,7 @@ namespace TacMesh.Engine
                 LamportClock lamportClock = new LamportClock();
 
                 // Heartbeats, NeighbourTable
-                HeartBeater heartbeater = new HeartBeater(nodeInfo.NodeId, new HeartbeatLogger(), simTransport, radioModel, lamportClock);
+                HeartBeater heartbeater = new HeartBeater(nodeInfo.NodeId, nodeConfigs, new HeartbeatLogger(), simTransport, radioModel, lamportClock);
                 NeighborTable neighborTable = new NeighborTable(systemClock);
 
                 // Beacon Emitter

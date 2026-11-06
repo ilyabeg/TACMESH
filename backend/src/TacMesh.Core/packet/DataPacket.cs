@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections;
+using System.Text;
 using TacMesh.Core.utils.design;
 
 namespace TacMesh.Core.packet
@@ -9,10 +10,10 @@ namespace TacMesh.Core.packet
 
         // packet fields
         public PacketHeader PacketHeader { get; private set; }
-        public string Payload { get; private set; }
+        public byte[] Payload { get; private set; }
         
         // constructor
-        public DataPacket(PacketHeader packetHeader, string payload)
+        public DataPacket(PacketHeader packetHeader, byte[] payload)
         {
             PacketHeader = packetHeader;
             Payload = payload;
@@ -22,9 +23,6 @@ namespace TacMesh.Core.packet
         public override string ToString()
         {
             StringBuilder str = new StringBuilder();
-
-            // calculate payload bytes for the title
-            int payloadBytes = string.IsNullOrEmpty(Payload) ? 0 : Encoding.UTF8.GetByteCount(Payload);
 
             // title area
             str.AppendLine("╔════════════════════════════════════════════════════════════════════════╗");
@@ -40,12 +38,14 @@ namespace TacMesh.Core.packet
             }
 
             // payload area
+            int payloadBytes = Payload.Length;
+
             str.AppendLine("┌────────────────────────────────────────────────────────────────────────┐");
             string payloadTitle = $" PAYLOAD (Size: {payloadBytes} Bytes)";
             str.AppendLine($"│{payloadTitle.PadRight(ConsoleDesign._72_padRight)}│");
             str.AppendLine("├────────────────────────────────────────────────────────────────────────┤");
 
-            if (string.IsNullOrEmpty(Payload))
+            if (payloadBytes == 0)
             {
                 str.AppendLine($"│ {"[EMPTY]".PadRight(ConsoleDesign._70_padRight)} │");
             }
@@ -53,12 +53,11 @@ namespace TacMesh.Core.packet
             {
                 // split payload string into lines of max 70 characters 
                 int maxLineLen = 70;
-                for (int i = 0; i < Payload.Length; i += maxLineLen)
-                {
-                    int length = Math.Min(maxLineLen, Payload.Length - i);
-                    string payloadLine = Payload.Substring(i, length);
+                IEnumerable payloadChunks = Payload.Chunk(maxLineLen);
 
-                    str.AppendLine($"│ {payloadLine.PadRight(maxLineLen)} │");
+                foreach (var chunk in payloadChunks)
+                {                    
+                    str.AppendLine($"│ {chunk.ToString()!.PadRight(maxLineLen)} │");
                 }
             }
 

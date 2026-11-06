@@ -2,7 +2,7 @@
 using TacMesh.Core.assets.node.packet.buffer;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.packet;
-using TacMesh.Core.tables.node_related;
+using TacMesh.Core.tables.node;
 using TacMesh.Core.utils.serializers;
 
 namespace TacMesh.Core.assets.node.packet

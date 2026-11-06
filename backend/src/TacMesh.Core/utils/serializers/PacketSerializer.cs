@@ -12,7 +12,7 @@ namespace TacMesh.Core.utils.serializers
         /// Serializes the provided data packet into a byte array
         /// </summary>
         /// <param name="dataPacket"></param>
-        /// <returns></returns>
+        /// <returns>The serialized bytes of the DataPacket</returns>
         public static byte[] Serialize(DataPacket dataPacket)
         {
             // serialize the header first
@@ -21,10 +21,9 @@ namespace TacMesh.Core.utils.serializers
 
             // serialize the payload
             //
-            // Note: TEMPORARILY serialize into simple utf8 encoding. later, when the 
+            // Note: TEMPORARILY input the raw bytes. later, when the 
             // cryptography algorithms will be added, the payload will be encrypted 
-            //
-            byte[] payloadBytes = Encoding.UTF8.GetBytes(dataPacket.Payload ?? string.Empty); // nothing if payload is null
+            //            
 
             // digitally sign the packet
             //
@@ -33,14 +32,14 @@ namespace TacMesh.Core.utils.serializers
             // concatenate the byte arrays into 1 continuous byte array
             // by using the spread operator
             //
-            return [.. headerBytes, .. payloadBytes];
+            return [.. headerBytes, .. dataPacket.Payload];
         }
 
         /// <summary>
         /// Deserializes the provided byte array into a data packet
         /// </summary>
         /// <param name="packetBytes"></param>
-        /// <returns></returns>
+        /// <returns>The deserialized DataPacket</returns>
         public static DataPacket Deserialize(byte[] packetBytes)
         {
             // deserialize the first 76 header bytes first
@@ -56,7 +55,6 @@ namespace TacMesh.Core.utils.serializers
             //
             int payloadLength = packetBytes.Length - PacketHeader.HEADER_SIZE;
             byte[] payloadBytes = packetBytes.AsSpan().Slice(start: PacketHeader.HEADER_SIZE, payloadLength).ToArray();
-            string payload = Encoding.UTF8.GetString(payloadBytes);
 
             // authenticate the signature with the mission package per the proposal
             //
@@ -64,7 +62,7 @@ namespace TacMesh.Core.utils.serializers
 
             // return the full data packet
             //
-            return new DataPacket(header, payload);
+            return new DataPacket(header, payloadBytes);
         }
     }
 }

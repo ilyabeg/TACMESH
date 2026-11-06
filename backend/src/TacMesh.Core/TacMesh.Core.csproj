@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="tables\routing related\" />
+    <Folder Include="assets\routing\epidemic\" />
+    <Folder Include="assets\routing\prophet\" />
+    <Folder Include="tables\routing\" />
   </ItemGroup>
 
 </Project>
