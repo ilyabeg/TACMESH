@@ -3,7 +3,6 @@ using TacMesh.Core.assets.node.packet.buffer;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.packet;
 using TacMesh.Core.tables.node;
-using TacMesh.Core.utils.serializers;
 
 namespace TacMesh.Core.assets.node.packet
 {
@@ -13,14 +12,16 @@ namespace TacMesh.Core.assets.node.packet
     public class PacketSender
     {
         // dependencies
+        private readonly IByteSerializer<DataPacket> _packetSerializer;
         private readonly NeighborTable _neighborTable;
         private readonly ITransport _transporter;
         private readonly PacketBuffer _packetBuffer;
 
 
         // constructor
-        public PacketSender(NeighborTable neighborTable, ITransport transporter, PacketBuffer packetBuffer)
+        public PacketSender(IByteSerializer<DataPacket> packetSerializer, NeighborTable neighborTable, ITransport transporter, PacketBuffer packetBuffer)
         {
+            _packetSerializer = packetSerializer;
             _neighborTable = neighborTable;
             _transporter = transporter;
             _packetBuffer = packetBuffer;
@@ -42,7 +43,7 @@ namespace TacMesh.Core.assets.node.packet
             {
                 // TEMPORARILY transmit simply the message bytes, later the payload will be encrypted
                 //
-                byte[] packetBytes = PacketSerializer.Serialize(packet);
+                byte[] packetBytes = _packetSerializer.Serialize(packet);
 
                 // if message was sent successfuly, exit the function
                 //

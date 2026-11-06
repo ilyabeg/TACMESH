@@ -1,4 +1,6 @@
-﻿namespace TacMesh.Core.interfaces
+﻿using TacMesh.Core.interfaces.serializers;
+
+namespace TacMesh.Core.interfaces
 {
     public struct ByteCount
     {

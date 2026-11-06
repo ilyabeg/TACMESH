@@ -1,9 +1,9 @@
-﻿using System.Text;
+﻿using TacMesh.Core.interfaces;
 using TacMesh.Core.packet;
 
 namespace TacMesh.Core.utils.serializers
 {
-    public static class PacketSerializer
+    public class PacketSerializer: IByteSerializer<DataPacket>
     {
         // header serializer
         private static readonly PacketHeaderSerializer _headerSerializer = new();
@@ -13,7 +13,7 @@ namespace TacMesh.Core.utils.serializers
         /// </summary>
         /// <param name="dataPacket"></param>
         /// <returns>The serialized bytes of the DataPacket</returns>
-        public static byte[] Serialize(DataPacket dataPacket)
+        public byte[] Serialize(DataPacket dataPacket)
         {
             // serialize the header first
             //
@@ -40,7 +40,7 @@ namespace TacMesh.Core.utils.serializers
         /// </summary>
         /// <param name="packetBytes"></param>
         /// <returns>The deserialized DataPacket</returns>
-        public static DataPacket Deserialize(byte[] packetBytes)
+        public DataPacket Deserialize(byte[] packetBytes)
         {
             // deserialize the first 76 header bytes first
             //

@@ -1,10 +1,11 @@
-﻿using TacMesh.Core.assets.node.packet.validation;
+﻿using TacMesh.Core.assets.graph;
+using TacMesh.Core.assets.node.packet.validation;
 using TacMesh.Core.database_related;
 using TacMesh.Core.events;
 using TacMesh.Core.hardware_mode;
+using TacMesh.Core.interfaces;
 using TacMesh.Core.packet;
 using TacMesh.Core.tables.node;
-using TacMesh.Core.utils.serializers;
 
 namespace TacMesh.Core.assets.node.packet
 {
@@ -14,6 +15,7 @@ namespace TacMesh.Core.assets.node.packet
     public class PacketProcessor
     {
         // dependencies
+        private readonly IByteSerializer<DataPacket> _packetSerializer;
         private readonly TopologyFilter _topologyFilter;
         private readonly HeartBeater _heartbeater;
         private readonly NeighborTable _neighborTable;
@@ -21,8 +23,9 @@ namespace TacMesh.Core.assets.node.packet
 
 
         // constructor
-        public PacketProcessor(TopologyFilter topologyFilter, HeartBeater heartbeater, NeighborTable neighborTable, PacketValidator packetValidator)
+        public PacketProcessor(IByteSerializer<DataPacket> packetSerializer, TopologyFilter topologyFilter, HeartBeater heartbeater, NeighborTable neighborTable, PacketValidator packetValidator)
         {
+            _packetSerializer = packetSerializer;
             _topologyFilter = topologyFilter;
             _heartbeater = heartbeater;
             _neighborTable = neighborTable;
@@ -64,12 +67,12 @@ namespace TacMesh.Core.assets.node.packet
         /// </summary>
         /// <param name="e">Message Received Event Args containing the received bytes</param>
         /// <returns>a DataPacket object if deserialized successfuly or null otherwise.</returns>
-        public static DataPacket? ReadPacket(MessageReceivedEventArgs e)
+        private DataPacket? ReadPacket(MessageReceivedEventArgs e)
         {
             try
             {
                 // deserialize pacjet bytes
-                DataPacket packet = PacketSerializer.Deserialize(e.MessageBytes);
+                DataPacket packet = _packetSerializer.Deserialize(e.MessageBytes);
                 return packet;
             }
             catch (Exception ex)
@@ -93,8 +96,11 @@ namespace TacMesh.Core.assets.node.packet
                 // log heartbeat
                 _heartbeater.LogHeartbeat(LoggingMode.Received, packet.PacketHeader.SrcID, packet.PacketHeader.DstID);
 
+                // pull the location from the heartbeat payload
+                Location location = Location.FromBytes(packet.Payload);
+
                 // add/update record of peer in neighbour table
-                _neighborTable.UpdateRecord(packet.PacketHeader.SrcID, e.RemoteEndPoint);
+                _neighborTable.UpdateRecord(packet.PacketHeader.SrcID, location, e.RemoteEndPoint);
                 return true;
             }
             return false;

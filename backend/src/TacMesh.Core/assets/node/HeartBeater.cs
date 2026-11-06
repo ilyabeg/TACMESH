@@ -5,7 +5,6 @@ using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.packet;
 using TacMesh.Core.utils;
-using TacMesh.Core.utils.serializers;
 
 namespace TacMesh.Core.assets.node
 {
@@ -20,10 +19,11 @@ namespace TacMesh.Core.assets.node
         private readonly ITransport _transporter;
         private readonly IRadioModel _radioModel;
         private readonly LamportClock _lamportClock;
+        private readonly IByteSerializer<DataPacket> _packetSerializer;
 
 
         // inject dependencies through constructor
-        public HeartBeater(string nodeId, NodeConfigs nodeConfigs, HeartbeatLogger logger, ITransport transporter, IRadioModel radioModel, LamportClock lamportClock)
+        public HeartBeater(string nodeId, NodeConfigs nodeConfigs, HeartbeatLogger logger, ITransport transporter, IRadioModel radioModel, LamportClock lamportClock, IByteSerializer<DataPacket> packetSerializer)
         {
             _srcId = nodeId;
             _nodeConfigs = nodeConfigs;
@@ -31,6 +31,7 @@ namespace TacMesh.Core.assets.node
             _transporter = transporter;
             _radioModel = radioModel;
             _lamportClock = lamportClock;
+            _packetSerializer = packetSerializer;
         }
 
         /// <summary>
@@ -63,7 +64,7 @@ namespace TacMesh.Core.assets.node
 
                             // serialize each packet for each destination
                             DataPacket packet = CreateHeartbeatPacket(destID);
-                            byte[] packetBytes = PacketSerializer.Serialize(packet);
+                            byte[] packetBytes = _packetSerializer.Serialize(packet);
 
                             // transmit packet and log heartbeat if successfuly sent bytes
                             if (_transporter.Transmit(packetBytes, destAddress) > 0)
@@ -97,8 +98,9 @@ namespace TacMesh.Core.assets.node
                 logicalClock: _lamportClock.GetNext()
             );
 
-            // FOR NOW, heartbeat payload will be empty, until location report is added
-            byte[] payload = [];
+            // serialize location and add to the payload
+            //
+            byte[] payload = _nodeConfigs.Location.ToBytes();
 
             return new DataPacket(header, payload);
         }

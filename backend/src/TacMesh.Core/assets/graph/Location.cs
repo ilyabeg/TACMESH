@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Buffers.Binary;
+using System.Text.Json.Serialization;
+using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.location;
 
 namespace TacMesh.Core.assets.graph
@@ -43,7 +45,51 @@ namespace TacMesh.Core.assets.graph
             return Math.Sqrt(xDiffSquared + yDiffSquared);
         }
 
-        public override string ToString() => $"({X:F3},{Y:F3})";
+        public override string ToString() => $"{X:F2},{Y:F2}";
+
+        /// <summary>
+        /// Get the byte representation of the Location
+        /// </summary>
+        /// <returns>The bytes of the location object</returns>
+        public byte[] ToBytes()
+        {
+            // write X bytes in big endian order
+            //
+            byte[] xBytes = new byte[ByteCount._8bytes];
+            BinaryPrimitives.WriteDoubleBigEndian(xBytes, X);
+
+            // write Y bytes in big endian order
+            //
+            byte[] yBytes = new byte[ByteCount._8bytes];
+            BinaryPrimitives.WriteDoubleBigEndian(yBytes, Y);
+
+            // return all bytes appended as one array
+            //
+            return [.. xBytes, .. yBytes];
+        }
+
+        /// <summary>
+        /// Get the Location from the byte representation
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns>The Location from the bytes</returns>
+        public static Location FromBytes(byte[] bytes)
+        {
+            // NOTE: this method may throw an exception if the bytes aren't a valid location,
+            // which is not wrong, it is supposed to throw the error.
+
+            // get the first 8 bytes
+            //
+            byte[] xBytes = bytes.AsSpan().Slice(start: 0, ByteCount._8bytes).ToArray();
+            BinaryPrimitives.TryReadDoubleBigEndian(xBytes, out double x);
+
+            // get the last 8 bytes
+            //
+            byte[] yBytes = bytes.AsSpan().Slice(start: ByteCount._8bytes).ToArray();
+            BinaryPrimitives.TryReadDoubleBigEndian(yBytes, out double y);
+            
+            return new Location(x, y); // return the deserialized location object
+        }
 
         /// <summary>
         /// Copies the values from the current Location object to the other Location object.
@@ -66,5 +112,11 @@ namespace TacMesh.Core.assets.graph
             }
             return false;
         }
+
+        /// <summary>
+        /// Overridden GetHashCode() which is dependent on the Location X and Y points
+        /// </summary>
+        /// <returns>The Location Hashcode</returns>
+        public override int GetHashCode() => X.GetHashCode() + Y.GetHashCode();
     }
 }

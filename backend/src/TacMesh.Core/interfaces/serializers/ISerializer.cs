@@ -1,4 +1,4 @@
-﻿namespace TacMesh.Core.interfaces
+﻿namespace TacMesh.Core.interfaces.serializers
 {
     /// <summary>
     /// Generic Serializer interface for serializing and deserializing data between two types. 

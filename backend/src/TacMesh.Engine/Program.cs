@@ -21,8 +21,10 @@ using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
 using TacMesh.Core.map_related;
 using TacMesh.Core.models;
+using TacMesh.Core.packet;
 using TacMesh.Core.tables.node;
 using TacMesh.Core.utils;
+using TacMesh.Core.utils.serializers;
 
 namespace TacMesh.Engine
 {
@@ -83,8 +85,11 @@ namespace TacMesh.Engine
                 IClock systemClock = new SystemClock();
                 LamportClock lamportClock = new LamportClock();
 
+                // Seralizers
+                IByteSerializer<DataPacket> packetSerializer = new PacketSerializer();
+
                 // Heartbeats, NeighbourTable
-                HeartBeater heartbeater = new HeartBeater(nodeInfo.NodeId, nodeConfigs, new HeartbeatLogger(), simTransport, radioModel, lamportClock);
+                HeartBeater heartbeater = new HeartBeater(nodeInfo.NodeId, nodeConfigs, new HeartbeatLogger(), simTransport, radioModel, lamportClock, packetSerializer);
                 NeighborTable neighborTable = new NeighborTable(systemClock);
 
                 // Beacon Emitter
@@ -95,8 +100,8 @@ namespace TacMesh.Engine
 
                 // Packet Sender, Packet Validator, Packet Processor
                 PacketValidator packetValidator = new PacketValidator(lamportClock);
-                PacketSender packetSender = new PacketSender(neighborTable, simTransport, new PacketBuffer(systemClock));
-                PacketProcessor packetProcessor = new PacketProcessor(topologyFilter, heartbeater, neighborTable, packetValidator);
+                PacketSender packetSender = new PacketSender(packetSerializer, neighborTable, simTransport, new PacketBuffer(systemClock));
+                PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, topologyFilter, heartbeater, neighborTable, packetValidator);
 
                 // IInputListener
                 //IInputListener launcherControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
