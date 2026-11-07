@@ -16,20 +16,23 @@ namespace TacMesh.Core.assets.node.packet
     {
         // dependencies
         private readonly IByteSerializer<DataPacket> _packetSerializer;
+        private readonly IByteSerializer<List<string>> _linkStateSerializer;
         private readonly TopologyFilter _topologyFilter;
         private readonly HeartBeater _heartbeater;
         private readonly NeighborTable _neighborTable;
         private readonly PacketValidator _packetValidator;
-
+        private readonly NetworkTopology _networkTopology;
 
         // constructor
-        public PacketProcessor(IByteSerializer<DataPacket> packetSerializer, TopologyFilter topologyFilter, HeartBeater heartbeater, NeighborTable neighborTable, PacketValidator packetValidator)
+        public PacketProcessor(IByteSerializer<DataPacket> packetSerializer, IByteSerializer<List<string>> linkStateSerializer, TopologyFilter topologyFilter, HeartBeater heartbeater, NeighborTable neighborTable, PacketValidator packetValidator, NetworkTopology networkTopology)
         {
             _packetSerializer = packetSerializer;
+            _linkStateSerializer = linkStateSerializer;
             _topologyFilter = topologyFilter;
             _heartbeater = heartbeater;
             _neighborTable = neighborTable;
             _packetValidator = packetValidator;
+            _networkTopology = networkTopology;
         }
 
         /// <summary>
@@ -57,7 +60,7 @@ namespace TacMesh.Core.assets.node.packet
                 // 
                 if (ProcessHeartbeat(packet, e)) return;
                 if (ProcessUserMessage(packet, e)) return;
-                if (ProcessLinkState(packet, e)) return;
+                if (ProcessLinkState(packet)) return;
             }
             // if packet invalid, it is dropped...
         }
@@ -96,11 +99,17 @@ namespace TacMesh.Core.assets.node.packet
                 // log heartbeat
                 _heartbeater.LogHeartbeat(LoggingMode.Received, packet.PacketHeader.SrcID, packet.PacketHeader.DstID);
 
-                // pull the location from the heartbeat payload
-                Location location = Location.FromBytes(packet.Payload);
+                // pull the node info from the heartbeat payload
+                //
+                string nodeId = packet.PacketHeader.SrcID;
+                Location nodeLocation = Location.FromBytes(packet.Payload);
 
                 // add/update record of peer in neighbour table
-                _neighborTable.UpdateRecord(packet.PacketHeader.SrcID, location, e.RemoteEndPoint);
+                _neighborTable.UpdateRecord(nodeId, nodeLocation, e.RemoteEndPoint);
+
+                // update specific node's location in the net topology
+                _networkTopology.UpdateNodeLocation(nodeId, nodeLocation);
+
                 return true;
             }
             return false;
@@ -110,11 +119,27 @@ namespace TacMesh.Core.assets.node.packet
         /// tries to process the packet as a link state packet
         /// </summary>
         /// <returns>true if successfuly processed as a link state packet</returns>
-        private bool ProcessLinkState(DataPacket packet, MessageReceivedEventArgs e)
+        private bool ProcessLinkState(DataPacket packet)
         {
             if (packet.PacketHeader.MsgType == PacketType.LinkState && _packetValidator.ValidateLogicalClock(packet))
             {
-                // To Do ...
+                // deserialize the location before the link state (first 16 bytes)
+                //
+                byte[] locationBytes = packet.Payload.AsSpan().Slice(start: 0, ByteCount._16bytes).ToArray();
+                Location nodeLocation = Location.FromBytes(locationBytes);
+
+                // deserialize the link state after the location in the payload
+                //
+                byte[] linkStateBytes = packet.Payload.AsSpan().Slice(start: ByteCount._16bytes).ToArray();
+                List<string> linkState = _linkStateSerializer.Deserialize(linkStateBytes);
+                
+                string nodeId = packet.PacketHeader.SrcID; // the node identifier
+
+                // update the node's link state and location in the net topology
+                //
+                _networkTopology.UpdateLinkState(nodeId, linkState);
+                _networkTopology.UpdateNodeLocation(nodeId, nodeLocation);
+
                 return true;
             }
             return false;

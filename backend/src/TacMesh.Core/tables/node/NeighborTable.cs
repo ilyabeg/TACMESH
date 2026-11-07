@@ -12,7 +12,7 @@ namespace TacMesh.Core.tables.node
     {
         // holds record for each neighbour by his ID
         public Dictionary<string, NeighborRecord> NeighborRecords { get; private set; }
-        public int N { get; private set; }
+        public int N { get; private set; } // number of legal cycles before dropping an unheard neighbor
         private readonly IClock _tableClock;
         private readonly int _legal_timeDiff_seconds;
 
@@ -20,6 +20,9 @@ namespace TacMesh.Core.tables.node
         // LOCK ORDER RULE: Always acquire access to the NeighborTable lock before the Buffer lock to prevent Deadlocks
         // Brief explanation documented in the README file.
         private readonly TacReadWriteLock _rwLock = new TacReadWriteLock();
+
+        // public event to invoke when the neighbor table changes (the local node's link state)
+        public event EventHandler<List<string>>? OnLinkStateChanged;
 
 
         // inject any clock to the table
@@ -46,9 +49,9 @@ namespace TacMesh.Core.tables.node
             using (_rwLock.Read())
             {
                 // if neigbor exists
-                if (NeighborRecords.ContainsKey(neighborId)) 
+                if (NeighborRecords.TryGetValue(neighborId, out NeighborRecord? value)) 
                 {
-                    return NeighborRecords[neighborId].Address;
+                    return value.Address;
                 }
                 else {
                     return null;
@@ -59,10 +62,24 @@ namespace TacMesh.Core.tables.node
         // adds new record if doesn't exist OR overrides an existing one
         public void UpdateRecord(string neighborId, Location neighborLocation, IPEndPoint address)
         {
+            bool isNew; // if a new neighbor added this is true
+
             using (_rwLock.Write())
             {
+                // TryGetValue() returns true if the dictionary contains a value with the specified key.
+                // if a new neighbor is added the result of TryGetValue() is false, because there is no value
+                // associated with that specific key, so the flag isNew should be true (the opposite of the result)
+                //
+                isNew = !NeighborRecords.TryGetValue(neighborId, out _);
+
+                // adds new record or updates if exists
+                //
                 NeighborRecords[neighborId] = new NeighborRecord(neighborId, address, neighborLocation, _tableClock.GetTime());
             }
+
+            // if the neighbor table changed, invoke event, and pass current neighbor identifiers
+            //
+            if (isNew) OnLinkStateChanged?.Invoke(this, NeighborRecords.Keys.ToList());
         }
 
         // checks for expired nodes and removes
@@ -74,6 +91,7 @@ namespace TacMesh.Core.tables.node
                 List<string> expiredNeighbours = new List<string>();
 
                 // O(NeighborRecords.Length) - iterates through all records
+                //
                 foreach (NeighborRecord record in NeighborRecords.Values)
                 {
                     DateTime last_heartbeat = record.LastHeartbeatTime;
@@ -95,6 +113,10 @@ namespace TacMesh.Core.tables.node
         {
             if (!NeighborRecords.Remove(neighbourId, out _))
                 throw new Exception($"Failed to remove neighbour {neighbourId} from table.");
+
+            // if the neighbor table changed, invoke event, and pass current neighbor identifiers
+            //
+            OnLinkStateChanged?.Invoke(this, NeighborRecords.Keys.ToList());
         }
 
         // background expiration checker

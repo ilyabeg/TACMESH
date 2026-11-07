@@ -6,6 +6,7 @@ namespace TacMesh.Core.interfaces
     {
         // constant byte sizes
         public const int _1byte = 1;
+        public const int _4bytes = 4;
         public const int _8bytes = 8;
         public const int _16bytes = 16;
     }

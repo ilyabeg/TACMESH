@@ -11,7 +11,7 @@ namespace TacMesh.Core.assets.node
     public class NodeConfigs
     {
         // Important Note: if any class holds references to the NodeConfigs fields themselves,
-        // and the refernce types (such as the Permitted Neighbors list) are overwritten by 'new',
+        // and the refernce types (such as the Permitted LinkState list) are overwritten by 'new',
         // those classes may hold expired data types and unexpected behavior may accour. 
 
 
@@ -67,7 +67,7 @@ namespace TacMesh.Core.assets.node
             stringBuilder.AppendLine($"\tNode Speed: {Speed}");
             stringBuilder.AppendLine($"\tNode Location: {Location}");
             stringBuilder.AppendLine($"\tNode Link Range: {LinkRange}");
-            stringBuilder.AppendLine($"\tPermitted Neighbors: {PermittedNeighbors?.ToString()}");
+            stringBuilder.AppendLine($"\tPermitted LinkState: {PermittedNeighbors?.ToString()}");
             stringBuilder.AppendLine($"\tWaypoints: {Waypoints?.ToString()}");
 
             return stringBuilder.ToString();

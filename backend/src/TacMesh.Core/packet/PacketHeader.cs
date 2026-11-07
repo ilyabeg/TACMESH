@@ -33,6 +33,11 @@ namespace TacMesh.Core.packet
         // SUCH AS THE CONFIG FILE OR MISSION PACKAGE.
         public const int LEGAL_STRING_LENGTH = 16;
 
+        // a constant destination identifier that specifies that a packet 
+        // with this dest id is ment for anybody
+        //
+        public const string ALL_SPECIFIER = "@all";
+
 
         // Header fields in order of transmision
         #region Header Fields
@@ -54,7 +59,10 @@ namespace TacMesh.Core.packet
             {
                 if (string.IsNullOrWhiteSpace(value))
                     throw new ArgumentException("Error initiating Source ID. The ID must contain text");
-                
+
+                if (string.Equals(value, ALL_SPECIFIER))
+                    throw new ArgumentException("Error initiating Source ID. Invalid ID.");
+
                 // check if actual byte length and not the amount of characters
                 int byteCount = Encoding.UTF8.GetByteCount(value);
 

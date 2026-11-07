@@ -14,10 +14,7 @@ namespace TacMesh.Core.utils.serializers
         // Memory of type byte to keep a "clone" of the actual byte stream that needs to be translated.        
         private Memory<byte> _byteMemory;
 
-        // fixed index 0
-        // IMPORTANT NOTE: I AM AWARE THIS VALUE APPEARS TWICE, ONCE HERE AND IN THE BYTEWRITER CLASS,
-        // BUT I AM LEAVING IT HERE FOR NOW, UNTILL I FIND A BETTER PLACE FOR IT, BECAUSE THE
-        // CONSTANT INDEX IS STRICTLY RELATED TO THE BYTE READER AND BYTE WRITER CLASSES, AND NOT TO ANY OTHER CLASS.
+        // fixed index 0        
         private const int _memoryStartIndex = 0;
 
         // Inject the byte buffer in construction
@@ -39,9 +36,20 @@ namespace TacMesh.Core.utils.serializers
             return field;
         }
 
+        public int ReadInt()
+        {
+            // read the 8 bytes with BigEndian order
+            int field = BinaryPrimitives.ReadInt32BigEndian(_byteMemory.Span);
+
+            // slice the written data: shrinks the Memory object by 4 bytes
+            _byteMemory = _byteMemory.Slice(ByteCount._4bytes);
+
+            return field;
+        }
+
         public long ReadLong()
         {
-            // write the 8 bytes with BigEndian order
+            // read the 8 bytes with BigEndian order
             long field = BinaryPrimitives.ReadInt64BigEndian(_byteMemory.Span);
 
             // slice the written data: shrinks the Memory object by 8 bytes

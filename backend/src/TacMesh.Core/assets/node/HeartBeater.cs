@@ -91,10 +91,10 @@ namespace TacMesh.Core.assets.node
             // init heartbeat data packet packet header
             //
             PacketHeader header = new PacketHeader(
-                PacketType.Heartbeat,
-                _srcId, 
-                destinationID, 
-                Guid.NewGuid(), 
+                msgType: PacketType.Heartbeat,
+                srcID: _srcId, 
+                dstID: destinationID, 
+                msgID: Guid.NewGuid(), 
                 logicalClock: _lamportClock.GetNext()
             );
 

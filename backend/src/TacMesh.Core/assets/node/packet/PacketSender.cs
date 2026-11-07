@@ -41,8 +41,6 @@ namespace TacMesh.Core.assets.node.packet
 
             if (peerAddress != null)
             {
-                // TEMPORARILY transmit simply the message bytes, later the payload will be encrypted
-                //
                 byte[] packetBytes = _packetSerializer.Serialize(packet);
 
                 // if message was sent successfuly, exit the function

@@ -23,7 +23,8 @@ namespace TacMesh.Core.utils.serializers
             //
             // Note: TEMPORARILY input the raw bytes. later, when the 
             // cryptography algorithms will be added, the payload will be encrypted 
-            //            
+            //
+            byte[] payloadBytes = dataPacket.Payload; // <- encrypt here later
 
             // digitally sign the packet
             //
@@ -32,7 +33,7 @@ namespace TacMesh.Core.utils.serializers
             // concatenate the byte arrays into 1 continuous byte array
             // by using the spread operator
             //
-            return [.. headerBytes, .. dataPacket.Payload];
+            return [.. headerBytes, .. payloadBytes];
         }
 
         /// <summary>
@@ -49,9 +50,8 @@ namespace TacMesh.Core.utils.serializers
 
             // deserialize the payload
             //
-            // NOTE: currently deserializing simply with utf8 encoding untill cryptography 
-            // algorithms are added in the future. plus when a signature is implemented the 
-            // payload will have to be pulled by it's length from the total bytes array
+            // NOTE: when cryptography algorithms are added in the future,
+            // the payload will need to be decrypted
             //
             int payloadLength = packetBytes.Length - PacketHeader.HEADER_SIZE;
             byte[] payloadBytes = packetBytes.AsSpan().Slice(start: PacketHeader.HEADER_SIZE, payloadLength).ToArray();

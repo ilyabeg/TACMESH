@@ -15,9 +15,6 @@ namespace TacMesh.Core.utils.serializers
         private Memory<byte> _byteMemory;
 
         // fixed index 0
-        // IMPORTANT NOTE: I AM AWARE THIS VALUE APPEARS TWICE, ONCE HERE AND IN THE BYTEREADER CLASS,
-        // BUT I AM LEAVING IT HERE FOR NOW, UNTILL I FIND A BETTER PLACE FOR IT, BECAUSE THE
-        // CONSTANT INDEX IS STRICTLY RELATED TO THE BYTE READER AND BYTE WRITER CLASSES, AND NOT TO ANY OTHER CLASS.
         private const int _memoryStartIndex = 0;
 
         // Inject the empty buffer in construction
@@ -36,6 +33,15 @@ namespace TacMesh.Core.utils.serializers
 
             // slice the written data: shrinks the Memory object by 1 byte
             _byteMemory = _byteMemory.Slice(ByteCount._1byte);
+        }
+
+        public void WriteBytes(int data)
+        {
+            // write the 4 bytes with BigEndian order
+            BinaryPrimitives.WriteInt32BigEndian(_byteMemory.Span, data);
+
+            // slice the written data: shrinks the Memory object by 4 bytes
+            _byteMemory = _byteMemory.Slice(ByteCount._4bytes);
         }
 
         public void WriteBytes(long data)

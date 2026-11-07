@@ -28,6 +28,10 @@ namespace TacMesh.Core.assets.graph
             Y = y;
         }
 
+        // public default location 
+        //
+        public static readonly Location DEFAULT_LOCATION = new (0, 0);
+
         /// <summary>
         /// Distance calculator
         /// </summary>
