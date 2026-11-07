@@ -95,9 +95,8 @@ namespace TacMesh.Core.hardware_mode.communication
         
         private DataPacket CreateSourcePacket(UserMessage userMessage)
         {
-            // TEMPORARILY inject as link state message for lamport clock test
             return new DataPacket(
-                new PacketHeader(PacketType.LinkState, userMessage.Source, userMessage.Destination, Guid.NewGuid(), logicalClock: _lamportClock.GetCurrent()),
+                new PacketHeader(PacketType.UserMessage, userMessage.Source, userMessage.Destination, Guid.NewGuid(), logicalClock: _lamportClock.GetCurrent()),
                 Encoding.UTF8.GetBytes(userMessage.Message)
             );
         }

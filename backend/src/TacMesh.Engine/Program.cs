@@ -19,6 +19,7 @@ using TacMesh.Core.interfaces.clock_interfaces;
 using TacMesh.Core.interfaces.communication;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
+using TacMesh.Core.launcher;
 using TacMesh.Core.map_related;
 using TacMesh.Core.models;
 using TacMesh.Core.packet;
@@ -37,33 +38,27 @@ namespace TacMesh.Engine
         {
             try
             {
-                //if (args.Length != arguments_length)
-                //{
-                //    Console.WriteLine("ERROR: Engine Process arguments did not match. Terminating process...");
-                //    return;
-                //}
+                if (args.Length != arguments_length)
+                {
+                    Console.WriteLine("ERROR: Engine Process arguments did not match. Terminating process...");
+                    return;
+                }
+
                 // set the output encoding to UTF-8 encoding
                 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
                 // --- arguments ---
 
                 // save node info
-                //string nodeInfoJson = args[0];
-                //NodeInfo? nodeInfo = DeserializeNodeInfo(nodeInfoJson);
-                //if (nodeInfo == null) return;
+                string nodeInfoJson = args[0];
+                NodeInfo? nodeInfo = DeserializeNodeInfo(nodeInfoJson);
+                if (nodeInfo == null) return;
 
-                //// save node config settings to access the engine's specific node settings anywhere               
-                //string configsJson = args[1];
-                //NodeConfigs? nodeConfigs = DeserializeConfigSettings(configsJson);
-                //if (nodeConfigs == null) return;
+                // save node config settings to access the engine's specific node settings anywhere               
+                string configsJson = args[1];
+                NodeConfigs? nodeConfigs = DeserializeConfigSettings(configsJson);
+                if (nodeConfigs == null) return;
 
-
-                // !!! TEMP TEST !!!
-
-                string nodeId = args[0].ToString();
-                string otherNode = nodeId.ElementAt(nodeId.Length - 1) == '1' ? "Node-02" : "Node-01";
-                NodeInfo nodeInfo = new NodeInfo(nodeId, NodeRole.Soldier);
-                NodeConfigs nodeConfigs = new NodeConfigs(1.0, new Location(0, 0), 400, new List<string>([otherNode]), new Queue<Location>());
 
                 // --- create all dependencies ---
 
@@ -103,31 +98,31 @@ namespace TacMesh.Engine
                 // Packet Sender, Packet Validator, Packet Processor
                 PacketValidator packetValidator = new PacketValidator(lamportClock);
                 PacketSender packetSender = new PacketSender(packetSerializer, neighborTable, simTransport, new PacketBuffer(systemClock));
-                PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, linkStateSerializer, topologyFilter, heartbeater, neighborTable, packetValidator, networkTopology);
+                PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, linkStateSerializer, topologyFilter, heartbeater, neighborTable, packetValidator, packetSender, networkTopology, nodeInfo.NodeId);
 
                 // Link State Dispatcher
-                LinkStateDispatcher linkStateDispatcher = new LinkStateDispatcher(nodeId, nodeConfigs, packetSender, neighborTable, lamportClock, linkStateSerializer);
+                LinkStateDispatcher linkStateDispatcher = new LinkStateDispatcher(nodeInfo.NodeId, nodeConfigs, packetSender, neighborTable, lamportClock, linkStateSerializer);
 
                 // Input Listener
-                //IInputListener launcherControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
-                IInputListener userControl = new UserControl(packetSender, nodeConfigs, beaconEmitter, lamportClock);                
+                IInputListener inputControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
+                //IInputListener inputControl = new UserControl(packetSender, nodeConfigs, beaconEmitter, lamportClock);                
 
 
                 // --- inject all dependencies --- 
-                Node node = new Node(nodeInfo, nodeConfigs, simTransport, neighborTable, heartbeater, packetProcessor, userControl);
+                Node node = new Node(nodeInfo, nodeConfigs, simTransport, neighborTable, heartbeater, packetProcessor, inputControl);
 
 
                 // Release the Semaphore to allow the next engine to be initialized in the launcher
-                //string semName = "TacMesh-Global-Sem";
+                string semName = "TacMesh-Global-Sem";
 
-                //if (Semaphore.TryOpenExisting(semName, out Semaphore? semaphore))
-                //{
-                //    using (semaphore)
-                //    {
-                //        // un-freeze the launcher
-                //        semaphore.Release();
-                //    }
-                //}
+                if (Semaphore.TryOpenExisting(semName, out Semaphore? semaphore))
+                {
+                    using (semaphore)
+                    {
+                        // un-freeze the launcher
+                        semaphore.Release();
+                    }
+                }
 
                 Thread.Sleep(Timeout.Infinite);
             }

@@ -38,18 +38,17 @@ namespace TacMesh.Core.assets.graph
         /// <param name="linkState">The link state to dispatch</param>
         private void DispatchLinkState(List<string> linkState)
         {
-            // dispatch the packet to every current neighbor link
+            // inject the current clock value to each packet
             //
-            List<string> currentNeighbors = _neighborTable.GetCurrentNeighbors();
+            long logicalClockValue = _lamportClock.GetNext();
 
-            foreach (string neighbor in currentNeighbors)
-            {
-                DataPacket linkStatePacket = BuildLinkStatePacket(linkState, neighbor);
-                _packetSender.SendPacket(linkStatePacket);
-            }         
+            // build and dispatch the packet using the packet sender
+            //
+            DataPacket linkStatePacket = BuildLinkStatePacket(linkState, logicalClockValue);
+            _packetSender.SendPacket(linkStatePacket);
         }
 
-        private DataPacket BuildLinkStatePacket(List<string> linkState, string destinationId)
+        private DataPacket BuildLinkStatePacket(List<string> linkState, long logicalClockValue)
         {
             // link state packets must contain the node's location aswell 
             // for remote nodes to set the location in their local graph
@@ -69,9 +68,9 @@ namespace TacMesh.Core.assets.graph
             PacketHeader packetHeader = new PacketHeader(
                 msgType: PacketType.LinkState,
                 srcID: _sourceId,
-                dstID: destinationId,
+                dstID: PacketHeader.ALL_SPECIFIER,
                 msgID: Guid.NewGuid(),
-                logicalClock: _lamportClock.GetNext()
+                logicalClock: logicalClockValue
             );
 
             return new DataPacket(packetHeader, packetPayload);

@@ -21,18 +21,23 @@ namespace TacMesh.Core.assets.node.packet
         private readonly HeartBeater _heartbeater;
         private readonly NeighborTable _neighborTable;
         private readonly PacketValidator _packetValidator;
+        private readonly PacketSender _packetSender;
         private readonly NetworkTopology _networkTopology;
+        private readonly string _sourceId;
+
 
         // constructor
-        public PacketProcessor(IByteSerializer<DataPacket> packetSerializer, IByteSerializer<List<string>> linkStateSerializer, TopologyFilter topologyFilter, HeartBeater heartbeater, NeighborTable neighborTable, PacketValidator packetValidator, NetworkTopology networkTopology)
-        {
+        public PacketProcessor(IByteSerializer<DataPacket> packetSerializer, IByteSerializer<List<string>> linkStateSerializer, TopologyFilter topologyFilter, HeartBeater heartbeater, NeighborTable neighborTable, PacketValidator packetValidator, PacketSender packetSender, NetworkTopology networkTopology, string sourceId)
+        {            
             _packetSerializer = packetSerializer;
             _linkStateSerializer = linkStateSerializer;
             _topologyFilter = topologyFilter;
             _heartbeater = heartbeater;
             _neighborTable = neighborTable;
             _packetValidator = packetValidator;
+            _packetSender = packetSender;
             _networkTopology = networkTopology;
+            _sourceId = sourceId;
         }
 
         /// <summary>
@@ -60,7 +65,7 @@ namespace TacMesh.Core.assets.node.packet
                 // 
                 if (ProcessHeartbeat(packet, e)) return;
                 if (ProcessUserMessage(packet, e)) return;
-                if (ProcessLinkState(packet)) return;
+                if (ProcessLinkState(packet, e)) return;
             }
             // if packet invalid, it is dropped...
         }
@@ -119,7 +124,7 @@ namespace TacMesh.Core.assets.node.packet
         /// tries to process the packet as a link state packet
         /// </summary>
         /// <returns>true if successfuly processed as a link state packet</returns>
-        private bool ProcessLinkState(DataPacket packet)
+        private bool ProcessLinkState(DataPacket packet, MessageReceivedEventArgs e)
         {
             if (packet.PacketHeader.MsgType == PacketType.LinkState && _packetValidator.ValidateLogicalClock(packet))
             {
@@ -140,6 +145,12 @@ namespace TacMesh.Core.assets.node.packet
                 _networkTopology.UpdateLinkState(nodeId, linkState);
                 _networkTopology.UpdateNodeLocation(nodeId, nodeLocation);
 
+                // increment the hop count, retransmit the packet to spread the link state,
+                // and exclude the neighbor which this message was sent from
+                //
+                packet.PacketHeader.IncrementHopCount();
+                _packetSender.SendPacket(packet, exluciveAddress: e.RemoteEndPoint);
+
                 return true;
             }
             return false;
@@ -156,13 +167,14 @@ namespace TacMesh.Core.assets.node.packet
                 // TEST print out packet
                 Console.WriteLine($"[PACKET PROCESSOR] Received User Message: \n{packet}");
 
-                // if the packet isn't intended for this node, invoke OnForward event to let the
-                // PacketSender handle it
+                // if the packet isn't intended for this node, let the PacketSender handle it
                 //
                 // SELF NOTE: what happens if a Link State ot Heartbeat not inteded for THIS node gets processed
                 //
-                
-                // To do ...
+                if (!packet.PacketHeader.DstID.Equals(_sourceId))
+                {
+                    // To do ...
+                }
 
                 return true;
             }
