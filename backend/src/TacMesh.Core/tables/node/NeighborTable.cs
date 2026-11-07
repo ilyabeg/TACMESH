@@ -59,9 +59,22 @@ namespace TacMesh.Core.tables.node
             }
         }
 
+        /// <summary>
+        /// Method to get the current neighbor identifiers
+        /// </summary>
+        /// <returns>A list of all the current neighbors linked to this node</returns>
+        public List<string> GetCurrentNeighbors()
+        {
+            using (_rwLock.Read())
+            {
+                return NeighborRecords.Keys.ToList();
+            }
+        }
+
         // adds new record if doesn't exist OR overrides an existing one
         public void UpdateRecord(string neighborId, Location neighborLocation, IPEndPoint address)
         {
+            List<string>? linkState = null; // hold the neighbors links if the table changed changed
             bool isNew; // if a new neighbor added this is true
 
             using (_rwLock.Write())
@@ -75,20 +88,28 @@ namespace TacMesh.Core.tables.node
                 // adds new record or updates if exists
                 //
                 NeighborRecords[neighborId] = new NeighborRecord(neighborId, address, neighborLocation, _tableClock.GetTime());
+
+                // save the new link chaged state
+                //
+                if (isNew)
+                    linkState = NeighborRecords.Keys.ToList();
             }
 
             // if the neighbor table changed, invoke event, and pass current neighbor identifiers
             //
-            if (isNew) OnLinkStateChanged?.Invoke(this, NeighborRecords.Keys.ToList());
+            if (linkState != null) OnLinkStateChanged?.Invoke(this, linkState);
         }
 
         // checks for expired nodes and removes
         public void CheckExpiration()
-        {
+        {                        
+            bool tableChanged = false; // flag to determine if to invoke the changed event
+            List<string>? linkState = null; // hold the neighbors links if the table changed
+
             using (_rwLock.Write())
             {
+                List<string> expiredNeighbors = new List<string>();
                 DateTime current_time = _tableClock.GetTime();
-                List<string> expiredNeighbours = new List<string>();
 
                 // O(NeighborRecords.Length) - iterates through all records
                 //
@@ -99,24 +120,34 @@ namespace TacMesh.Core.tables.node
 
                     // if heartbeat wasn't received from this neighbor for over N, heartbeat time cycles
                     if (time_diff >= _legal_timeDiff_seconds)
-                        expiredNeighbours.Add(record.NeighborID);
+                        expiredNeighbors.Add(record.NeighborID);
                 }
 
                 // remove all expired neighbours
-                foreach (string expired_neighbour in expiredNeighbours)
+                //
+                foreach (string expired_neighbour in expiredNeighbors)
+                {
                     RemoveRecord(expired_neighbour);
+                    tableChanged = true;
+                }
+
+                // save the new changed link state
+                //
+                if (tableChanged) 
+                    linkState = NeighborRecords.Keys.ToList();
             }
+
+            // if the neighbor table changed, invoke event, and pass current neighbor identifiers
+            //
+            if (linkState != null)
+                OnLinkStateChanged?.Invoke(this, linkState);
         }
 
         // removes based on the neighbor id key
         private void RemoveRecord(string neighbourId)
         {
             if (!NeighborRecords.Remove(neighbourId, out _))
-                throw new Exception($"Failed to remove neighbour {neighbourId} from table.");
-
-            // if the neighbor table changed, invoke event, and pass current neighbor identifiers
-            //
-            OnLinkStateChanged?.Invoke(this, NeighborRecords.Keys.ToList());
+                throw new Exception($"Failed to remove neighbour {neighbourId} from table.");            
         }
 
         // background expiration checker
@@ -176,7 +207,7 @@ namespace TacMesh.Core.tables.node
             string padded_location = $"{location,ConsoleDesign._10_padRight}";
             string padded_heartbeat = $"{heartbeat,ConsoleDesign._10_padRight}";
 
-            return $"| {padded_id} | {padded_address} | {padded_location} | {padded_heartbeat} |";
+            return $"│ {padded_id} │ {padded_address} │ {padded_location} │ {padded_heartbeat} │";
         }
     }
 }

@@ -69,41 +69,46 @@ namespace TacMesh.Engine
 
                 // Engine socket & port
                 Socket engine_socket = GetEngineSocket();
-                int assignedPort = ((IPEndPoint)engine_socket.LocalEndPoint).Port;
+                int assignedPort = ((IPEndPoint)engine_socket.LocalEndPoint!).Port;
 
-                // IRadioModel
+                // Beacon Emitter
+                IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeInfo.NodeId, assignedPort, SysConfigs.McastEndPoint);
+
+                // RadioModel
                 Socket radio_socket = GetRadioSocket();
                 IReceiver radioReceiver = new SimReceiver(radio_socket);
                 ILineOfSight terrainLoS = new TerrainLineOfSight();
                 DRandom dRandom = new DRandom();
                 IRadioModel radioModel = new VirtualRadioModel(nodeConfigs, dRandom, radioReceiver, terrainLoS);
 
-                // ITransport
+                // Transport
                 ITransport simTransport = new SimTransport(engine_socket, radioModel);
 
-                // IClock and Lamport Logical Clock
+                // Clock and Lamport Logical Clock
                 IClock systemClock = new SystemClock();
                 LamportClock lamportClock = new LamportClock();
 
                 // Seralizers
                 IByteSerializer<DataPacket> packetSerializer = new PacketSerializer();
+                IByteSerializer<List<string>> linkStateSerializer = new LinkStateSerializer();
 
-                // Heartbeats, NeighbourTable
+                // Heartbeater & NeighbourTable
                 HeartBeater heartbeater = new HeartBeater(nodeInfo.NodeId, nodeConfigs, new HeartbeatLogger(), simTransport, radioModel, lamportClock, packetSerializer);
                 NeighborTable neighborTable = new NeighborTable(systemClock);
 
-                // Beacon Emitter
-                IBeaconEmitter beaconEmitter = new SimBeaconEmitter(nodeInfo.NodeId, assignedPort, SysConfigs.McastEndPoint);
-
-                // Topology Filter
-                TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);                
+                // Topology Filter & Network Topology
+                TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);
+                NetworkTopology networkTopology = new NetworkTopology();
 
                 // Packet Sender, Packet Validator, Packet Processor
                 PacketValidator packetValidator = new PacketValidator(lamportClock);
                 PacketSender packetSender = new PacketSender(packetSerializer, neighborTable, simTransport, new PacketBuffer(systemClock));
-                PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, topologyFilter, heartbeater, neighborTable, packetValidator);
+                PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, linkStateSerializer, topologyFilter, heartbeater, neighborTable, packetValidator, networkTopology);
 
-                // IInputListener
+                // Link State Dispatcher
+                LinkStateDispatcher linkStateDispatcher = new LinkStateDispatcher(nodeId, nodeConfigs, packetSender, neighborTable, lamportClock, linkStateSerializer);
+
+                // Input Listener
                 //IInputListener launcherControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
                 IInputListener userControl = new UserControl(packetSender, nodeConfigs, beaconEmitter, lamportClock);                
 

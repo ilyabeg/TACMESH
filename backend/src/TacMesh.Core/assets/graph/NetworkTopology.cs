@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using System.Text;
+using TacMesh.Core.utils.design;
 
 namespace TacMesh.Core.assets.graph
 {
@@ -46,6 +48,10 @@ namespace TacMesh.Core.assets.graph
             //
             NodeState newNodeState = new NodeState(linkState, Location.DEFAULT_LOCATION);
             State.AddOrUpdate(nodeId, newNodeState, (key, prevState) => new NodeState(linkState, prevState.Location));
+
+            // TEST print out topology when updated
+            //
+            PrintTopology();
         }
 
         /// <summary>
@@ -60,6 +66,64 @@ namespace TacMesh.Core.assets.graph
             //
             NodeState newNodeState = new NodeState(new List<string>(), nodeLocation);
             State.AddOrUpdate(nodeId, newNodeState, (key, prevState) => new NodeState(prevState.LinkState, nodeLocation));
+
+            // TEST print out topology when updated
+            //
+            PrintTopology();
+        }
+
+        /// <summary>
+        /// private printer method to test out the network topology structure
+        /// </summary>
+        private void PrintTopology()
+        {
+            StringBuilder str = new StringBuilder();
+
+            str.AppendLine("┌────────────────────────────────────────────────────────────┐");
+
+            string title = $" NETWORK TOPOLOGY (Count: {State.Count})";
+            str.AppendLine($"│{title,ConsoleDesign._m60_padRight}│");
+
+            str.AppendLine("├────────────┬────────────┬──────────────────────────────────┤");
+            str.AppendLine("│ Node ID    │ Location   │ Link State (Neighbors)           │");
+            str.AppendLine("├────────────┼────────────┼──────────────────────────────────┤");
+
+            foreach (KeyValuePair<string, NodeState> kvp in State)
+            {
+                string nodeId = kvp.Key;
+                Location? nodeLocation = kvp.Value.Location;
+                List<string>? nodeLinkState = kvp.Value.LinkState;
+
+                // convert location string
+                string location = (nodeLocation != null) ? nodeLocation.ToString() : "None";
+
+                // convert links to single line with ',' between node id's
+                string links = nodeLinkState != null && nodeLinkState.Count > 0
+                    ? string.Join(", ", nodeLinkState)
+                    : "None";
+
+                string padded_string = FormatNodeState(nodeId, location, links);
+                str.AppendLine(padded_string);
+            }
+
+            str.AppendLine("└────────────┴────────────┴──────────────────────────────────┘");
+            Console.WriteLine(str);
+        }
+
+        // helper method to pad the node state record
+        private string FormatNodeState(string id, string location, string links)
+        {
+            // TEMPORARILY USE MAGIC NUMBERS FOR TESTING !!!
+            //
+            if (id.Length > 10) id = id.Substring(0, 7) + "...";
+            if (location.Length > 13) location = location.Substring(0, 10) + "...";
+            if (links.Length > 29) links = links.Substring(0, 26) + "...";
+            
+            string padded_id = $"{id,ConsoleDesign._10_padRight}";
+            string padded_location = $"{location,ConsoleDesign._10_padRight}";
+            string padded_links = $"{links,ConsoleDesign._32_padRight}";
+
+            return $"│ {padded_id} │ {padded_location} │ {padded_links} │";
         }
     }
 }

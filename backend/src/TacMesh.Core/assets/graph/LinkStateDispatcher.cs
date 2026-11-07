@@ -27,7 +27,7 @@ namespace TacMesh.Core.assets.graph
             _lamportClock = lamportClock;
             _linkStateSerializer = linkStateSerializer;
 
-            // attach event handler
+            // attach link state update event handler
             _neighborTable.OnLinkStateChanged += (s,e) => DispatchLinkState(e);
         }
 
@@ -38,13 +38,18 @@ namespace TacMesh.Core.assets.graph
         /// <param name="linkState">The link state to dispatch</param>
         private void DispatchLinkState(List<string> linkState)
         {
-            // build packet and dispatch it
+            // dispatch the packet to every current neighbor link
             //
-            DataPacket linkStatePacket = BuildLinkStatePacket(linkState);
-            _packetSender.SendPacket(linkStatePacket);
+            List<string> currentNeighbors = _neighborTable.GetCurrentNeighbors();
+
+            foreach (string neighbor in currentNeighbors)
+            {
+                DataPacket linkStatePacket = BuildLinkStatePacket(linkState, neighbor);
+                _packetSender.SendPacket(linkStatePacket);
+            }         
         }
 
-        private DataPacket BuildLinkStatePacket(List<string> linkState)
+        private DataPacket BuildLinkStatePacket(List<string> linkState, string destinationId)
         {
             // link state packets must contain the node's location aswell 
             // for remote nodes to set the location in their local graph
@@ -64,7 +69,7 @@ namespace TacMesh.Core.assets.graph
             PacketHeader packetHeader = new PacketHeader(
                 msgType: PacketType.LinkState,
                 srcID: _sourceId,
-                dstID: PacketHeader.ALL_SPECIFIER, // destination is not specified with link state packets
+                dstID: destinationId,
                 msgID: Guid.NewGuid(),
                 logicalClock: _lamportClock.GetNext()
             );

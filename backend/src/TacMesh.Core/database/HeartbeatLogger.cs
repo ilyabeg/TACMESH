@@ -13,11 +13,6 @@ namespace TacMesh.Core.database_related
 
     public class HeartbeatLogger : ILogger<string>
     {
-        // VERY IMPORTANT NOTE: THIS IS A TEMPORARY IMPLEMENTATION OF A LOGGER CLASS,
-        // I AM AWARE THAT THIS KIND OF WRITING IS NOT A GOOD IDEA AND USING A LOCK IS NO
-        // T IDEAL AND WILL CAUSE BOTTLENECKS IF ALOT OF PACKETS ARE RECEIVED
-        // SIMULTANEOUSLY, I WILL FIX THIS, BUT ONLY FOR TEMPORARY TESING I
-        // WILL USE THIS FOR NOW.
         public List<string> Logs { get; private set; }
         private static readonly object _lock = new object();
 
@@ -70,7 +65,7 @@ namespace TacMesh.Core.database_related
             dst = $"{dst,ConsoleDesign._10_padRight}";
             string time = $"{DateTime.Now,ConsoleDesign._10_padRight}";
 
-            string log = $"| {action} | {src} | {dst} | {time} |";
+            string log = $"│ {action} │ {src} │ {dst} │ {time} │";
             Log(log);
         }
     }
