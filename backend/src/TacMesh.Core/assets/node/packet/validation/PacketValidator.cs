@@ -42,12 +42,27 @@ namespace TacMesh.Core.assets.node.packet.validation
                 return false;
 
             // check sender counter
-            // To Do ...
+            //
+            if (!ValidateSenderCount(packet))
+                return false;
 
             // if the packet is valid, sync the local lamport clock
             //
             _lamportClock.Sync(packet.PacketHeader.LogicalClock);
             return true;
+        }
+
+        // validates if the sender counter is a valid one for this sender
+        private bool ValidateSenderCount(DataPacket packet)
+        {
+            // try to update the new value
+            string source = packet.PacketHeader.SrcID;
+            long newValue = packet.PacketHeader.SenderCounter;
+
+            // return true if successfuly updated the sender counter,
+            // false if failed
+            //
+            return _userValidationRecords[source].TryUpdateSenderCount(newValue);
         }
 
         /// <summary>
@@ -65,12 +80,10 @@ namespace TacMesh.Core.assets.node.packet.validation
             string source = packet.PacketHeader.SrcID;
             long newValue = packet.PacketHeader.LogicalClock;
 
-            // return true if successfuly updated
+            // return true if successfuly updated the logical clock,
+            // false if failed
             //
-            if (_userValidationRecords[source].TryUpdateClock(newValue))
-                return true;
-
-            return false;
+            return _userValidationRecords[source].TryUpdateClock(newValue);
         }
 
         /// <summary>
