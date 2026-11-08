@@ -32,6 +32,14 @@ namespace TacMesh.Core.tables.node
             N = cyclesNumber;
             _legal_timeDiff_seconds = (N * SysConfigs.HeartbeatDelayMs / 1000);
             NeighborRecords = new Dictionary<string, NeighborRecord>();
+
+            // invoke the link state update every a couple of seconds to ensure no 
+            // "graph blind spots" happen (when no change in the link state happens and
+            // nodes remain "blind" to the actual net topology without an update)
+            //
+            // Note: this will be documented in the project book
+            //
+            RunLinkStateUpdate();
         }
 
         // determines wether the provided neighbor id exists in the neighbor table
@@ -159,16 +167,38 @@ namespace TacMesh.Core.tables.node
                 while (true)
                 {
                     // TMPORARILY SHOW ON SCRREN WHICH PULSE OF CHECK IS SHOWN
-                    Console.WriteLine($"~~~~~~~~~ [PULSE #{TEMP_COUNT}] ~~~~~~~~~");
+                    //Console.WriteLine($"~~~~~~~~~ [PULSE #{TEMP_COUNT}] ~~~~~~~~~");
                     TEMP_COUNT++;
 
                     CheckExpiration();
-                    PrintTable(); // table test
+                    //PrintTable(); // table test
                     await Task.Delay(SysConfigs.HeartbeatDelayMs); // match heartbeat delay
                 }
             });
         }
 
+        /// <summary>
+        /// background thread to invoke the link state update every a couple of seconds
+        /// to avoid network "blind spots"
+        /// </summary>
+        private void RunLinkStateUpdate()
+        {
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    // await the delay before invoking to let the link state
+                    // dispatcher subscribe to the event
+                    //
+                    await Task.Delay(SysConfigs.HeartbeatDelayMs); // match heartbeat delay between event calls
+
+                    List<string> currLinkState = GetCurrentNeighbors();
+
+                    if (currLinkState.Count > 0)
+                        OnLinkStateChanged?.Invoke(this, currLinkState);
+                }
+            });
+        }
 
         public void PrintTable()
         {

@@ -41,7 +41,7 @@ export default function NodeConfigurations({ allNodes, nodeId }: NodeConfigsProp
     const [speed, setSpeed] = useState<number>(currSpeed);
     const [location, setLocation] = useState<NodeLocation>(currLocation);
     const [linkRange, setLinkRange] = useState<number>(currLinkRange);
-    const [permittedNodes, setPermitted] = useState<Array<string>>(currPermitted) // defaultly permit all nodes
+    const [permittedNodes, setPermitted] = useState<Array<string>>(currPermitted)
     const [waypoints, setWaypoints] = useState<Array<NodeLocation>>(currWaypoints);
 
     // select tag ref of the current selected value

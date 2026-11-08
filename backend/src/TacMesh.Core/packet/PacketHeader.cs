@@ -180,7 +180,7 @@ namespace TacMesh.Core.packet
             byte priority = MIN_PRIORITY,
             long logicalClock = DEFAULT_MIN_VALUE,
             long ttl = DEFAULT_TTL,
-            long sender_counter = DEFAULT_MIN_VALUE,
+            long senderCounter = DEFAULT_MIN_VALUE,
             byte p_version = PROTOCOL_VERSION,
             byte hopCount = DEFAULT_MIN_VALUE)
         {
@@ -193,7 +193,7 @@ namespace TacMesh.Core.packet
             LogicalClock = logicalClock;
             TTL = ttl;
             Priority = priority;
-            SenderCounter = sender_counter;
+            SenderCounter = senderCounter;
         }
 
         /// <summary>

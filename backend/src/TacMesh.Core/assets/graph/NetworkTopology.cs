@@ -58,14 +58,19 @@ namespace TacMesh.Core.assets.graph
         /// Updates the specific node's location in the topology state if the node exists
         /// </summary>
         /// <param name="nodeId">The node identifier</param>
-        /// <param name="nodeLocation">The node's location</param>
-        public void UpdateNodeLocation(string nodeId, Location nodeLocation)
+        /// <param name="newLocation">The node's location</param>
+        public void UpdateNodeLocation(string nodeId, Location newLocation)
         {
+            // ignore state updates with the same exact location
+            //
+            if (State.TryGetValue(nodeId, out NodeState? currState) && currState.Location.Equals(newLocation))
+                return;
+
             // if neighbor does not exist, create new record of his topology.
             // else, set new state but keep previous link state in tact
             //
-            NodeState newNodeState = new NodeState(new List<string>(), nodeLocation);
-            State.AddOrUpdate(nodeId, newNodeState, (key, prevState) => new NodeState(prevState.LinkState, nodeLocation));
+            NodeState newNodeState = new NodeState(new List<string>(), newLocation);
+            State.AddOrUpdate(nodeId, newNodeState, (key, prevState) => new NodeState(prevState.LinkState, newLocation));
 
             // TEST print out topology when updated
             //

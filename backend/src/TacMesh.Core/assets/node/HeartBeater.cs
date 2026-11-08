@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using TacMesh.Core.assets.clocks;
+using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.database_related;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.communication_interfaces;
@@ -20,10 +21,11 @@ namespace TacMesh.Core.assets.node
         private readonly IRadioModel _radioModel;
         private readonly LamportClock _lamportClock;
         private readonly IByteSerializer<DataPacket> _packetSerializer;
+        private readonly SenderCounter _senderCounter;
 
 
         // inject dependencies through constructor
-        public HeartBeater(string nodeId, NodeConfigs nodeConfigs, HeartbeatLogger logger, ITransport transporter, IRadioModel radioModel, LamportClock lamportClock, IByteSerializer<DataPacket> packetSerializer)
+        public HeartBeater(string nodeId, NodeConfigs nodeConfigs, HeartbeatLogger logger, ITransport transporter, IRadioModel radioModel, LamportClock lamportClock, IByteSerializer<DataPacket> packetSerializer, SenderCounter senderCounter)
         {
             _srcId = nodeId;
             _nodeConfigs = nodeConfigs;
@@ -32,6 +34,7 @@ namespace TacMesh.Core.assets.node
             _radioModel = radioModel;
             _lamportClock = lamportClock;
             _packetSerializer = packetSerializer;
+            _senderCounter = senderCounter;
         }
 
         /// <summary>
@@ -55,8 +58,9 @@ namespace TacMesh.Core.assets.node
 
                         foreach (string destID in destinations.Keys)
                         {
-                            // ignore same node
-                            if (destID.Equals(_srcId))
+                            // ignore same node or unpermitted neighbors
+                            //
+                            if (destID.Equals(_srcId) || !_nodeConfigs.PermittedNeighbors.Contains(destID))
                                 continue;
 
                             // pull node address
@@ -87,15 +91,16 @@ namespace TacMesh.Core.assets.node
         }
 
         private DataPacket CreateHeartbeatPacket(string destinationID)
-        {            
+        {
             // init heartbeat data packet packet header
             //
             PacketHeader header = new PacketHeader(
                 msgType: PacketType.Heartbeat,
-                srcID: _srcId, 
-                dstID: destinationID, 
-                msgID: Guid.NewGuid(), 
-                logicalClock: _lamportClock.GetNext()
+                srcID: _srcId,
+                dstID: destinationID,
+                msgID: Guid.NewGuid(),
+                logicalClock: _lamportClock.GetNext(),
+                senderCounter: _senderCounter.GetCurrent()
             );
 
             // serialize location and add to the payload

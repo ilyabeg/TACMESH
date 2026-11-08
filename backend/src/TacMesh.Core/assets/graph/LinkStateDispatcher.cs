@@ -9,23 +9,28 @@ namespace TacMesh.Core.assets.graph
 {
     public class LinkStateDispatcher
     {
+        // dependencies
         private readonly string _sourceId; // the identifier of the source node
         private readonly NodeConfigs _nodeConfigs; // to access location
         private readonly PacketSender _packetSender; // to send the link state packets
         private readonly NeighborTable _neighborTable; // to listen for link state updates
         private readonly LamportClock _lamportClock; // to access current logical clock
+        private readonly SenderCounter _senderCounter; // to attach the sender counter to the packets
         private readonly IByteSerializer<List<string>> _linkStateSerializer; // to serialize the link state
+        private readonly NetworkTopology _networkTopology; // to update the own node's link state
 
 
         // constructor
-        public LinkStateDispatcher(string source, NodeConfigs nodeConfigs, PacketSender packetSender, NeighborTable neighborTable, LamportClock lamportClock, IByteSerializer<List<string>> linkStateSerializer)
+        public LinkStateDispatcher(string source, NodeConfigs nodeConfigs, PacketSender packetSender, NeighborTable neighborTable, LamportClock lamportClock, SenderCounter senderCounter, IByteSerializer<List<string>> linkStateSerializer, NetworkTopology networkTopology)
         {
             _sourceId = source;
             _nodeConfigs = nodeConfigs;
             _packetSender = packetSender;
             _neighborTable = neighborTable;
             _lamportClock = lamportClock;
+            _senderCounter = senderCounter;
             _linkStateSerializer = linkStateSerializer;
+            _networkTopology = networkTopology;
 
             // attach link state update event handler
             _neighborTable.OnLinkStateChanged += (s,e) => DispatchLinkState(e);
@@ -38,9 +43,12 @@ namespace TacMesh.Core.assets.graph
         /// <param name="linkState">The link state to dispatch</param>
         private void DispatchLinkState(List<string> linkState)
         {
-            // inject the current clock value to each packet
+            // add the own node's link state in the topology before dispatching to remote nodes
             //
-            long logicalClockValue = _lamportClock.GetNext();
+            _networkTopology.UpdateLinkState(_sourceId, linkState);
+            _networkTopology.UpdateNodeLocation(_sourceId, _nodeConfigs.Location);
+
+            long logicalClockValue = _lamportClock.GetNext(); // inject the current clock value to each packet
 
             // build and dispatch the packet using the packet sender
             //
@@ -70,7 +78,8 @@ namespace TacMesh.Core.assets.graph
                 srcID: _sourceId,
                 dstID: PacketHeader.ALL_SPECIFIER,
                 msgID: Guid.NewGuid(),
-                logicalClock: logicalClockValue
+                logicalClock: logicalClockValue,
+                senderCounter: _senderCounter.GetCurrent()
             );
 
             return new DataPacket(packetHeader, packetPayload);

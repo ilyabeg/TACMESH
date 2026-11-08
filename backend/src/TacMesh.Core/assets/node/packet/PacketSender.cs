@@ -86,7 +86,7 @@ namespace TacMesh.Core.assets.node.packet
             {
                 // exclude this transmission if the address is the excluded one
                 //
-                if (exluciveAddress != null && peerAddress == exluciveAddress) 
+                if (exluciveAddress != null && peerAddress.Equals(exluciveAddress)) 
                     return false;
 
                 byte[] packetBytes = _packetSerializer.Serialize(packet);

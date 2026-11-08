@@ -1,4 +1,5 @@
-﻿using TacMesh.Core.assets.graph;
+﻿using System.Net;
+using TacMesh.Core.assets.graph;
 using TacMesh.Core.assets.node.packet.validation;
 using TacMesh.Core.database_related;
 using TacMesh.Core.events;
@@ -55,11 +56,11 @@ namespace TacMesh.Core.assets.node.packet
             {
                 // drop packet if it is from an un-permitted neighbor before processing
                 //
-                if (!_topologyFilter.Filter(packet.PacketHeader.SrcID))
-                {
-                    Console.WriteLine($"[Packet Processor] Dropping Packet from source \"{packet.PacketHeader.SrcID}\" due to: un-permitted neighbor");
-                    return;
-                }
+                //if (!_topologyFilter.Filter(packet.PacketHeader.SrcID))
+                //{
+                //    Console.WriteLine($"[Packet Processor] Dropping Packet from source \"{packet.PacketHeader.SrcID}\" due to: un-permitted neighbor");
+                //    return;
+                //}
 
                 // process packet by type ...
                 // 
@@ -101,6 +102,12 @@ namespace TacMesh.Core.assets.node.packet
         {
             if (packet.PacketHeader.MsgType == PacketType.Heartbeat && _packetValidator.ValidateLogicalClock(packet))
             {
+
+                // TEMPORARILY TEST THE MULTIHOPS AND FILTER ONLY HEARTBEATS
+                //
+                if (!_topologyFilter.Filter(packet.PacketHeader.SrcID)) return false;
+
+
                 // log heartbeat
                 _heartbeater.LogHeartbeat(LoggingMode.Received, packet.PacketHeader.SrcID, packet.PacketHeader.DstID);
 
@@ -145,12 +152,7 @@ namespace TacMesh.Core.assets.node.packet
                 _networkTopology.UpdateLinkState(nodeId, linkState);
                 _networkTopology.UpdateNodeLocation(nodeId, nodeLocation);
 
-                // increment the hop count, retransmit the packet to spread the link state,
-                // and exclude the neighbor which this message was sent from
-                //
-                packet.PacketHeader.IncrementHopCount();
-                _packetSender.SendPacket(packet, exluciveAddress: e.RemoteEndPoint);
-
+                RetransmitPacket(packet, e.RemoteEndPoint); // re-transmit the packet forward
                 return true;
             }
             return false;
@@ -167,9 +169,7 @@ namespace TacMesh.Core.assets.node.packet
                 // TEST print out packet
                 Console.WriteLine($"[PACKET PROCESSOR] Received User Message: \n{packet}");
 
-                // if the packet isn't intended for this node, let the PacketSender handle it
-                //
-                // SELF NOTE: what happens if a Link State ot Heartbeat not inteded for THIS node gets processed
+                // if the packet isn't intended for this node, let the PacketSender handle it                
                 //
                 if (!packet.PacketHeader.DstID.Equals(_sourceId))
                 {
@@ -179,6 +179,17 @@ namespace TacMesh.Core.assets.node.packet
                 return true;
             }
             return false;
+        }
+
+        // retransmits the packet forward (multi-hop)
+        //
+        private void RetransmitPacket(DataPacket packet, IPEndPoint excludeAddress)
+        {
+            // increment the hop count, retransmit the packet to spread the link state,
+            // and exclude the neighbor which this message was sent from
+            //
+            packet.PacketHeader.IncrementHopCount();
+            _packetSender.SendPacket(packet, exluciveAddress: excludeAddress);
         }
     }
 }

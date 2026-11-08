@@ -59,7 +59,7 @@ namespace TacMesh.Core.utils.serializers
                 logicalClock: reader.ReadLong(),
                 ttl: reader.ReadLong(),
                 priority: reader.ReadByte(),
-                sender_counter: reader.ReadLong()
+                senderCounter: reader.ReadLong()
             );
         }
     }

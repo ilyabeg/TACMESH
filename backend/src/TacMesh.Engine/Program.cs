@@ -40,7 +40,7 @@ namespace TacMesh.Engine
             {
                 if (args.Length != arguments_length)
                 {
-                    Console.WriteLine("ERROR: Engine Process arguments did not match. Terminating process...");
+                    Console.WriteLine("ERROR: Engine Process arguments did not match. Terminating process...\n");
                     return;
                 }
 
@@ -52,12 +52,25 @@ namespace TacMesh.Engine
                 // save node info
                 string nodeInfoJson = args[0];
                 NodeInfo? nodeInfo = DeserializeNodeInfo(nodeInfoJson);
-                if (nodeInfo == null) return;
+                if (nodeInfo == null)
+                {
+                    Console.WriteLine("[ENGINE PROCESS] ERROR: Engine Process NodeInfo Failed to init. Terminating process...\n");
+                    return;
+                }
 
                 // save node config settings to access the engine's specific node settings anywhere               
                 string configsJson = args[1];
                 NodeConfigs? nodeConfigs = DeserializeConfigSettings(configsJson);
-                if (nodeConfigs == null) return;
+                if (nodeConfigs == null)
+                {
+                    Console.WriteLine("[ENGINE PROCESS] ERROR: Engine Process NodeConfigs Failed to init. Terminating process...\n");
+                    return;
+                }
+
+
+                // TEMP TEST
+                //
+                Console.WriteLine($"Node {nodeInfo.NodeId} started with permitted neighbors: {string.Join(",", nodeConfigs.PermittedNeighbors)}\n");
 
 
                 // --- create all dependencies ---
@@ -87,8 +100,11 @@ namespace TacMesh.Engine
                 IByteSerializer<DataPacket> packetSerializer = new PacketSerializer();
                 IByteSerializer<List<string>> linkStateSerializer = new LinkStateSerializer();
 
+                // Sender Counter state
+                SenderCounter senderCounter = new SenderCounter();
+
                 // Heartbeater & NeighbourTable
-                HeartBeater heartbeater = new HeartBeater(nodeInfo.NodeId, nodeConfigs, new HeartbeatLogger(), simTransport, radioModel, lamportClock, packetSerializer);
+                HeartBeater heartbeater = new HeartBeater(nodeInfo.NodeId, nodeConfigs, new HeartbeatLogger(), simTransport, radioModel, lamportClock, packetSerializer, senderCounter);
                 NeighborTable neighborTable = new NeighborTable(systemClock);
 
                 // Topology Filter & Network Topology
@@ -101,7 +117,7 @@ namespace TacMesh.Engine
                 PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, linkStateSerializer, topologyFilter, heartbeater, neighborTable, packetValidator, packetSender, networkTopology, nodeInfo.NodeId);
 
                 // Link State Dispatcher
-                LinkStateDispatcher linkStateDispatcher = new LinkStateDispatcher(nodeInfo.NodeId, nodeConfigs, packetSender, neighborTable, lamportClock, linkStateSerializer);
+                LinkStateDispatcher linkStateDispatcher = new LinkStateDispatcher(nodeInfo.NodeId, nodeConfigs, packetSender, neighborTable, lamportClock, senderCounter, linkStateSerializer, networkTopology);
 
                 // Input Listener
                 IInputListener inputControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
