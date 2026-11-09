@@ -46,6 +46,23 @@ namespace TacMesh.Core.assets.node.packet.buffer
         }
 
 
+        // --- Contains ---
+
+        /// <summary>
+        /// Checks if the packet is already included in the packet buffer
+        /// </summary>
+        /// <param name="packet">The packet to check if already included</param>
+        /// <returns>True if the packet is already in the packet buffer or False otherwise</returns>
+        public bool Contains(DataPacket packet)
+        {
+            // if the packet were already existing, the check is still correct because
+            // it would fall into the same bucket by the priority
+            //
+            PriorityBucket bucket = _buckets[packet.PacketHeader.Priority - 1];
+            return bucket.Contains(packet); // O(1) [using HashSet for lookup]
+        }
+
+
         // --- Addition logic ---
 
         /// <summary>
@@ -54,29 +71,25 @@ namespace TacMesh.Core.assets.node.packet.buffer
         /// <param name="packet"></param>
         public void Add(DataPacket packet)
         {
-            // makes new room while the buffer is full.
-            //
-            // NOTE: interlocked must be used to read/increment/decrement the total packets count
-            // because if two threads change the value of the count at the same time, a race 
-            // condition may happen, so using atomic operations on it is mandatory
-            //
-            while (Interlocked.Read(ref _TOTAL_PACKETS) >= _BUFFER_CAPACITY) {
-                RemoveOldestPacket();
-            }
-
             // check packets expiration to clean up before adding
             CheckExpiration();
 
-            // add the packet if it does not exist in the priority queue (by reference).
-            // if the packet were already existing, the check is still correct because
-            // it would fall into the same bucket by the priority
+            // add the packet if it does not exist in the priority queue (by msg id).
             //
-            PriorityBucket bucket = _buckets[packet.PacketHeader.Priority - 1];
-
-            if (!bucket.Contains(packet)) // O(1) [using HashSet for lookup]
+            if (!Contains(packet))
             {
-                // insert the packet
-                bucket.Enqueue(packet); // O(logM) [because priority queue used min-heap]
+                // makes new room while the buffer is full.
+                //
+                // NOTE: interlocked must be used to read/increment/decrement the total packets count
+                // because if two threads change the value of the count at the same time, a race 
+                // condition may happen, so using atomic operations on it is mandatory
+                //
+                while (Interlocked.Read(ref _TOTAL_PACKETS) >= _BUFFER_CAPACITY) {
+                    RemoveOldestPacket();
+                }
+
+                // insert the packet to the corrisponding priority bucket
+                _buckets[packet.PacketHeader.Priority - 1].Enqueue(packet); // O(logM) [because priority queue used min-heap]
 
                 // insert to recipients dict
                 AddToRecipients(packet);

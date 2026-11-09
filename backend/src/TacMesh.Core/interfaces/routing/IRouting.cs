@@ -8,6 +8,11 @@ namespace TacMesh.Core.interfaces.routing
     /// </summary>
     public interface IRouting
     {
-        void Route(DataPacket packet);
+        /// <summary>
+        /// Router method to determine the next hops for the DataPacket
+        /// </summary>
+        /// <param name="packet">The packet to route through to the next hops</param>
+        /// <returns>A list containing the identifiers of the next hops</returns>
+        List<string> Route(DataPacket packet);
     }
 }

@@ -20,26 +20,12 @@ namespace TacMesh.Launcher.processes
             Dictionary<string, Process> engines = new();
 
             // create a default permitted nodes list containing all of the node id's
-            //List<string> permittedNodes = CreateDefaultPermitted(num_of_engines);            
+            List<string> permittedNodes = CreateDefaultPermitted(num_of_engines);            
 
             for (int i = 0; i < num_of_engines; i++)
             {
                 // init engine process with the start info
                 string nodeId = $"Node-{i+1:D2}";
-
-
-                // TEMPORARILY TEST THE MULTIHOPS VIA SPECIFIC NEIGHBOR PERMISSIONS
-                //
-                List<string> permittedNodes = nodeId switch
-                {
-                    "Node-01" => new List<string> { "Node-02" },
-                    "Node-02" => new List<string> { "Node-01", "Node-03" },
-                    "Node-03" => new List<string> { "Node-02", "Node-04" },
-                    "Node-04" => new List<string> { "Node-03" },
-                    _ => new List<string>()
-                };
-
-
                 Process engine = CreateNewEngineInstance(nodeId, permittedNodes);
                 engines.Add(nodeId, engine);
             }
