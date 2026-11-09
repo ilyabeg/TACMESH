@@ -75,7 +75,7 @@ namespace TacMesh.Core.assets.node.packet
         /// <param name="peerId">The specified peer</param>
         /// <param name="exluciveAddress">Address to exclude when sending the packet</param>
         /// <returns>True if transmitted successfuly or False otherwise</returns>
-        public bool ExecuteSend(DataPacket packet, string peerId, IPEndPoint? exluciveAddress)
+        public bool ExecuteSend(DataPacket packet, string peerId, IPEndPoint? exluciveAddress = null)
         {
             IPEndPoint? peerAddress = _neighborTable.GetNeigborAddress(peerId);
             

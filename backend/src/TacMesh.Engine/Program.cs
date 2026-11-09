@@ -8,17 +8,19 @@ using TacMesh.Core.assets.node;
 using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.assets.node.packet.buffer;
 using TacMesh.Core.assets.node.packet.validation;
+using TacMesh.Core.assets.routing.epidemic;
 using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.communication.simulation_communication;
 using TacMesh.Core.database_related;
+using TacMesh.Core.events.dispatchers;
 using TacMesh.Core.hardware_mode;
-using TacMesh.Core.hardware_mode.communication;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.beacon_and_destination;
 using TacMesh.Core.interfaces.clock_interfaces;
 using TacMesh.Core.interfaces.communication;
 using TacMesh.Core.interfaces.communication_interfaces;
 using TacMesh.Core.interfaces.raster;
+using TacMesh.Core.interfaces.routing;
 using TacMesh.Core.launcher;
 using TacMesh.Core.map_related;
 using TacMesh.Core.models;
@@ -51,26 +53,11 @@ namespace TacMesh.Engine
 
                 // save node info
                 string nodeInfoJson = args[0];
-                NodeInfo? nodeInfo = DeserializeNodeInfo(nodeInfoJson);
-                if (nodeInfo == null)
-                {
-                    Console.WriteLine("[ENGINE PROCESS] ERROR: Engine Process NodeInfo Failed to init. Terminating process...\n");
-                    return;
-                }
+                NodeInfo nodeInfo = JsonSerializer.Deserialize<NodeInfo>(nodeInfoJson)!;
 
                 // save node config settings to access the engine's specific node settings anywhere               
                 string configsJson = args[1];
-                NodeConfigs? nodeConfigs = DeserializeConfigSettings(configsJson);
-                if (nodeConfigs == null)
-                {
-                    Console.WriteLine("[ENGINE PROCESS] ERROR: Engine Process NodeConfigs Failed to init. Terminating process...\n");
-                    return;
-                }
-
-
-                // TEMP TEST
-                //
-                Console.WriteLine($"Node {nodeInfo.NodeId} started with permitted neighbors: {string.Join(",", nodeConfigs.PermittedNeighbors)}\n");
+                NodeConfigs nodeConfigs = JsonSerializer.Deserialize<NodeConfigs>(configsJson)!;
 
 
                 // --- create all dependencies ---
@@ -98,26 +85,31 @@ namespace TacMesh.Engine
 
                 // Seralizers
                 IByteSerializer<DataPacket> packetSerializer = new PacketSerializer();
-                IByteSerializer<List<string>> linkStateSerializer = new LinkStateSerializer();
+                IByteSerializer<List<string>> linkStateSerializer = new LinkStateSerializer();                
 
                 // Sender Counter state
                 SenderCounter senderCounter = new SenderCounter();
 
                 // Heartbeater & NeighbourTable
                 HeartBeater heartbeater = new HeartBeater(nodeInfo.NodeId, nodeConfigs, new HeartbeatLogger(), simTransport, radioModel, lamportClock, packetSerializer, senderCounter);
-                NeighborTable neighborTable = new NeighborTable(systemClock);
+                NeighborTable neighborTable = new NeighborTable(systemClock);                
+
+                // Routing Algorithm
+                IRouting routing = new EpidemicRouting(neighborTable);
 
                 // Topology Filter & Network Topology
                 TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);
                 NetworkTopology networkTopology = new NetworkTopology();
 
-                // Packet Sender, Packet Validator, Packet Processor
+                // Packet Buffer, Packet Sender, Packet Validator, Packet Processor
+                PacketBuffer packetBuffer = new PacketBuffer(systemClock);
                 PacketValidator packetValidator = new PacketValidator(lamportClock);
-                PacketSender packetSender = new PacketSender(packetSerializer, neighborTable, simTransport, new PacketBuffer(systemClock));
-                PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, linkStateSerializer, topologyFilter, heartbeater, neighborTable, packetValidator, packetSender, networkTopology, nodeInfo.NodeId);
+                PacketSender packetSender = new PacketSender(packetSerializer, neighborTable, simTransport);
+                PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, linkStateSerializer, routing, topologyFilter, heartbeater, neighborTable, packetValidator, packetSender, packetBuffer, networkTopology, nodeInfo.NodeId);
 
-                // Link State Dispatcher
+                // Link State & Buffer Dispatchers
                 LinkStateDispatcher linkStateDispatcher = new LinkStateDispatcher(nodeInfo.NodeId, nodeConfigs, packetSender, neighborTable, lamportClock, senderCounter, linkStateSerializer, networkTopology);
+                BufferDispatcher bufferDispatcher = new BufferDispatcher(neighborTable, packetSender, packetBuffer, routing);
 
                 // Input Listener
                 IInputListener inputControl = new LauncherControl(nodeInfo.NodeId, nodeConfigs, beaconEmitter);
@@ -158,27 +150,5 @@ namespace TacMesh.Engine
 
         static Socket GetRadioSocket() 
             => SocketGenerator.GenerateMcastListenerSocket(SysConfigs.McastGroupIp, SysConfigs.McastPort);
-        
-        static NodeInfo? DeserializeNodeInfo(string json)
-        {
-            try {
-                return JsonSerializer.Deserialize<NodeInfo>(json);
-            }
-            catch (Exception e) {
-                Console.WriteLine($"[SYS CONFIGS] Error deserializing the node info: \"{e.Message}\"");
-                return null;
-            }
-        }
-
-        static NodeConfigs? DeserializeConfigSettings(string json)
-        {
-            try {
-                return JsonSerializer.Deserialize<NodeConfigs>(json);
-            }
-            catch (Exception e) {
-                Console.WriteLine($"[SYS CONFIGS] Error deserializing the node configs: \"{e.Message}\"");
-                return null;
-            }
-        }
     }
 }

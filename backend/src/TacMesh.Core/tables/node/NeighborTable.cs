@@ -24,6 +24,9 @@ namespace TacMesh.Core.tables.node
         // public event to invoke when the neighbor table changes (the local node's link state)
         public event EventHandler<List<string>>? OnLinkStateChanged;
 
+        // public event to invoke when a new neighboris discovered
+        public event EventHandler<string>? OnNeighborDiscovered;
+
 
         // inject any clock to the table
         public NeighborTable(IClock tableClock, int cyclesNumber = 3) // if cycles isn't provided, default = 3
@@ -103,9 +106,13 @@ namespace TacMesh.Core.tables.node
                     linkState = NeighborRecords.Keys.ToList();
             }
 
-            // if the neighbor table changed, invoke event, and pass current neighbor identifiers
+            // if the neighbor table changed, invoke events, and pass current neighbor identifiers
             //
-            if (linkState != null) OnLinkStateChanged?.Invoke(this, linkState);
+            if (isNew && linkState != null)
+            {
+                OnLinkStateChanged?.Invoke(this, linkState);
+                OnNeighborDiscovered?.Invoke(this, neighborId);
+            }
         }
 
         // checks for expired nodes and removes

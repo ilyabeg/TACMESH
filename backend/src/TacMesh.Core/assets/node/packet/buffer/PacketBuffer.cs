@@ -4,9 +4,11 @@ using TacMesh.Core.packet;
 namespace TacMesh.Core.assets.node.packet.buffer
 {
     public class PacketBuffer
-    {
-        // the maximum amount of messages that can be stored in TOTAL
-        private readonly int _BUFFER_CAPACITY = 1000;
+    {               
+        // NOTE: the 4200 cap is intentional. 4200 messages * 250 byte for each message (on average) = ~1MB
+        // of stored packets in memory for each every node process on the network
+        //
+        private readonly int _BUFFER_CAPACITY = 4200; // the maximum amount of messages that can be stored in TOTAL
         private long _TOTAL_PACKETS; // packet counter
         private readonly IClock _sysClock; // system clock for TTL timestamps
         private const int _PACKET_EXPIRATION_DELAY = 5000; //ms
@@ -60,6 +62,25 @@ namespace TacMesh.Core.assets.node.packet.buffer
             //
             PriorityBucket bucket = _buckets[packet.PacketHeader.Priority - 1];
             return bucket.Contains(packet); // O(1) [using HashSet for lookup]
+        }
+
+
+        // --- Get all Packets ---
+
+        /// <summary>
+        /// A method to get all of the current packets from each bucket and merge them into a list
+        /// </summary>
+        /// <returns>All of the current packets in the buffer</returns>
+        public List<DataPacket> GetCurrentPackets()
+        {
+            List<DataPacket> allPackets = new List<DataPacket>();
+
+            for (int i = _buckets.Length - 1; i >= 0; i--)
+            {
+                PriorityBucket bucket = _buckets[i];
+                allPackets.AddRange(bucket.GetPackets());
+            }
+            return allPackets;
         }
 
 

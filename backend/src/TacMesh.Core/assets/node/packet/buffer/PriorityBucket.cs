@@ -107,6 +107,18 @@ namespace TacMesh.Core.assets.node.packet.buffer
             return validRecord != null;
         }
 
+        /// <summary>
+        /// Method to get the current bucket packets in a list
+        /// </summary>
+        /// <returns>All of the current packets in the bucket</returns>
+        public List<DataPacket> GetPackets()
+        {
+            lock (_bucketLock)
+            {
+                return _packetSet.ToList();
+            }
+        }
+
 
         // --- Enqueue & Dequeue ---
 

@@ -1,11 +1,12 @@
 ﻿using TacMesh.Core.assets.clocks;
+using TacMesh.Core.assets.graph;
 using TacMesh.Core.assets.node;
 using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.packet;
 using TacMesh.Core.tables.node;
 
-namespace TacMesh.Core.assets.graph
+namespace TacMesh.Core.events.dispatchers
 {
     public class LinkStateDispatcher
     {
