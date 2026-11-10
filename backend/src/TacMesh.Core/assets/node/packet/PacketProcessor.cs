@@ -1,9 +1,10 @@
-﻿using System.Net;
+﻿using System.Text;
 using TacMesh.Core.assets.graph;
 using TacMesh.Core.assets.node.packet.buffer;
 using TacMesh.Core.assets.node.packet.validation;
 using TacMesh.Core.database_related;
 using TacMesh.Core.events;
+using TacMesh.Core.events.dispatchers;
 using TacMesh.Core.hardware_mode;
 using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.routing;
@@ -20,29 +21,27 @@ namespace TacMesh.Core.assets.node.packet
         // dependencies
         private readonly IByteSerializer<DataPacket> _packetSerializer;
         private readonly IByteSerializer<List<string>> _linkStateSerializer;
-        private readonly IRouting _routing;
         private readonly TopologyFilter _topologyFilter;
         private readonly HeartBeater _heartbeater;
         private readonly NeighborTable _neighborTable;
         private readonly PacketValidator _packetValidator;
+        private readonly PacketDispatcher _packetDispatcher;
         private readonly PacketSender _packetSender;
-        private readonly PacketBuffer _packetBuffer;
         private readonly NetworkTopology _networkTopology;
         private readonly string _sourceId;
 
 
         // constructor
-        public PacketProcessor(IByteSerializer<DataPacket> packetSerializer, IByteSerializer<List<string>> linkStateSerializer, IRouting routing, TopologyFilter topologyFilter, HeartBeater heartbeater, NeighborTable neighborTable, PacketValidator packetValidator, PacketSender packetSender, PacketBuffer packetBuffer, NetworkTopology networkTopology, string sourceId)
+        public PacketProcessor(IByteSerializer<DataPacket> packetSerializer, IByteSerializer<List<string>> linkStateSerializer, TopologyFilter topologyFilter, HeartBeater heartbeater, NeighborTable neighborTable, PacketValidator packetValidator, PacketDispatcher packetDispatcher, PacketSender packetSender, NetworkTopology networkTopology, string sourceId)
         {            
             _packetSerializer = packetSerializer;
             _linkStateSerializer = linkStateSerializer;
-            _routing = routing;
             _topologyFilter = topologyFilter;
             _heartbeater = heartbeater;
             _neighborTable = neighborTable;
             _packetValidator = packetValidator;
+            _packetDispatcher = packetDispatcher;
             _packetSender = packetSender;
-            _packetBuffer = packetBuffer;
             _networkTopology = networkTopology;
             _sourceId = sourceId;
         }
@@ -169,34 +168,25 @@ namespace TacMesh.Core.assets.node.packet
         private bool ProcessUserMessage(DataPacket packet, MessageReceivedEventArgs e)
         {
             if (packet.PacketHeader.MsgType == PacketType.UserMessage)
-            {
-                // return, if the packet was already processed.
-                // this stops from retransmitting the packet infinitely
-                //
-                if (_packetBuffer.Contains(packet)) return true;
-
+            {                
                 // if the packet isn't intended for this node, or for everyone
                 // try to forward it using the Routing method
                 //
                 if (!packet.PacketHeader.DstID.Equals(_sourceId) && !packet.PacketHeader.DstID.Equals(PacketHeader.ALL_SPECIFIER))
-                {                    
-                    _packetBuffer.Add(packet); // allways store the message in the buffer
-
-                    packet.PacketHeader.IncrementHopCount(); // increment the hop count
-                    List<string> nextHops = _routing.Route(packet); // get the next hops
-
-                    // forward the packet to all of the next hops directly
+                {
+                    // increment the hop count and dispatch the packet
                     //
-                    foreach (string nextHop in nextHops)
-                        _packetSender.ExecuteSend(packet, exluciveAddress: e.RemoteEndPoint, peerId: nextHop);
-
+                    packet.PacketHeader.IncrementHopCount();
+                    _packetDispatcher.DispatchPacket(packet, excludeAddress: e.RemoteEndPoint);
                     return true;
                 }
 
                 // process the packet ...
-                //
+
                 // TEST print out packet
-                Console.WriteLine($"[PACKET PROCESSOR] Received User Message: \n{packet}");
+                //
+                string message = Encoding.UTF8.GetString(packet.Payload);
+                Console.WriteLine($"[PACKET PROCESSOR] Received User Message: \n{message}");
 
                 return true;
             }

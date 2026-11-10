@@ -2,7 +2,7 @@
 using System.Text.Json;
 using TacMesh.Core.assets.clocks;
 using TacMesh.Core.assets.node;
-using TacMesh.Core.assets.node.packet;
+using TacMesh.Core.events.dispatchers;
 using TacMesh.Core.interfaces.beacon_and_destination;
 using TacMesh.Core.interfaces.communication;
 using TacMesh.Core.packet;
@@ -16,18 +16,16 @@ namespace TacMesh.Core.hardware_mode.communication
     public class UserControl : IInputListener
     {        
         // dependencies
-        private readonly PacketSender _packetSender;
-
-        // maybe temporary
+        private readonly PacketDispatcher _packetDispatcher;
         private readonly NodeConfigs _nodeConfigs;
         private readonly IBeaconEmitter _beaconEmitter;
         private readonly LamportClock _lamportClock;
 
 
         // Constructor 
-        public UserControl(PacketSender packetSender, NodeConfigs nodeConfigs, IBeaconEmitter beaconEmitter, LamportClock lamportClock) 
+        public UserControl(PacketDispatcher packetDispatcher, NodeConfigs nodeConfigs, IBeaconEmitter beaconEmitter, LamportClock lamportClock) 
         {
-            _packetSender = packetSender;
+            _packetDispatcher = packetDispatcher;
             _nodeConfigs = nodeConfigs;
             _beaconEmitter = beaconEmitter;
             _lamportClock = lamportClock;
@@ -84,10 +82,10 @@ namespace TacMesh.Core.hardware_mode.communication
             {
                 UserMessage? userMessage = JsonSerializer.Deserialize<UserMessage>(input) ?? throw new Exception();
 
-                // build and send the packet to the destination
+                // build and dispatch the packet to the destination
                 //
                 DataPacket packet = CreateSourcePacket(userMessage);
-                _packetSender.SendPacket(packet);
+                _packetDispatcher.DispatchPacket(packet);
                 return true;
             }
             catch { return false; }

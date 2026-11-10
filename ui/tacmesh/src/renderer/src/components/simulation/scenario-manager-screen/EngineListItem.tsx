@@ -72,6 +72,15 @@ export default function EngineListItem({ engine, expandedFlag }: ItemProps) {
         setOpenMenu(false);
     }
 
+
+    // TEMPORARY BUTTON TO TEST MESSAGE ROUTING 
+    //
+    const onTemp = () => {
+        const json: string = JSON.stringify("test-message-routing");
+        pushToLauncher(json);
+    }
+
+
     return (
         <li className="list-item-container">
 
@@ -107,6 +116,7 @@ export default function EngineListItem({ engine, expandedFlag }: ItemProps) {
                         <button className="dropdown-btn" style={{ borderBottom: "1px solid #424242" }} onClick={onKillProcess}>Terminate Process</button>
                         <button className="dropdown-btn" style={{ borderBottom: "1px solid #424242" }} onClick={onAdvance}>Advance Node</button>
                         <button className="dropdown-btn" onClick={onSettings}>Settings</button>
+                        <button className="dropdown-btn" onClick={onTemp} style={{ background: "blue" }}>SEND MESSAGE</button>
                     </div>
                 )
             }

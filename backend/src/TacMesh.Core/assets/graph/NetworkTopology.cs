@@ -49,9 +49,7 @@ namespace TacMesh.Core.assets.graph
             NodeState newNodeState = new NodeState(linkState, Location.DEFAULT_LOCATION);
             State.AddOrUpdate(nodeId, newNodeState, (key, prevState) => new NodeState(linkState, prevState.Location));
 
-            // TEST print out topology when updated
-            //
-            PrintTopology();
+            //PrintTopology(); // print out topology when updated
         }
 
         /// <summary>
@@ -72,9 +70,7 @@ namespace TacMesh.Core.assets.graph
             NodeState newNodeState = new NodeState(new List<string>(), newLocation);
             State.AddOrUpdate(nodeId, newNodeState, (key, prevState) => new NodeState(prevState.LinkState, newLocation));
 
-            // TEST print out topology when updated
-            //
-            PrintTopology();
+            //PrintTopology(); // print out topology when updated
         }
 
         /// <summary>

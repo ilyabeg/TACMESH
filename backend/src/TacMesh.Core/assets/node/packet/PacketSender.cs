@@ -6,7 +6,8 @@ using TacMesh.Core.tables.node;
 namespace TacMesh.Core.assets.node.packet
 {
     /// <summary>
-    /// The class used to send messages to other end users
+    /// Sender class used as a wrapper for the Transport interface, and for sending packets through it.
+    /// Understands concepts like: string id's, and pulls addresses of neighbors through the neighbor table.
     /// </summary>
     public class PacketSender
     {

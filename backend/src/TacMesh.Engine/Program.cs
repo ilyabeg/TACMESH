@@ -101,11 +101,12 @@ namespace TacMesh.Engine
                 TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);
                 NetworkTopology networkTopology = new NetworkTopology();
 
-                // Packet Buffer, Packet Sender, Packet Validator, Packet Processor
+                // Packet Buffer, Packet Validator, Packet Sender, Packet Dispatcher, Packet Processor
                 PacketBuffer packetBuffer = new PacketBuffer(systemClock);
                 PacketValidator packetValidator = new PacketValidator(lamportClock);
                 PacketSender packetSender = new PacketSender(packetSerializer, neighborTable, simTransport);
-                PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, linkStateSerializer, routing, topologyFilter, heartbeater, neighborTable, packetValidator, packetSender, packetBuffer, networkTopology, nodeInfo.NodeId);
+                PacketDispatcher packetDispatcher = new PacketDispatcher(routing, packetSender, packetBuffer);
+                PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, linkStateSerializer, topologyFilter, heartbeater, neighborTable, packetValidator, packetDispatcher, packetSender, networkTopology, nodeInfo.NodeId);
 
                 // Link State & Buffer Dispatchers
                 LinkStateDispatcher linkStateDispatcher = new LinkStateDispatcher(nodeInfo.NodeId, nodeConfigs, packetSender, neighborTable, lamportClock, senderCounter, linkStateSerializer, networkTopology);
