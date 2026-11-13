@@ -103,14 +103,14 @@ namespace TacMesh.Core.assets.routing.prophet
                     continue;
                 }
 
-                double p_BC = ... ; // B -> C probability
+                //double p_BC = ... ; // B -> C probability
 
                 // Grater Than Rule: clacify node B as a next hop only if the
                 // delivery probability of node B to C is grater than the delivery
                 // probability of node A to C
                 //
-                if (p_BC > p_AC)
-                    nextHops.Add(nodeB);
+                //if (p_BC > p_AC)
+                //    nextHops.Add(nodeB);
             }
             return nextHops;
         }
