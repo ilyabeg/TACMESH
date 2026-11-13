@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.interfaces.routing;
 using TacMesh.Core.packet;
 using TacMesh.Core.tables.node;
@@ -12,8 +13,16 @@ namespace TacMesh.Core.assets.routing.prophet
         //
         private readonly ConcurrentDictionary<string, double> _deliveryProbability;
 
-        // dependencies
+        // remote node's own probability vectors received from the network
+        //
+        private ConcurrentDictionary<string, ConcurrentDictionary<string, double>> _remotePrVectors;
+
+        // --- Dependencies ---
+        private readonly string _sourceNode;
         private readonly NeighborTable _neighborTable;
+        private readonly PacketSender _packetSender;
+        private readonly ProphetExchangeSerializer _serializer;
+
 
         // --- PRoPHET constants ---
 
@@ -71,11 +80,21 @@ namespace TacMesh.Core.assets.routing.prophet
 
 
         // constructor
-        public ProphetRouting(NeighborTable neighborTable)
+        public ProphetRouting(string sourceNode, NeighborTable neighborTable, PacketSender packetSender, ProphetExchangeSerializer serializer)
         {
             _deliveryProbability = new ConcurrentDictionary<string, double>();
+            _remotePrVectors = new ConcurrentDictionary<string, ConcurrentDictionary<string, double>>();
+            _sourceNode = sourceNode;
             _neighborTable = neighborTable;
+            _packetSender = packetSender;
+            _serializer = serializer;
+
+            // attach event handler for discovering new neighbors
+            //_neighborTable.OnNeighborDiscovered += (s, e) => ... ; // To Do ...
         }
+
+
+        // --- IRouting interface methods ---
 
         /// <summary>
         /// Router method to determine the next hops for the DataPacket
@@ -103,17 +122,55 @@ namespace TacMesh.Core.assets.routing.prophet
                     continue;
                 }
 
-                //double p_BC = ... ; // B -> C probability
+                double p_BC = 0; // B -> C probability, init as 0 in case no value exists
+
+                // get the remote node B's delivery probability to node C
+                //
+                if (_remotePrVectors.TryGetValue(nodeB, out var vectorB)) 
+                {
+                    vectorB.TryGetValue(nodeC, out p_BC);
+                }
 
                 // Grater Than Rule: clacify node B as a next hop only if the
                 // delivery probability of node B to C is grater than the delivery
                 // probability of node A to C
                 //
-                //if (p_BC > p_AC)
-                //    nextHops.Add(nodeB);
+                if (p_BC > p_AC)
+                    nextHops.Add(nodeB);
             }
             return nextHops;
         }
+
+        /// <summary>
+        /// Processor for PRoPHET routing exchange packet payloads. processes incoming
+        /// remote probability vector packet exchanges
+        /// </summary>
+        /// <param name="senderId">The identifier of the paacket sender.</param>
+        /// <param name="exchangePayload">The routing exchange payload bytes.</param>
+        public void ProcessRoutingExchange(string senderId, byte[] exchangePayload)
+        {
+            // deserialize the received vector bytes
+            ConcurrentDictionary<string, double> vector = _serializer.Deserialize(exchangePayload);
+                        
+            UpdateProbability(senderId); // update direct node delivery probbability of the sender
+
+            // get the delivery probability from this node A to
+            // the remote node B after the update
+            //
+            double p_AB = _deliveryProbability[senderId];
+
+            TransitivityUpdate(senderId, vector, p_AB); // update the transitivity using the remote node's vector
+
+            // finally, save the remote node's probability vector locally
+            //
+            _remotePrVectors.AddOrUpdate(senderId, vector, (key, oldVector) => vector);
+        }
+
+
+        // --- Probability Vector exchange methods ---
+
+        // To Do ...
+
 
         // --- Updating methods ---
 
@@ -161,14 +218,21 @@ namespace TacMesh.Core.assets.routing.prophet
         /// Updates the probability of delivery for each node C in node B's probability list
         /// via the PRoPHET transitivity probability equation
         /// </summary>
+        /// <param name="senderId">The identifier of the probability vector sender.</param>
         /// <param name="remoteNodeProbabilities">The remote node B's list of probabilities</param>
         /// <param name="p_AB">The delivery probability from node A to the remote node B</param>
-        private void TransitivityUpdate(ConcurrentDictionary<string, double> remoteNodeProbabilities, double p_AB)
+        private void TransitivityUpdate(string senderId, ConcurrentDictionary<string, double> remoteNodeProbabilities, double p_AB)
         {
             // iterate through all node B's delivery probabilities
             //
             foreach (string node_C_id in remoteNodeProbabilities.Keys)
             {
+                // PRoPHET protocol states to not calculate transitivity to 
+                // the node itself or to node B, through node B...
+                //
+                if (node_C_id.Equals(_sourceNode) || node_C_id.Equals(senderId)) 
+                    continue;
+
                 double p_BC = remoteNodeProbabilities[node_C_id]; // B -> C probability
 
                 // default value in case no old A -> C probability exists
@@ -184,6 +248,6 @@ namespace TacMesh.Core.assets.routing.prophet
                 _deliveryProbability.AddOrUpdate(node_C_id, defaultValue, 
                     (key, p_AC_old) => Math.Max(p_AC_old, p_AB * p_BC * TransitivityFactor));
             }            
-        }
+        }        
     }
 }

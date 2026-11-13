@@ -14,5 +14,13 @@ namespace TacMesh.Core.interfaces.routing
         /// <param name="packet">The packet to route through to the next hops</param>
         /// <returns>A list containing the identifiers of the next hops</returns>
         List<string> Route(DataPacket packet);
+
+        /// <summary>
+        /// Method to process the routing exchange payload specific to the exact
+        /// routing protocol which is used.
+        /// </summary>
+        /// <param name="senderId">The identifier of the packet sender.</param>
+        /// <param name="exchangePayload">The routing exchange payload bytes.</param>
+        void ProcessRoutingExchange(string senderId, byte[] exchangePayload);
     }
 }
