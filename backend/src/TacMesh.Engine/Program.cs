@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -9,6 +10,7 @@ using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.assets.node.packet.buffer;
 using TacMesh.Core.assets.node.packet.validation;
 using TacMesh.Core.assets.routing.epidemic;
+using TacMesh.Core.assets.routing.prophet;
 using TacMesh.Core.communication.radio_communication;
 using TacMesh.Core.communication.simulation_communication;
 using TacMesh.Core.database_related;
@@ -85,28 +87,32 @@ namespace TacMesh.Engine
 
                 // Seralizers
                 IByteSerializer<DataPacket> packetSerializer = new PacketSerializer();
-                IByteSerializer<List<string>> linkStateSerializer = new LinkStateSerializer();                
+                IByteSerializer<List<string>> linkStateSerializer = new LinkStateSerializer();
+                IByteSerializer<ConcurrentDictionary<string, double>> prophetSerializer = new ProphetExchangeSerializer();
 
                 // Sender Counter state
                 SenderCounter senderCounter = new SenderCounter();
 
                 // Heartbeater & NeighbourTable
                 HeartBeater heartbeater = new HeartBeater(nodeInfo.NodeId, nodeConfigs, new HeartbeatLogger(), simTransport, radioModel, lamportClock, packetSerializer, senderCounter);
-                NeighborTable neighborTable = new NeighborTable(systemClock);                
+                NeighborTable neighborTable = new NeighborTable(systemClock);
+
+                // Packet Sender
+                PacketSender packetSender = new PacketSender(packetSerializer, neighborTable, simTransport);
 
                 // Routing Algorithm
-                IRouting routing = new EpidemicRouting(neighborTable);
+                //IRouting routing = new EpidemicRouting(neighborTable);
+                IRouting routing = new ProphetRouting(nodeInfo.NodeId, neighborTable, packetSender, prophetSerializer, lamportClock, senderCounter);
 
                 // Topology Filter & Network Topology
                 TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);
                 NetworkTopology networkTopology = new NetworkTopology();
 
-                // Packet Buffer, Packet Validator, Packet Sender, Packet Dispatcher, Packet Processor
+                // Packet Buffer, Packet Validator, Packet Dispatcher, Packet Processor
                 PacketBuffer packetBuffer = new PacketBuffer(systemClock);
                 PacketValidator packetValidator = new PacketValidator(lamportClock);
-                PacketSender packetSender = new PacketSender(packetSerializer, neighborTable, simTransport);
                 PacketDispatcher packetDispatcher = new PacketDispatcher(routing, packetSender, packetBuffer);
-                PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, linkStateSerializer, topologyFilter, heartbeater, neighborTable, packetValidator, packetDispatcher, packetSender, networkTopology, nodeInfo.NodeId);
+                PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, linkStateSerializer, topologyFilter, heartbeater, neighborTable, packetValidator, packetDispatcher, packetSender, networkTopology, routing, nodeInfo.NodeId);
 
                 // Link State & Buffer Dispatchers
                 LinkStateDispatcher linkStateDispatcher = new LinkStateDispatcher(nodeInfo.NodeId, nodeConfigs, packetSender, neighborTable, lamportClock, senderCounter, linkStateSerializer, networkTopology);

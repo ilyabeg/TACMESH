@@ -17,6 +17,8 @@ namespace TacMesh.Core.assets.routing.epidemic
         {
             _neighborTable = neighborTable;
         }
+        
+        // --- IRouting interface methods ---
 
         /// <summary>
         /// Router method to determine the next hops for the DataPacket
@@ -29,6 +31,17 @@ namespace TacMesh.Core.assets.routing.epidemic
             // next hops to spread the packet in the network like a virus.
             //
             return _neighborTable.GetCurrentNeighbors();
+        }
+
+        /// <summary>
+        /// Processor for Epidemic routing exchange packet payloads. processes incoming
+        /// remote buffered packet identifiers packet exchanges
+        /// </summary>
+        /// <param name="senderId">The identifier of the paacket sender.</param>
+        /// <param name="exchangePayload">The routing exchange payload bytes.</param>
+        public void ProcessRoutingExchange(string senderId, byte[] exchangePayload)
+        {
+            throw new NotImplementedException();
         }
     }
 }

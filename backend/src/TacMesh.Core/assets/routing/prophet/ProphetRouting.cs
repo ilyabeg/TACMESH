@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using TacMesh.Core.assets.clocks;
 using TacMesh.Core.assets.node.packet;
+using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.routing;
 using TacMesh.Core.packet;
 using TacMesh.Core.tables.node;
@@ -22,7 +23,7 @@ namespace TacMesh.Core.assets.routing.prophet
         private readonly string _sourceNode;
         private readonly NeighborTable _neighborTable;
         private readonly PacketSender _packetSender;
-        private readonly ProphetExchangeSerializer _serializer;
+        private readonly IByteSerializer<ConcurrentDictionary<string, double>> _serializer;
         private readonly LamportClock _lamportClock;
         private readonly SenderCounter _senderCounter;
 
@@ -102,7 +103,7 @@ namespace TacMesh.Core.assets.routing.prophet
 
 
         // constructor
-        public ProphetRouting(string sourceNode, NeighborTable neighborTable, PacketSender packetSender, ProphetExchangeSerializer serializer, LamportClock lamportClock, SenderCounter senderCounter)
+        public ProphetRouting(string sourceNode, NeighborTable neighborTable, PacketSender packetSender, IByteSerializer<ConcurrentDictionary<string, double>> serializer, LamportClock lamportClock, SenderCounter senderCounter)
         {
             _deliveryProbability = new ConcurrentDictionary<string, double>();
             _remotePrVectors = new ConcurrentDictionary<string, ConcurrentDictionary<string, double>>();
