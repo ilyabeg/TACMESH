@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using TacMesh.Core.assets.graph;
-using TacMesh.Core.assets.node.packet.buffer;
 using TacMesh.Core.assets.node.packet.validation;
 using TacMesh.Core.database_related;
 using TacMesh.Core.events;
@@ -28,11 +27,12 @@ namespace TacMesh.Core.assets.node.packet
         private readonly PacketDispatcher _packetDispatcher;
         private readonly PacketSender _packetSender;
         private readonly NetworkTopology _networkTopology;
+        private readonly IRouting _routing;
         private readonly string _sourceId;
 
 
         // constructor
-        public PacketProcessor(IByteSerializer<DataPacket> packetSerializer, IByteSerializer<List<string>> linkStateSerializer, TopologyFilter topologyFilter, HeartBeater heartbeater, NeighborTable neighborTable, PacketValidator packetValidator, PacketDispatcher packetDispatcher, PacketSender packetSender, NetworkTopology networkTopology, string sourceId)
+        public PacketProcessor(IByteSerializer<DataPacket> packetSerializer, IByteSerializer<List<string>> linkStateSerializer, TopologyFilter topologyFilter, HeartBeater heartbeater, NeighborTable neighborTable, PacketValidator packetValidator, PacketDispatcher packetDispatcher, PacketSender packetSender, NetworkTopology networkTopology, IRouting routing, string sourceId)
         {            
             _packetSerializer = packetSerializer;
             _linkStateSerializer = linkStateSerializer;
@@ -43,6 +43,7 @@ namespace TacMesh.Core.assets.node.packet
             _packetDispatcher = packetDispatcher;
             _packetSender = packetSender;
             _networkTopology = networkTopology;
+            _routing = routing;
             _sourceId = sourceId;
         }
 
@@ -72,6 +73,7 @@ namespace TacMesh.Core.assets.node.packet
                 if (ProcessHeartbeat(packet, e)) return;
                 if (ProcessUserMessage(packet, e)) return;
                 if (ProcessLinkState(packet, e)) return;
+                if (ProcessRoutingExchange(packet)) return;
             }
             // if packet invalid, it is dropped...
         }
@@ -188,6 +190,22 @@ namespace TacMesh.Core.assets.node.packet
                 string message = Encoding.UTF8.GetString(packet.Payload);
                 Console.WriteLine($"[PACKET PROCESSOR] Received User Message: \n{message}");
 
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// tries to process the packet as a routing exchange packet
+        /// </summary>
+        /// <returns>true if successfuly processed as a routing exchange packet</returns>
+        private bool ProcessRoutingExchange(DataPacket packet)
+        {
+            if (packet.PacketHeader.MsgType == PacketType.RoutingExchange)
+            {
+                // hand the routing algorithm the received exchange payload
+                //
+                _routing.ProcessRoutingExchange(packet.PacketHeader.SrcID, packet.Payload);
                 return true;
             }
             return false;

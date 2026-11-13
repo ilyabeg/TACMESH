@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using TacMesh.Core.assets.clocks;
 using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.interfaces.routing;
 using TacMesh.Core.packet;
@@ -22,9 +23,30 @@ namespace TacMesh.Core.assets.routing.prophet
         private readonly NeighborTable _neighborTable;
         private readonly PacketSender _packetSender;
         private readonly ProphetExchangeSerializer _serializer;
+        private readonly LamportClock _lamportClock;
+        private readonly SenderCounter _senderCounter;
 
 
         // --- PRoPHET constants ---
+
+        /// <summary>
+        /// the delay before adding the aging factor to probabilities
+        /// and dispatching the probability vector state to neighbors
+        /// </summary>
+        private const int ProphetDelay = 10000; // 10 sec
+
+        /// <summary>
+        /// the probability aging cycle unit. every 'ProphetDelay' seconds = 1 cycle.
+        ///
+        /// per the PRoPHET protocol: "K is the number of time units that have elapsed since
+        /// the last time the metric was aged and the time unit used can differ and should
+        /// be defined based on the application and the expected delays in the
+        /// targeted network".
+        ///
+        /// aging the probability by 1 unit since the last change by 'ProphetDelay' seconds
+        /// makes perfect sense.
+        /// </summary>
+        private const int AgingUnit = 1; // 1 unit since last update
 
         /// <summary>
         /// the initial probability constant
@@ -80,7 +102,7 @@ namespace TacMesh.Core.assets.routing.prophet
 
 
         // constructor
-        public ProphetRouting(string sourceNode, NeighborTable neighborTable, PacketSender packetSender, ProphetExchangeSerializer serializer)
+        public ProphetRouting(string sourceNode, NeighborTable neighborTable, PacketSender packetSender, ProphetExchangeSerializer serializer, LamportClock lamportClock, SenderCounter senderCounter)
         {
             _deliveryProbability = new ConcurrentDictionary<string, double>();
             _remotePrVectors = new ConcurrentDictionary<string, ConcurrentDictionary<string, double>>();
@@ -88,9 +110,16 @@ namespace TacMesh.Core.assets.routing.prophet
             _neighborTable = neighborTable;
             _packetSender = packetSender;
             _serializer = serializer;
+            _lamportClock = lamportClock;
+            _senderCounter = senderCounter;
 
             // attach event handler for discovering new neighbors
-            //_neighborTable.OnNeighborDiscovered += (s, e) => ... ; // To Do ...
+            _neighborTable.OnNeighborDiscovered += (s, e) => DispatchVectorExchange(e);
+
+            // run bg thread for aging the probabilities and
+            // dispatching the local vector state
+            //
+            RunExpirationAndExchange();
         }
 
 
@@ -169,7 +198,39 @@ namespace TacMesh.Core.assets.routing.prophet
 
         // --- Probability Vector exchange methods ---
 
-        // To Do ...
+        private void DispatchVectorExchange(string neighbor)
+        {
+            // serialize the current local probability vector state
+            //
+            byte[] currentVector = _serializer.Serialize(_deliveryProbability);
+            
+            // build the actual packet
+            DataPacket routingExchange = BuildExchangeVector(neighbor, currentVector);
+
+            // transmit the packet to the neighbor
+            _packetSender.SendPacket(routingExchange);
+        }
+
+        /// <summary>
+        /// Builds a probability vector exchange packet to a specific node
+        /// </summary>
+        /// <param name="destination">The node's identifier</param>
+        /// <param name="payload">The serialized probability vector as payload</param>
+        /// <returns>The built vector exchange packet</returns>
+        private DataPacket BuildExchangeVector(string destination, byte[] payload)
+        {
+            // build the header
+            //
+            PacketHeader header = new PacketHeader(
+                msgType: PacketType.RoutingExchange,
+                srcID: _sourceNode,
+                dstID: destination,
+                msgID: Guid.NewGuid(),
+                logicalClock: _lamportClock.GetCurrent(),
+                senderCounter: _senderCounter.GetCurrent()
+            );
+            return new DataPacket(header, payload);
+        }
 
 
         // --- Updating methods ---
@@ -248,6 +309,43 @@ namespace TacMesh.Core.assets.routing.prophet
                 _deliveryProbability.AddOrUpdate(node_C_id, defaultValue, 
                     (key, p_AC_old) => Math.Max(p_AC_old, p_AB * p_BC * TransitivityFactor));
             }            
-        }        
+        }
+
+
+        // --- Expiration and Dispatcher background task ---
+
+        /// <summary>
+        /// Runs a backgroung thread to age delivery probabilities to unheard from remote
+        /// nodes, and dispatch the current probability vector state after the update on 
+        /// a regular basis to keep remote nodes updated to current state
+        /// </summary>
+        private void RunExpirationAndExchange()
+        {
+            Task.Run(async () => 
+            { 
+                while (true)
+                {
+                    try
+                    {
+                        // update the current probabilities via the aging equation
+                        //
+                        foreach (string node in _deliveryProbability.Keys)
+                            DecayProbability(node, k: AgingUnit);
+
+                        // iterate through each neighbor and dispatch the local vector
+                        //
+                        foreach (string neighbor in _neighborTable.GetCurrentNeighbors())
+                            DispatchVectorExchange(neighbor);
+
+                        // delay between each cleanup and dispatch
+                        await Task.Delay(ProphetDelay);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"[PRoPHET] Failed to update probability of delivery and dispatch vector. \"{e.Message}\"");
+                    }
+                }
+            });            
+        }
     }
 }
