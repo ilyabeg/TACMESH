@@ -8,7 +8,8 @@ namespace TacMesh.Core.packet
     {
         Heartbeat,
         LinkState,
-        UserMessage
+        UserMessage,
+        RoutingExchange
     }
 
     /// <summary>

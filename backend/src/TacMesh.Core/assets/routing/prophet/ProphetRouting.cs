@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using TacMesh.Core.interfaces.routing;
 using TacMesh.Core.packet;
+using TacMesh.Core.tables.node;
 
 namespace TacMesh.Core.assets.routing.prophet
 {
@@ -10,6 +11,9 @@ namespace TacMesh.Core.assets.routing.prophet
         // determines the probability of the packet getting delivered to the node 
         //
         private readonly ConcurrentDictionary<string, double> _deliveryProbability;
+
+        // dependencies
+        private readonly NeighborTable _neighborTable;
 
         // --- PRoPHET constants ---
 
@@ -67,9 +71,10 @@ namespace TacMesh.Core.assets.routing.prophet
 
 
         // constructor
-        public ProphetRouting()
+        public ProphetRouting(NeighborTable neighborTable)
         {
             _deliveryProbability = new ConcurrentDictionary<string, double>();
+            _neighborTable = neighborTable;
         }
 
         /// <summary>
@@ -80,20 +85,29 @@ namespace TacMesh.Core.assets.routing.prophet
         public List<string> Route(DataPacket packet)
         {
             List<string> nextHops = new List<string>();
-            string destination = packet.PacketHeader.DstID;
 
-            string nodeB = ... ; // node B's identifier
-
-            // iterate through all saved delivery probabilities
+            // pull node C id and A -> C delivery probability
             //
-            foreach (string nodeId in _deliveryProbability.Keys)
+            string nodeC = packet.PacketHeader.DstID;
+            double p_AC = _deliveryProbability.TryGetValue(nodeC, out double val) ? val : 0;
+
+            // iterate through all current node A's neighbors
+            //
+            foreach (string nodeB in _neighborTable.GetCurrentNeighbors())
             {
-                double p_AC = _deliveryProbability[nodeId]; // A -> C probability
+                // if node B is node C, add to next hop immedietly and continue
+                //
+                if (nodeB.Equals(nodeC))
+                {
+                    nextHops.Add(nodeB);
+                    continue;
+                }
+
                 double p_BC = ... ; // B -> C probability
 
                 // Grater Than Rule: clacify node B as a next hop only if the
-                // delivery probability of node B is grater than the delivery
-                // probability of node A
+                // delivery probability of node B to C is grater than the delivery
+                // probability of node A to C
                 //
                 if (p_BC > p_AC)
                     nextHops.Add(nodeB);
