@@ -97,19 +97,23 @@ namespace TacMesh.Engine
                 HeartBeater heartbeater = new HeartBeater(nodeInfo.NodeId, nodeConfigs, new HeartbeatLogger(), simTransport, radioModel, lamportClock, packetSerializer, senderCounter);
                 NeighborTable neighborTable = new NeighborTable(systemClock);
 
-                // Packet Sender
+                // Packet Buffer, Packet Sender
+                PacketBuffer packetBuffer = new PacketBuffer(systemClock);
                 PacketSender packetSender = new PacketSender(packetSerializer, neighborTable, simTransport);
 
+                // Routing Exchange Handlers
+                ProphetExchangeHandler prophetExchangeHandler = new ProphetExchangeHandler(prophetSerializer, packetSender, lamportClock, senderCounter, nodeInfo.NodeId);
+                EpidemicExchangeHandler epidemicExchangeHandler = new EpidemicExchangeHandler(packetBuffer, packetSender, lamportClock, senderCounter, nodeInfo.NodeId);
+
                 // Routing Algorithm
-                //IRouting routing = new EpidemicRouting(neighborTable);
-                IRouting routing = new ProphetRouting(nodeInfo.NodeId, neighborTable, packetSender, prophetSerializer, lamportClock, senderCounter);
+                //IRouting routing = new EpidemicRouting(neighborTable, packetBuffer, epidemicExchangeHandler);
+                IRouting routing = new ProphetRouting(nodeInfo.NodeId, neighborTable, prophetExchangeHandler);
 
                 // Topology Filter & Network Topology
                 TopologyFilter topologyFilter = new TopologyFilter(nodeConfigs);
                 NetworkTopology networkTopology = new NetworkTopology();
 
-                // Packet Buffer, Packet Validator, Packet Dispatcher, Packet Processor
-                PacketBuffer packetBuffer = new PacketBuffer(systemClock);
+                // Packet Validator, Packet Dispatcher, Packet Processor
                 PacketValidator packetValidator = new PacketValidator(lamportClock);
                 PacketDispatcher packetDispatcher = new PacketDispatcher(routing, packetSender, packetBuffer);
                 PacketProcessor packetProcessor = new PacketProcessor(packetSerializer, linkStateSerializer, topologyFilter, heartbeater, neighborTable, packetValidator, packetDispatcher, packetSender, networkTopology, routing, nodeInfo.NodeId);

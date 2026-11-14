@@ -1,7 +1,6 @@
 ﻿using TacMesh.Core.assets.clocks;
 using TacMesh.Core.assets.node.packet;
 using TacMesh.Core.assets.node.packet.buffer;
-using TacMesh.Core.interfaces;
 using TacMesh.Core.packet;
 
 namespace TacMesh.Core.assets.routing.epidemic
@@ -9,10 +8,9 @@ namespace TacMesh.Core.assets.routing.epidemic
     /// <summary>
     /// Handler class to handle Epidemic rouing protocol routing exchange messages
     /// </summary>
-    public class EpidemicExchangeHandler
+    public class EpidemicExchangeHandler 
     {
         // dependencies
-        private readonly IByteSerializer<List<Guid>> _serializer;
         private readonly PacketBuffer _packetBuffer;
         private readonly PacketSender _packetSender;
         private readonly LamportClock _lamportClock;
@@ -20,9 +18,8 @@ namespace TacMesh.Core.assets.routing.epidemic
         private readonly string _sourceNode;
 
         // constructor
-        public EpidemicExchangeHandler(IByteSerializer<List<Guid>> serializer, PacketBuffer packetBuffer, PacketSender packetSender, LamportClock lamportClock, SenderCounter senderCounter, string sourceNode)
+        public EpidemicExchangeHandler(PacketBuffer packetBuffer, PacketSender packetSender, LamportClock lamportClock, SenderCounter senderCounter, string sourceNode)
         {
-            _serializer = serializer;
             _packetBuffer = packetBuffer;
             _packetSender = packetSender;
             _lamportClock = lamportClock;
@@ -39,10 +36,10 @@ namespace TacMesh.Core.assets.routing.epidemic
         /// <param name="neighbor">The neighbor to send the sum vector to</param>
         public void DispatchSumVector(string neighbor)
         {
-            // serialize the current summary vector
+            // serialize the current summary vector into bloom filter
             //
-            List<Guid> currPacketIdentifiers = _packetBuffer.GetCurrentPackets();
-            byte[] currVector = _serializer.Serialize(currPacketIdentifiers);
+            List<Guid> currPacketIdentifiers = _packetBuffer.GetCurrentPackets().Select(packet => packet.PacketHeader.MsgID).ToList();
+            byte[] currVector = BloomFilter.ComputeFilter(currPacketIdentifiers);
 
             // get the sum vector packet and send to the neighbor
             //
@@ -63,6 +60,18 @@ namespace TacMesh.Core.assets.routing.epidemic
                 senderCounter: _senderCounter.GetCurrent()
             );
             return new DataPacket(header, payload);
+        }
+
+        // --- Pairwise exchange processing logic ---
+
+        public void ProcessSumVectorExchange(byte[] summaryVector)
+        {
+
+        }
+
+        public void ProcessRequestVectorExchange(byte[] requestVector)
+        {
+
         }
     }
 }

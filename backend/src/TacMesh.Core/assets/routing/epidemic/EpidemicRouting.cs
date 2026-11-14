@@ -1,7 +1,4 @@
-﻿using TacMesh.Core.assets.clocks;
-using TacMesh.Core.assets.node.packet;
-using TacMesh.Core.assets.node.packet.buffer;
-using TacMesh.Core.interfaces;
+﻿using TacMesh.Core.assets.node.packet.buffer;
 using TacMesh.Core.interfaces.routing;
 using TacMesh.Core.packet;
 using TacMesh.Core.tables.node;
@@ -54,7 +51,7 @@ namespace TacMesh.Core.assets.routing.epidemic
         /// <param name="exchangePayload">The routing exchange payload bytes.</param>
         public void ProcessRoutingExchange(string senderId, byte[] exchangePayload)
         {
-            throw new NotImplementedException();
+            
         }        
     }
 }
