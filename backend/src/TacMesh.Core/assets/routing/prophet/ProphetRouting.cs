@@ -1,7 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using TacMesh.Core.assets.clocks;
-using TacMesh.Core.assets.node.packet;
-using TacMesh.Core.interfaces;
 using TacMesh.Core.interfaces.routing;
 using TacMesh.Core.packet;
 using TacMesh.Core.tables.node;
@@ -22,10 +19,7 @@ namespace TacMesh.Core.assets.routing.prophet
         // --- Dependencies ---
         private readonly string _sourceNode;
         private readonly NeighborTable _neighborTable;
-        private readonly PacketSender _packetSender;
-        private readonly IByteSerializer<ConcurrentDictionary<string, double>> _serializer;
-        private readonly LamportClock _lamportClock;
-        private readonly SenderCounter _senderCounter;
+        private readonly ProphetExchangeHandler _exchangeHandler;
 
 
         // --- PRoPHET constants ---
@@ -103,19 +97,16 @@ namespace TacMesh.Core.assets.routing.prophet
 
 
         // constructor
-        public ProphetRouting(string sourceNode, NeighborTable neighborTable, PacketSender packetSender, IByteSerializer<ConcurrentDictionary<string, double>> serializer, LamportClock lamportClock, SenderCounter senderCounter)
+        public ProphetRouting(string sourceNode, NeighborTable neighborTable, ProphetExchangeHandler exchangeHandler)
         {
             _deliveryProbability = new ConcurrentDictionary<string, double>();
             _remotePrVectors = new ConcurrentDictionary<string, ConcurrentDictionary<string, double>>();
             _sourceNode = sourceNode;
             _neighborTable = neighborTable;
-            _packetSender = packetSender;
-            _serializer = serializer;
-            _lamportClock = lamportClock;
-            _senderCounter = senderCounter;
+            _exchangeHandler = exchangeHandler;
 
             // attach event handler for discovering new neighbors
-            _neighborTable.OnNeighborDiscovered += (s, e) => DispatchVectorExchange(e);
+            _neighborTable.OnNeighborDiscovered += (s, e) => _exchangeHandler.DispatchVectorExchange(e, _deliveryProbability);
 
             // run bg thread for aging the probabilities and
             // dispatching the local vector state
@@ -180,7 +171,7 @@ namespace TacMesh.Core.assets.routing.prophet
         public void ProcessRoutingExchange(string senderId, byte[] exchangePayload)
         {
             // deserialize the received vector bytes
-            ConcurrentDictionary<string, double> vector = _serializer.Deserialize(exchangePayload);
+            ConcurrentDictionary<string, double> vector = _exchangeHandler.TranslateVector(exchangePayload);
                         
             UpdateProbability(senderId); // update direct node delivery probbability of the sender
 
@@ -195,46 +186,9 @@ namespace TacMesh.Core.assets.routing.prophet
             //
             _remotePrVectors.AddOrUpdate(senderId, vector, (key, oldVector) => vector);
         }
+        
 
-
-        // --- Probability Vector exchange methods ---
-
-        private void DispatchVectorExchange(string neighbor)
-        {
-            // serialize the current local probability vector state
-            //
-            byte[] currentVector = _serializer.Serialize(_deliveryProbability);
-            
-            // build the actual packet
-            DataPacket routingExchange = BuildExchangeVector(neighbor, currentVector);
-
-            // transmit the packet to the neighbor
-            _packetSender.SendPacket(routingExchange);
-        }
-
-        /// <summary>
-        /// Builds a probability vector exchange packet to a specific node
-        /// </summary>
-        /// <param name="destination">The node's identifier</param>
-        /// <param name="payload">The serialized probability vector as payload</param>
-        /// <returns>The built vector exchange packet</returns>
-        private DataPacket BuildExchangeVector(string destination, byte[] payload)
-        {
-            // build the header
-            //
-            PacketHeader header = new PacketHeader(
-                msgType: PacketType.RoutingExchange,
-                srcID: _sourceNode,
-                dstID: destination,
-                msgID: Guid.NewGuid(),
-                logicalClock: _lamportClock.GetCurrent(),
-                senderCounter: _senderCounter.GetCurrent()
-            );
-            return new DataPacket(header, payload);
-        }
-
-
-        // --- Updating methods ---
+        // --- Updating/Equations methods ---
 
         /// <summary>
         /// Updator method to update a direct neighbor node's delivery probability.
@@ -336,7 +290,7 @@ namespace TacMesh.Core.assets.routing.prophet
                         // iterate through each neighbor and dispatch the local vector
                         //
                         foreach (string neighbor in _neighborTable.GetCurrentNeighbors())
-                            DispatchVectorExchange(neighbor);
+                            _exchangeHandler.DispatchVectorExchange(neighbor, _deliveryProbability);
 
                         // delay between each cleanup and dispatch
                         await Task.Delay(ProphetDelay);

@@ -1,4 +1,8 @@
-﻿using TacMesh.Core.interfaces.routing;
+﻿using TacMesh.Core.assets.clocks;
+using TacMesh.Core.assets.node.packet;
+using TacMesh.Core.assets.node.packet.buffer;
+using TacMesh.Core.interfaces;
+using TacMesh.Core.interfaces.routing;
 using TacMesh.Core.packet;
 using TacMesh.Core.tables.node;
 
@@ -10,12 +14,21 @@ namespace TacMesh.Core.assets.routing.epidemic
     /// </summary>
     public class EpidemicRouting : IRouting
     {
-        private readonly NeighborTable _neighborTable;
+        // dependencies
+        private readonly NeighborTable _neighborTable;        
+        private readonly PacketBuffer _packetBuffer;
+        private readonly EpidemicExchangeHandler _exchangeHandler;
+
 
         // constructor
-        public EpidemicRouting(NeighborTable neighborTable)
+        public EpidemicRouting(NeighborTable neighborTable, PacketBuffer packetBuffer, EpidemicExchangeHandler exchangeHandler)
         {
             _neighborTable = neighborTable;
+            _packetBuffer = packetBuffer;
+            _exchangeHandler = exchangeHandler;
+
+            // attach event handler for discovering new neighbors
+            _neighborTable.OnNeighborDiscovered += (s, e) => _exchangeHandler.DispatchSumVector(e);
         }
         
         // --- IRouting interface methods ---
@@ -42,6 +55,6 @@ namespace TacMesh.Core.assets.routing.epidemic
         public void ProcessRoutingExchange(string senderId, byte[] exchangePayload)
         {
             throw new NotImplementedException();
-        }
+        }        
     }
 }
